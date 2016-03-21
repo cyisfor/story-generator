@@ -7,8 +7,12 @@ import makers: makers;
 import html: createDocument;
 
 import std.file: setTimes;
-import std.algorithm.mutation: copy;
-import std.algorithm.comparison: max;
+version(GNU) {
+  import std.algorithm: copy, max;
+} else {
+  import std.algorithm.mutation: copy;
+  import std.algorithm.comparison: max;
+ }
 import std.datetime: SysTime;
 import std.conv: to;
 import std.stdio;

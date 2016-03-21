@@ -1,6 +1,10 @@
 static import backend = d2sqlite3;
 
-import std.algorithm.iteration: map;
+version(GNU) {
+  import std.algorithm: map;
+} else {
+  import std.algorithm.iteration: map;
+}
 import std.datetime: SysTime, Clock;
 import std.file: exists, readText;
 import std.path: buildPath;
@@ -16,7 +20,7 @@ struct Chapter {
   int which;
   void update(SysTime modified, int which, string title) {
 	this.which = which;
-	db.update_chapter.bindAll(title,modified.toUnixTime,which,story.id);
+	db.update_chapter.bindAll(title,modified.toISOExtString(),which,story.id);
 	db.update_chapter.execute();
   }
 }
@@ -24,12 +28,12 @@ struct Chapter {
 Chapter fucking_hell(backend.Row row) {
   struct temp {
 	string title;
-	long modified;
+	string modified;
 	string first_words;
   }
   temp t = row.as!temp;
   Chapter ret = { title: t.title,
-				  modified: SysTime.fromUnixTime(t.modified),
+				  modified: SysTime.fromISOString(t.modified),
 				  first_words: t.first_words
   };
   return ret;
@@ -48,7 +52,7 @@ struct Story {
 	db.find_chapter.bindAll(id, which);
 	auto rset = db.find_chapter.execute();
 	if(rset.empty) {
-	  db.insert_chapter.bindAll(which, id, Clock.currTime.toUnixTime);
+	  db.insert_chapter.bindAll(which, id, Clock.currTime.toISOExtString());
 	  db.insert_chapter.execute();
 	  db.insert_chapter.reset();
 	  rset = db.find_chapter.execute();
@@ -116,7 +120,7 @@ class Database {
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	insert_story = db.prepare("INSERT INTO stories (location,title,description,modified) VALUES (?,?,?,?)");
-	find_chapter = db.prepare("SELECT title, modified, first_words FROM chapters WHERE story = ? AND which = ?");
+	find_chapter = db.prepare("SELECT title, strftime('%Y%m%dT%H%M%fZ',modified), first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story, modified) VALUES (?,?,?)");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");
@@ -154,7 +158,7 @@ class Database {
 	  insert_story.bind(2,readln().strip());
 	  writeln("Description: (end with a dot)");
 	  insert_story.bind(3,readToDot());
-	  insert_story.bind(4, Clock.currTime.toUnixTime);
+	  insert_story.bind(4, Clock.currTime.toISOExtString());
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}

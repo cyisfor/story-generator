@@ -10,7 +10,11 @@ static import htmlish;
 
 import html: Document, createDocument;
 
-import std.algorithm.searching: endsWith;
+version(GNU) {
+  import std.algorithm: endsWith;
+} else {
+  import std.algorithm.searching: endsWith;
+}
 import std.stdio: writeln, writefln;
 import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
   FileException;

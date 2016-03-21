@@ -6,6 +6,7 @@ import std.stdio : writeln;
 import std.array : array;
 import std.string : isNumeric, strip;
 import std.datetime : SysTime;
+import core.time: TimeException;
 version(GNU) {
   import std.algorithm: startsWith;
 } else {
@@ -17,9 +18,9 @@ auto adp = regex("([^\t]+)\t([^\t]+)\t(.*)");
 void parse_log(string since, void function(SysTime, int, string, bool) handler) {
   string[] args;
   if(since == null) {
-	args = ["git","log","--numstat","--pretty=format:%at"];
+	args = ["git","log","--numstat","--pretty=format:%cI"];
   } else {
-	args = ["git","log",since,"--numstat","--pretty=format:%at"];
+	args = ["git","log",since,"--numstat","--pretty=format:%cI"];
   }
   auto git = pipeProcess(args,Redirect.stdout);
   // why not an iterator? this:
@@ -28,15 +29,15 @@ void parse_log(string since, void function(SysTime, int, string, bool) handler) 
 	git.pid.wait();
   }
 
-  int modified = 0;
+  SysTime modified = 0;
 
   foreach (line; git.stdout.byLine) {
 	//writeln(line);
 	auto res = matchFirst(line,adp);
 	if( res.empty ) {
-	  if(isNumeric(line)) {
-		modified = to!(int)(line);
-	  }
+	  try {
+		modified = SysTime.fromISOExtString(line);
+	  } catch(TimeException e) {}
 	  continue;
 	}
 	auto path = array(pathSplitter(res[3]));
@@ -58,7 +59,7 @@ void parse_log(string since, void function(SysTime, int, string, bool) handler) 
 
 	// can probably ignore whether it's adding or deleting
 	// regenerate anyway
-	handler(SysTime.fromUnixTime(modified), chapter, to!string(path[0]), is_hish);
+	handler(modified, chapter, to!string(path[0]), is_hish);
   }
 }
 
