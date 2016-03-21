@@ -55,7 +55,7 @@ void parse_log(string since, void function(SysTime, int, string, bool) handler) 
 	if(!isNumeric(derp)) {
 	  continue;
 	}
-	int chapter = to!int(derp);
+	int chapter = to!int(derp) - 1;
 
 	// can probably ignore whether it's adding or deleting
 	// regenerate anyway

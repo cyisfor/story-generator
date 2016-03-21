@@ -51,15 +51,15 @@ struct Update {
 	// find a better place to put stuff so it doesn't scram the source directory
 	auto basedir = buildPath(location,"base");
 	smackdir(basedir);
-	const Maker herpaderp() {
+	const(Maker) herpaderp() {
 	  if(location in makers) {
 		return makers[location];
-		assert(maker);
 	  } else {
 		return htmlish.check;
 	  }
 	}
 	const Maker maker = herpaderp();
+	assert(maker);
 
 	string ext;
 	if( is_hish ) {
@@ -68,8 +68,8 @@ struct Update {
 	  ext = ".txt";
 	}
 	
-	auto name = "chapter" ~ to!string(which);
-	auto markup = buildPath(location,"markup",name ~ ext);
+	auto name = chapter_name(which);
+	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
 
 	auto chapter = story[which];
 

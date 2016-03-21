@@ -1,9 +1,10 @@
 static import backend = d2sqlite3;
 
 version(GNU) {
-  import std.algorithm: map;
+  import std.algorithm: map, findSplit;
 } else {
   import std.algorithm.iteration: map;
+  import std.algorithm.searching: findSplit;
 }
 import std.datetime: SysTime, Clock;
 import std.file: exists, readText;
@@ -32,11 +33,28 @@ Chapter fucking_hell(backend.Row row) {
 	string first_words;
   }
   temp t = row.as!temp;
+  // sometimes year is negative, before 0 AD!
+  auto when = t.modified.findSplit("/");
+  import std.datetime: Date, TimeOfDay, DateTime, UTC, TimeException;
+  import std.conv: to;
+  try {
+  const Date the_date = Date(to!short(when[0]),
+					   to!ubyte(when[2][0..2]),
+					   to!ubyte(when[2][2..4]));
+  const TimeOfDay the_time = TimeOfDay.fromISOString
+	(when[2][4..when[2].length]);
+  // sqlite dates cannot hold timezone info, so they're always relative to
+  // UTC.
+  // fromJulianDay would be nice, but floating point error :p
   Chapter ret = { title: t.title,
-				  modified: SysTime.fromISOString(t.modified),
+				  modified: SysTime(DateTime(the_date,the_time),UTC()),
 				  first_words: t.first_words
   };
   return ret;
+  } catch(TimeException e) {
+	writeln("uhhh",t.modified);
+	throw(e);
+  }
 }
 
 
@@ -52,7 +70,7 @@ struct Story {
 	db.find_chapter.bindAll(id, which);
 	auto rset = db.find_chapter.execute();
 	if(rset.empty) {
-	  db.insert_chapter.bindAll(which, id, Clock.currTime.toISOExtString());
+	  db.insert_chapter.bindAll(which, id);
 	  db.insert_chapter.execute();
 	  db.insert_chapter.reset();
 	  rset = db.find_chapter.execute();
@@ -119,9 +137,9 @@ class Database {
 	db.run(import("schema.sql"));
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
-	insert_story = db.prepare("INSERT INTO stories (location,title,description,modified) VALUES (?,?,?,?)");
-	find_chapter = db.prepare("SELECT title, strftime('%Y%m%dT%H%M%fZ',modified), first_words FROM chapters WHERE story = ? AND which = ?");
-	insert_chapter = db.prepare("INSERT INTO chapters (which, story, modified) VALUES (?,?,?)");
+	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
+	find_chapter = db.prepare("SELECT title, strftime('%Y/%m%d%H%M%f',modified), first_words FROM chapters WHERE story = ? AND which = ?");
+	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");
   }
@@ -158,7 +176,6 @@ class Database {
 	  insert_story.bind(2,readln().strip());
 	  writeln("Description: (end with a dot)");
 	  insert_story.bind(3,readToDot());
-	  insert_story.bind(4, Clock.currTime.toISOExtString());
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
