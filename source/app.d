@@ -26,6 +26,14 @@ import core.memory: GC;
 
 db.Story[string] stories;
 
+void smackdir(string p) {
+  try {
+	mkdir(p);
+  } catch {
+	
+  }
+}
+
 struct Update {
   SysTime modified;
   int which;
@@ -38,13 +46,12 @@ struct Update {
 	} else {
 	  story = db.story(location);
 	  stories[location] = story;
+	  assert(stories.length > 0);
+	  writeln("argh!");
 	}
 	// find a better place to put stuff so it doesn't scram the source directory
-	try {
-	  mkdir(buildPath(location,"base"));
-	} catch {
-	  writeln("beep");
-	}
+	auto basedir = buildPath(location,"base");
+	smackdir(basedir);
 	Maker maker;
 	if(location in makers) {
 	  maker = makers[location];
@@ -70,12 +77,12 @@ struct Update {
 	  return;
 	}
 	
-	auto base = buildPath(location,"base",name ~ ".xhtml");
+	auto base = buildPath(basedir,name ~ ".xhtml");
 	maker.make(markup,base);
 	Document doc;
-	doc = createDocument(readText("base/" ~
+	doc = createDocument(readText(buildPath(basedir,
 									chapter_name(chapter.which) ~
-									".xhtml"));
+									".xhtml")));
 
 	auto head = querySelector(doc,"head");
 	auto links = querySelector(doc,"#links");
@@ -103,9 +110,12 @@ struct Update {
 	maker.chapter(doc);
 	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
 
-	write("out/" ~
-		  chapter_name(chapter.which) ~
-		  ".xhtml",doc.root.outerHTML);
+	string outdir = buildPath(location, "out/");
+	smackdir(outdir);
+	
+	write(buildPath(outdir,
+					chapter_name(chapter.which) ~
+					".xhtml"),doc.root.outerHTML);
 	
 	string chapterTitle = to!string(querySelector(doc,"title").text);
 	story[which].update(modified, which, chapterTitle);
@@ -125,8 +135,11 @@ void check_chapter(SysTime modified, int which, string location, bool is_hish) {
 }
 
 
-void derpmain(string[] args)
+void main(string[] args)
 {
+  scope(exit) {
+	db.close();
+  }
   string since = "HEAD~20..HEAD";
   while(!exists(".git")) {
 	writeln("boing");
@@ -139,16 +152,8 @@ void derpmain(string[] args)
   writeln("since "~since);
   git.parse_log(since,&check_chapter);
   foreach(update; queue.values) {
-	writeln("checking ",update.location);
+	writeln("checking ",update.location," ",update.modified);
 	update.update();
   }
   reindex(stories);
-  db.close();
-}
-
-
-void main(string[] args) {
-  derpmain(args);
-  GC.collect();
-  writeln("yay");
 }

@@ -11,7 +11,7 @@ const string preamble = `<?xml version="1.0" encoding="UTF-8"?>`;
 string encode_date(SysTime s) {
   // %Y-%m-%dT%H:%M%:S
   return s.toISOExtString();
-  
+
 }
 
 class Feed {
@@ -48,7 +48,7 @@ class Feed {
 	this();
 	this.p = params;
   }
-  
+
   auto start_out(string url) {
 	auto entry = doc.createElement("entry",feed);
 	auto link = doc.createElement("link",entry);
@@ -78,12 +78,10 @@ class Feed {
 	}
 	doc.createElement("title",entry).appendText(chapter.title);
   }
-  
+
   void save(string dest) {
 	write(dest,
-		  preamble ~ 
+		  preamble ~
 		  doc.root.outerHTML);
   }
 }
-
-	

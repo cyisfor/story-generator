@@ -15,8 +15,6 @@ class Maker : makers.Maker {
 	  link.attr("href","style.css"); // style for this story alone
 	  link.attr("rel","stylesheet");
 	  link.attr("type","text/css");
-	  writeln(head.outerHTML);
-	  writeln(link.outerHTML);
 	  head.appendChild(link);
 	} catch(AssertError e) {
 	  writeln(doc.root.outerHTML);

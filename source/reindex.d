@@ -49,14 +49,20 @@ SysTime reindex(Story story) {
 }
 void reindex(Story[string] stories) {
   SysTime maxTime;
+  writeln("na aueo ",stories.length);
+  if(stories.length == 0) {
+	writeln("no stories to update?");
+	return;
+  }
   foreach(string location, Story story; stories) {
+	writeln("story ",location);
 	story.location = location;
 	SysTime modified = reindex(story);
 	setTimes(location, modified, modified);
 	maxTime = max(modified,maxTime);
   }
-  if(maxTime == SysTime()) return;
 
+  writeln(stories.length," at ",maxTime);
   Feed.Params p = {
   title: "Recently Updated",
   url: "./",
@@ -67,7 +73,6 @@ void reindex(Story[string] stories) {
   updated: maxTime
   };
   Feed recent = new Feed(p);
-
 
   copy(db.latest(),recent);
 
