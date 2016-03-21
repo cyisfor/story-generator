@@ -1,5 +1,3 @@
-static import makers;
-
 import std.stdio: File,writeln;
 import std.file: rename;
 import std.process: spawnProcess, wait;

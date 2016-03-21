@@ -3,7 +3,7 @@ static import git;
 static import db;
 import reindex: reindex, chapter_name;
 
-import makers : makers, Maker;
+import makers;
 static import nada = makers.birthverse;
 static import nada2 = makers.littlepip;
 static import htmlish;
