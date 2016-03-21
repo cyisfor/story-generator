@@ -40,6 +40,17 @@ struct Update {
   string location;
   bool is_hish;
   void update() {
+	string ext;
+	if( is_hish ) {
+	  ext = ".hish";
+	} else {
+	  ext = ".txt";
+	}
+	
+	auto name = chapter_name(which);
+	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
+	if(!exists(markup)) return;
+
 	db.Story story;
 	if(location in stories) {
 	  story = stories[location];
@@ -66,20 +77,10 @@ struct Update {
 	}
 	auto make = herpaderp();
 
-	string ext;
-	if( is_hish ) {
-	  ext = ".hish";
-	} else {
-	  ext = ".txt";
-	}
-	
-	auto name = chapter_name(which);
-	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
-
 	auto chapter = story[which];
 
 	try {
-	  if(timeLastModified(markup) <= chapter.modified) {
+	  if(modified <= chapter.modified) {
 		writeln("unmodified");
 		return;
 	  }
@@ -120,7 +121,7 @@ struct Update {
 
 	auto box = location in makers.chapter;
 	if(box) {
-	  *box(doc);
+	  (*box)(doc);
 	}
 	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
 
@@ -137,7 +138,7 @@ struct Update {
   }
 }
 
-Update[string] queue;
+bool[string] updated;
 string only_location = null;
 
 void check_chapter(SysTime modified, int which, string location, bool is_hish) {
@@ -145,8 +146,10 @@ void check_chapter(SysTime modified, int which, string location, bool is_hish) {
   if(only_location && (!location.endsWith(only_location))) return;
 
   string key = location ~ "/" ~ to!string(which);
-  if(key in queue) return;
-  queue[key] = Update(modified,which,location,is_hish);
+  if(key in updated) return;
+  updated[key] = true;
+  writeln(location,' ',which," updated!");
+  Update(modified,which,location,is_hish).update();
 }
 
 
@@ -157,7 +160,6 @@ void main(string[] args)
   }
   string since = "HEAD~20..HEAD";
   while(!exists(".git")) {
-	writeln("boing");
 	chdir("..");
   }
   if(args.length > 1) {

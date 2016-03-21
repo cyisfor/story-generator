@@ -42,7 +42,7 @@ SysTime reindex(Story story) {
   }
   auto box = story.location in makers.contents;
   if(box) {
-	*box(contents);
+	(*box)(contents);
   }
   return maxTime;
   } catch(AssertError e) {

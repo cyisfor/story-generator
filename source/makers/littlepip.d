@@ -6,7 +6,7 @@ import html: Document;
 import std.stdio: writeln;
 import core.exception: AssertError;
 
-void add_style(ref Document doc) const {
+void add_style(ref Document doc) {
   try {
 	auto link = doc.createElement("link");
 	auto head = querySelector(doc, "head");
@@ -21,15 +21,6 @@ void add_style(ref Document doc) const {
 	throw(e);
   }
 }
-
-void contents(Document doc) const {
-  add_style(doc);
-}
-
-void chapter(Document doc) const {
-  add_style(doc);
-}
-
 
 static this() {
   static import makers;

@@ -4,7 +4,7 @@ import std.process: spawnProcess, wait;
 
 const string exe = "/home/code/htmlish/parse";
 
-void make(string src, string dest) const {
+void make(string src, string dest) {
 	writeln("htmlishhhhh ",dest);
 	File source = File(src,"r");
 	File destination = File(dest~".temp","w");
@@ -14,7 +14,8 @@ void make(string src, string dest) const {
 						source,
 						destination,
 						std.stdio.stderr,
-						["template": "template/chapter.xhtml"]).wait());
+						["template": "template/chapter.xhtml",
+						 "title": "???"]).wait());
 	rename(dest~".temp",dest);
 	source.close();
 	destination.close();

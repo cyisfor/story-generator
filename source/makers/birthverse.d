@@ -1,5 +1,4 @@
 module makers.birthverse;
-static import makers;
 import htmlderp: querySelector;
 import html: createDocument;
 
@@ -8,7 +7,7 @@ import std.stdio: File, writeln;
 import std.conv: to;
 import std.string: strip;
 
-void make(string src, string dest) const {
+void make(string src, string dest) {
   auto doc = createDocument(readText("template/birthverse.xhtml"));
   auto bod = querySelector(doc, "div.greentext");
   assert(bod);
@@ -49,6 +48,6 @@ void make(string src, string dest) const {
 }
 
 static this() {
-  import makers: makers;
+  static import makers;
   makers.make["birthverse"] = &make;
 }
