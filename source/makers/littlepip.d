@@ -1,5 +1,6 @@
 module makers.littlepip;
 
+import htmlderp: querySelector;
 import html: Document;
 
 import std.stdio: writeln;
@@ -8,7 +9,7 @@ class Maker : makers.Maker {
   void add_style(ref Document doc) {
 	try {
 	  auto link = doc.createElement("link");
-	  auto head = doc.querySelector("head");
+	  auto head = querySelector(doc, "head");
 	  assert(head != null);
 	  assert(head.node_ != null);
 	  link.attr("href","style.css"); // style for this story alone

@@ -1,10 +1,10 @@
-import htmlderp: createElement, querySelector;
+import htmlderp: querySelector;
 import feed: Feed;
 import db: Story, Chapter;
 static import db;
 import makers: makers;
 
-import arsd.dom: Document;
+import html: createDocument;
 
 import std.file: setTimes;
 import std.algorithm.mutation: copy;
@@ -19,7 +19,7 @@ string chapter_name(int which) {
 }
 
 SysTime reindex(Story story) {
-  Document contents = new Document(import("template/contents.xhtml"));
+  auto contents = createDocument(import("template/contents.xhtml"));
   assert(story.description != null);
   auto desc = querySelector(contents,"#description");
   desc.html = story.description;

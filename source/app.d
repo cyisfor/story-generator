@@ -1,4 +1,4 @@
-import htmlderp: querySelector, createElement;
+import htmlderp: querySelector;
 static import git;
 static import db;
 import reindex: reindex, chapter_name;
@@ -8,7 +8,7 @@ static import nada = makers.birthverse;
 static import nada2 = makers.littlepip;
 static import htmlish;
 
-import html: Document;
+import html: Document, createDocument;
 
 import std.algorithm.searching: endsWith;
 import std.stdio: writeln, writefln;
@@ -69,7 +69,7 @@ struct Update {
 	auto base = buildPath(location,"base",name ~ ".xhtml");
 	maker.make(markup,base);
 	Document doc;
-	doc = new Document(readText("base/" ~
+	doc = createDocument(readText("base/" ~
 									chapter_name(chapter.which) ~
 									".xhtml"));
 

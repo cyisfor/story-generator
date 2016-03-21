@@ -1,0 +1,13 @@
+{
+	"name": "generate",
+	"authors": [
+		"ferret"
+	],
+	"dependencies": {
+		"htmld": "~>0.2.13",		
+		"d2sqlite3": "~>0.9.7"
+	},
+	"description": "Generate HTML versions of story markup",
+	"copyright": "meh",
+	"license": "whatever",
+}

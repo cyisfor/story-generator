@@ -1,8 +1,7 @@
 module makers.birthverse;
-import htmlderp: createElement;
 static import makers;
-
-import arsd.dom: Document;
+import htmlderp: querySelector;
+import html: createDocument;
 
 import std.file: readText,write;
 import std.stdio: File;
@@ -12,8 +11,8 @@ import std.string: strip;
 class Maker : makers.Maker {
   override
   void make(string src, string dest) {
-	auto doc = new Document(readText("template/birthverse.xhtml"));
-	auto bod = doc.querySelector("div.greentext");
+	auto doc = createDocument(readText("template/birthverse.xhtml"));
+	auto bod = querySelector(doc, "div.greentext");
 	assert(bod);
 
 	auto inp = File(src, "r");
@@ -40,7 +39,7 @@ class Maker : makers.Maker {
 
 	assert(title,"no title in " ~ src);
 	auto tnode = 	doc.createTextNode(title);
-	doc.querySelector("title").appendChild(tnode);
+	querySelector(doc, "title").appendChild(tnode);
 	foreach(e; doc.querySelectorAll("intitle")) {
 	  // can't reuse, because it'll relink parent / has move semantics
 	  tnode = doc.createTextNode(title);
@@ -53,5 +52,5 @@ class Maker : makers.Maker {
 
 static this() {
   import makers: makers;
-  makers["birthverse"] = Maker();
+  makers["birthverse"] = new Maker();
 }

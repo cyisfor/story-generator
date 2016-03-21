@@ -6,7 +6,11 @@ import std.stdio : writeln;
 import std.array : array;
 import std.string : isNumeric, strip;
 import std.datetime : SysTime;
-import std.algorithm.searching: startsWith;
+version(GNU) {
+  import std.algorithm: startsWith;
+} else {
+  import std.algorithm.searching: startsWith;
+ }
 
 auto adp = regex("([^\t]+)\t([^\t]+)\t(.*)");
 
