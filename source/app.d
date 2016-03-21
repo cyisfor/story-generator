@@ -158,7 +158,9 @@ void main(string[] args)
   scope(exit) {
 	db.close();
   }
-  string since = "HEAD~20..HEAD";
+  // by default we just check the last commit
+  // (run this in a post-commit hook)
+  string since = "HEAD~1..HEAD";
   while(!exists(".git")) {
 	chdir("..");
   }
@@ -168,9 +170,5 @@ void main(string[] args)
   }
   writeln("since "~since);
   git.parse_log(since,&check_chapter);
-  foreach(update; queue.values) {
-	writeln("checking ",update.location," ",update.modified);
-	update.update();
-  }
   reindex(".",stories);
 }
