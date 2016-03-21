@@ -2,10 +2,7 @@ module makers;
 
 import html: Document;
 
-class Maker {
-  void make(string src, string dest) const {}
-  void chapter(Document doc) const {}
-  void contents(Document doc) const {}
-}
+(void function(string src, string dest))[string] make;
+(void function(Document doc))[string] contents;
+(void function(Document doc))[string] chapter;
 
-Maker[string] makers;

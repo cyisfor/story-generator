@@ -6,9 +6,7 @@ import std.process: spawnProcess, wait;
 
 const string exe = "/home/code/htmlish/parse";
 
-private class Maker : makers.Maker {
-  override
-  void make(string src, string dest) const {
+void make(string src, string dest) const {
 	writeln("htmlishhhhh ",dest);
 	File source = File(src,"r");
 	File destination = File(dest~".temp","w");
@@ -22,7 +20,4 @@ private class Maker : makers.Maker {
 	rename(dest~".temp",dest);
 	source.close();
 	destination.close();
-  }
 }
-
-const Maker check = new Maker();

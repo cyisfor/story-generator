@@ -2,7 +2,7 @@ import htmlderp: querySelector;
 import feed: Feed;
 import db: Story, Chapter;
 static import db;
-import makers: makers;
+import makers;
 
 import html: createDocument;
 
@@ -40,8 +40,9 @@ SysTime reindex(Story story) {
 	auto link = contents.createElement("a",contents.createElement("li",toc));
 	link.attr("href",chapter_name(which));
   }
-  if(story.location in makers) {
-	makers[story.location].contents(contents);
+  auto box = story.location in makers.contents;
+  if(box) {
+	*box(contents);
   }
   return maxTime;
   } catch(AssertError e) {

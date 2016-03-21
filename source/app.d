@@ -55,15 +55,16 @@ struct Update {
 	smackdir(basedir);
 	basedir = buildPath(basedir,location);
 	smackdir(basedir);
-	const(Maker) herpaderp() {
-	  if(location in makers) {
-		return makers[location];
+	auto herpaderp() {
+	  auto box = location in makers.make;
+	  if(box) {
+		writeln("found maker at ",location);
+		return *box;
 	  } else {
-		return htmlish.check;
+		return &htmlish.make;
 	  }
 	}
-	const Maker maker = herpaderp();
-	assert(maker);
+	auto make = herpaderp();
 
 	string ext;
 	if( is_hish ) {
@@ -87,12 +88,12 @@ struct Update {
 	  return;
 	}
 	
-	auto base = buildPath(basedir,name ~ ".xhtml");
-	maker.make(markup,base);
+	auto base = buildPath(basedir,name ~ ".html");
+	make(markup,base);
 	Document doc = createDocument
 	  (readText(buildPath(basedir,
 						  chapter_name(chapter.which) ~
-						  ".xhtml")));
+						  ".html")));
 
 	auto head = querySelector(doc,"head");
 	auto links = querySelector(doc,"#links");
@@ -117,16 +118,19 @@ struct Update {
 	  dolink(chapter_name(chapter.which+1), "next", "Next");
 	}
 
-	maker.chapter(doc);
+	auto box = location in makers.chapter;
+	if(box) {
+	  *box(doc);
+	}
 	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
 
 	smackdir("html");
 	string outdir = buildPath("html",location);
 	smackdir(outdir);
-	writeln("writing to ",outdir,chapter_name(chapter.which));
+	writeln("writing to ",outdir,"/",chapter_name(chapter.which));
 	write(buildPath(outdir,
 					chapter_name(chapter.which) ~
-					".xhtml"),doc.root.outerHTML);
+					".html"),doc.root.html);
 	
 	string chapterTitle = to!string(querySelector(doc,"title").text);
 	story[which].update(modified, which, chapterTitle);

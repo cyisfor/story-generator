@@ -5,7 +5,7 @@ import html: Document;
 
 import std.stdio: writeln;
 import core.exception: AssertError;
-class Maker : makers.Maker {
+class Maker : makers.DerpMaker {
   void add_style(ref Document doc) const {
 	try {
 	  auto link = doc.createElement("link");

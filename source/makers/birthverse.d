@@ -4,11 +4,11 @@ import htmlderp: querySelector;
 import html: createDocument;
 
 import std.file: readText,write;
-import std.stdio: File;
+import std.stdio: File, writeln;
 import std.conv: to;
 import std.string: strip;
 
-class Maker : makers.Maker {
+class Maker : makers.DerpMaker {
   override
   void make(string src, string dest) const {
 	auto doc = createDocument(readText("template/birthverse.xhtml"));
@@ -47,6 +47,7 @@ class Maker : makers.Maker {
 	  e.detach();
 	}
 	write(dest,doc.root.outerHTML);
+	writeln("okie wrote to ",dest);
   }
 }
 
