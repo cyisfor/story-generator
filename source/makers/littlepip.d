@@ -6,7 +6,7 @@ import html: Document;
 import std.stdio: writeln;
 import core.exception: AssertError;
 class Maker : makers.Maker {
-  void add_style(ref Document doc) {
+  void add_style(ref Document doc) const {
 	try {
 	  auto link = doc.createElement("link");
 	  auto head = querySelector(doc, "head");
@@ -22,11 +22,11 @@ class Maker : makers.Maker {
 	}
   }
   override
-  void contents(Document doc) {
+  void contents(Document doc) const {
 	add_style(doc);
   }
   override
-  void chapter(Document doc) {
+  void chapter(Document doc) const {
 	add_style(doc);
   }
 }

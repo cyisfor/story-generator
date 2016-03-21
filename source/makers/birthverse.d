@@ -10,7 +10,7 @@ import std.string: strip;
 
 class Maker : makers.Maker {
   override
-  void make(string src, string dest) {
+  void make(string src, string dest) const {
 	auto doc = createDocument(readText("template/birthverse.xhtml"));
 	auto bod = querySelector(doc, "div.greentext");
 	assert(bod);

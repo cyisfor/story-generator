@@ -8,7 +8,7 @@ const string exe = "/home/code/htmlish/parse";
 
 private class Maker : makers.Maker {
   override
-  void make(string src, string dest) {
+  void make(string src, string dest) const {
 	File source = File(src,"r");
 	File destination = File(dest~".temp","w");
 	assert(0==
@@ -19,4 +19,4 @@ private class Maker : makers.Maker {
   }
 }
 
-Maker check;
+const Maker check = new Maker();

@@ -29,7 +29,8 @@ class Feed {
   Document doc;
   typeof(doc.root) feed;
 
-  this() {
+  this(Params params) {
+	this.p = params;
 	doc = createDocument(`<feed xmlns="http://www.w3.org/2005/Atom"/>`);
 	feed = doc.root;
 
@@ -42,11 +43,6 @@ class Feed {
 	link.attr("href", p.feed_url);
 	link.attr("rel", "self");
 	doc.createElement("updated",feed).appendText(encode_date(p.updated));
-  }
-
-  this(Params params) {
-	this();
-	this.p = params;
   }
 
   auto start_out(string url) {

@@ -47,17 +47,19 @@ struct Update {
 	  story = db.story(location);
 	  stories[location] = story;
 	  assert(stories.length > 0);
-	  writeln("argh!");
 	}
 	// find a better place to put stuff so it doesn't scram the source directory
 	auto basedir = buildPath(location,"base");
 	smackdir(basedir);
-	Maker maker;
-	if(location in makers) {
-	  maker = makers[location];
-	} else {
-	  maker = htmlish.check;
+	const Maker herpaderp() {
+	  if(location in makers) {
+		return makers[location];
+		assert(maker);
+	  } else {
+		return htmlish.check;
+	  }
 	}
+	const Maker maker = herpaderp();
 
 	string ext;
 	if( is_hish ) {
@@ -72,17 +74,21 @@ struct Update {
 	auto chapter = story[which];
 
 	try {
-	  if(timeLastModified(markup) <= chapter.modified) return;
+	  if(timeLastModified(markup) <= chapter.modified) {
+		writeln("unmodified");
+		return;
+	  }
 	} catch(FileException) {
+	  writeln("markup not found ",markup);
 	  return;
 	}
 	
 	auto base = buildPath(basedir,name ~ ".xhtml");
 	maker.make(markup,base);
-	Document doc;
-	doc = createDocument(readText(buildPath(basedir,
-									chapter_name(chapter.which) ~
-									".xhtml")));
+	Document doc = createDocument
+	  (readText(buildPath(basedir,
+						  chapter_name(chapter.which) ~
+						  ".xhtml")));
 
 	auto head = querySelector(doc,"head");
 	auto links = querySelector(doc,"#links");
@@ -112,7 +118,7 @@ struct Update {
 
 	string outdir = buildPath(location, "out/");
 	smackdir(outdir);
-	
+	writeln("writing to ",outdir,chapter_name(chapter.which));
 	write(buildPath(outdir,
 					chapter_name(chapter.which) ~
 					".xhtml"),doc.root.outerHTML);
@@ -155,5 +161,5 @@ void main(string[] args)
 	writeln("checking ",update.location," ",update.modified);
 	update.update();
   }
-  reindex(stories);
+  reindex(".",stories);
 }

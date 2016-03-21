@@ -7,6 +7,8 @@ import makers: makers;
 import html: createDocument;
 
 import std.file: setTimes;
+import std.path: buildPath;
+
 version(GNU) {
   import std.algorithm: copy, max;
 } else {
@@ -30,7 +32,7 @@ SysTime reindex(Story story) {
   try {
 	auto toc = querySelector(contents,"#toc");
 
-  SysTime maxTime;
+  SysTime maxTime = SysTime(0);
   Chapter[] chapters;
   for(int which=0;which<story.chapters;++which) {
 	auto chapter = story[which];
@@ -47,9 +49,8 @@ SysTime reindex(Story story) {
 	throw e;
   }
 }
-void reindex(Story[string] stories) {
-  SysTime maxTime;
-  writeln("na aueo ",stories.length);
+void reindex(string outdir, Story[string] stories) {
+  SysTime maxTime = SysTime(0);
   if(stories.length == 0) {
 	writeln("no stories to update?");
 	return;
@@ -76,5 +77,5 @@ void reindex(Story[string] stories) {
 
   copy(db.latest(),recent);
 
-  recent.save("out/updates.atom");
+  recent.save(buildPath(outdir,"updates.atom"));
 }
