@@ -49,7 +49,11 @@ struct Update {
 	  assert(stories.length > 0);
 	}
 	// find a better place to put stuff so it doesn't scram the source directory
-	auto basedir = buildPath(location,"base");
+	string basedir = "tmp";
+	smackdir(basedir);
+	basedir = buildPath(basedir,"base");
+	smackdir(basedir);
+	basedir = buildPath(basedir,location);
 	smackdir(basedir);
 	const(Maker) herpaderp() {
 	  if(location in makers) {
@@ -116,7 +120,8 @@ struct Update {
 	maker.chapter(doc);
 	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
 
-	string outdir = buildPath(location, "out/");
+	smackdir("html");
+	string outdir = buildPath("html",location);
 	smackdir(outdir);
 	writeln("writing to ",outdir,chapter_name(chapter.which));
 	write(buildPath(outdir,

@@ -1,10 +1,10 @@
 static import backend = d2sqlite3;
 
 version(GNU) {
-  import std.algorithm: map, findSplit;
+  import std.algorithm: map, findSplit, findSplitBefore;
 } else {
   import std.algorithm.iteration: map;
-  import std.algorithm.searching: findSplit;
+  import std.algorithm.searching: findSplit, findSplitBefore;
 }
 import std.datetime: SysTime, Clock;
 import std.file: exists, readText;
@@ -21,8 +21,7 @@ struct Chapter {
   int which;
   void update(SysTime modified, int which, string title) {
 	this.which = which;
-	db.update_chapter.bindAll(title,modified.toISOExtString(),which,story.id);
-	db.update_chapter.execute();
+	db.update_chapter.inject(title,modified.toISOExtString(),which,story.id);
   }
 }
 
@@ -35,19 +34,28 @@ Chapter fucking_hell(backend.Row row) {
   temp t = row.as!temp;
   // sometimes year is negative, before 0 AD!
   auto when = t.modified.findSplit("/");
-  import std.datetime: Date, TimeOfDay, DateTime, UTC, TimeException;
+  auto derp = when[2].findSplitBefore(".");
+  import std.datetime: Date, TimeOfDay, DateTime,
+	UTC, TimeException;
+  import core.time: Duration, dur;
   import std.conv: to;
   try {
   const Date the_date = Date(to!short(when[0]),
-					   to!ubyte(when[2][0..2]),
-					   to!ubyte(when[2][2..4]));
+					   to!ubyte(derp[0][0..2]),
+					   to!ubyte(derp[0][2..4]));
   const TimeOfDay the_time = TimeOfDay.fromISOString
-	(when[2][4..when[2].length]);
+	(derp[0][4..derp[0].length]);
+  // restricted access to private members,
+  // because long compile times are a good thing!
+  const Duration jeezus = dur!"hnsecs"(to!long(
+										   100000000000 *
+										   to!float(derp[1])));
   // sqlite dates cannot hold timezone info, so they're always relative to
   // UTC.
   // fromJulianDay would be nice, but floating point error :p
   Chapter ret = { title: t.title,
-				  modified: SysTime(DateTime(the_date,the_time),UTC()),
+				  modified: SysTime(DateTime(the_date,the_time),
+									jeezus,UTC()),
 				  first_words: t.first_words
   };
   return ret;
@@ -70,9 +78,7 @@ struct Story {
 	db.find_chapter.bindAll(id, which);
 	auto rset = db.find_chapter.execute();
 	if(rset.empty) {
-	  db.insert_chapter.bindAll(which, id);
-	  db.insert_chapter.execute();
-	  db.insert_chapter.reset();
+	  db.insert_chapter.inject(which, id);
 	  rset = db.find_chapter.execute();
 	}
 	Chapter ret = rset.front.fucking_hell();
@@ -154,9 +160,7 @@ class Database {
 	  description = readText(buildPath(story.location,"description"));
 	}
 	if(title || description) {
-	  update_desc.bindAll(title, description, story.id);
-	  update_desc.execute();
-	  update_desc.reset();
+	  update_desc.inject(title, description, story.id);
 	}
   }
 
