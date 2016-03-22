@@ -11,17 +11,20 @@ static import htmlish;
 import html: Document, createDocument;
 
 version(GNU) {
-  import std.algorithm: endsWith, findSplitBefore;
+  import std.algorithm: startsWith, endsWith, findSplitBefore;
 } else {
-  import std.algorithm.searching: endsWith, findSplitBefore;
+  import std.algorithm.searching: startsWith, endsWith, findSplitBefore;
 }
+import std.string : isNumeric, strip;
+import std.array : array;
 import std.stdio: writeln, writefln;
 import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
-  FileException;
+  FileException, dirEntries, SpanMode;
 import std.path: buildPath, pathSplitter;
 import std.conv: to;
 import std.datetime : SysTime;
 
+import core.stdc.stdlib: getenv;
 import core.memory: GC;
 
 db.Story[string] stories;
@@ -149,7 +152,7 @@ void check_chapter(SysTime modified, string spath) {
   if(path[1] != "markup") return;
   
   check_chapter(modified, to!string(path[0]),
-				findSplitBefore(to!string(path[path.length-1]),'.').expand);
+				findSplitBefore(to!string(path[path.length-1]),".").expand);
 }
 
 bool[string] updated;
@@ -166,7 +169,7 @@ void check_chapter(SysTime modified,
 	
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;  
-  int chapter = to!int(derp) - 1;
+  int which = to!int(derp) - 1;
 
   if(!exists(location)) return;
   if(only_location && (!location.endsWith(only_location))) return;
@@ -187,23 +190,22 @@ void main(string[] args)
   while(!exists(".git")) {
 	chdir("..");
   }
-  import std.c.stdlib.getenv;
-  only_location = getenv("story");
-  if(getenv("regenerate")) {
-	assert(only_location,"specify a story please!");
-	check_chapters_for(only_location);
-  } else {
-	check_git_log(args);
+  if(getenv("story")) {
+	only_location = to!string(getenv("story"));
+	if(getenv("regenerate")) {
+	  assert(only_location,"specify a story please!");
+	  check_chapters_for(only_location);
+	  return;
+	}
   }
+  check_git_log(args);  
   reindex(".",stories);
 }
 
 void check_chapters_for(string location) {
   string top = buildPath(location,"markup");
-  foreach(string name; dirEntries(top)) {
-	string path = buildPath(top,name);
-	check_chapter(timeSinceModified(path),location,
-				  findSplitBefore(name,'.').expand);
+  foreach(string spath; dirEntries(top,SpanMode.shallow)) {
+	check_chapter(timeLastModified(spath),spath);
   }
 }
 

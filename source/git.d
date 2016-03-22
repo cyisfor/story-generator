@@ -2,15 +2,8 @@ import std.regex : regex, matchFirst;
 import std.conv : to;
 import std.process : pipeProcess, Redirect, wait;
 import std.stdio : writeln;
-import std.array : array;
-import std.string : isNumeric, strip;
 import std.datetime : SysTime;
 import core.time: TimeException;
-version(GNU) {
-  import std.algorithm: startsWith;
-} else {
-  import std.algorithm.searching: startsWith;
- }
 
 auto adp = regex("([^\t]+)\t([^\t]+)\t(.*)");
 
@@ -42,7 +35,7 @@ void parse_log(string since, void function(SysTime, string) handler) {
 	// res[1], res[2]
 	// can probably ignore whether it's adding or deleting
 	// regenerate anyway
-	handler(modified, res[3]);
+	handler(modified, to!string(res[3]));
   }
 }
 
