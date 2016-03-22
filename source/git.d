@@ -15,7 +15,7 @@ version(GNU) {
 
 auto adp = regex("([^\t]+)\t([^\t]+)\t(.*)");
 
-void parse_log(string since, void function(SysTime, int, string, bool) handler) {
+void parse_log(string since, void function(SysTime, string) handler) {
   string[] args;
   if(since == null) {
 	args = ["git","log","--numstat","--pretty=format:%cI"];
@@ -40,26 +40,10 @@ void parse_log(string since, void function(SysTime, int, string, bool) handler) 
 	  } catch(TimeException e) {}
 	  continue;
 	}
-	auto path = array(pathSplitter(res[3]));
-	if(path.length != 3) continue;
-	if(path[1] != "markup") continue;
-
-	string name = stripExtension(to!string(path[path.length-1]));
-	string ext = extension(to!string(path[path.length-1]));
-	bool is_hish = ext == ".hish";
-	if(!(ext == ".txt" || is_hish)) continue;
-
-	if(!name.startsWith("chapter")) continue;
-	
-	string derp = name["chapter".length..name.length];
-	if(!isNumeric(derp)) {
-	  continue;
-	}
-	int chapter = to!int(derp) - 1;
-
+	// res[1], res[2]
 	// can probably ignore whether it's adding or deleting
 	// regenerate anyway
-	handler(modified, chapter, to!string(path[0]), is_hish);
+	handler(modified, res[3]);
   }
 }
 

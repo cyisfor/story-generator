@@ -13,12 +13,16 @@ import std.stdio: writeln,readln,write;
 import std.string: strip;
 import std.array: join, appender;
 struct Chapter {
+  long id;
   string title;
   SysTime modified;
   string first_words;
   Database db;
   Story story;
   int which;
+  void update(SysTime modified) {
+	update(modified,which,title);
+  }
   void update(SysTime modified, int which, string title) {
 	this.which = which;
 	db.update_chapter.inject(title,modified.toISOExtString(),which,story.id);
@@ -27,6 +31,7 @@ struct Chapter {
 
 Chapter fucking_hell(backend.Row row) {
   struct temp {
+	string id;
 	string title;
 	string modified;
 	string first_words;
@@ -53,7 +58,8 @@ Chapter fucking_hell(backend.Row row) {
   // sqlite dates cannot hold timezone info, so they're always relative to
   // UTC.
   // fromJulianDay would be nice, but floating point error :p
-  Chapter ret = { title: t.title,
+  Chapter ret = { id: to!long(t.id),
+				  title: t.title,
 				  modified: SysTime(DateTime(the_date,the_time),
 									jeezus,UTC()),
 				  first_words: t.first_words
@@ -144,7 +150,7 @@ class Database {
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
-	find_chapter = db.prepare("SELECT title, strftime('%Y/%m%d%H%M%f',modified), first_words FROM chapters WHERE story = ? AND which = ?");
+	find_chapter = db.prepare("SELECT id,title, strftime('%Y/%m%d%H%M%f',modified), first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");

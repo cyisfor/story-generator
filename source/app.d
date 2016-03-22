@@ -78,16 +78,23 @@ struct Update {
 	auto make = herpaderp();
 
 	auto chapter = story[which];
+	string outdir = buildPath("html",location);
+	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
 
-	try {
-	  if(modified <= chapter.modified) {
-		writeln("unmodified");
-		return;
+	if(modified <= chapter.modified) {
+	  auto new_modified = timeLastModified(markup);
+	  if(new_modified > modified) {
+		modified = new_modified;
+		chapter.update(modified);
+	  } else {
+		if(exists(dest)) {
+		  writeln("unmodified");
+		  return;
+		}
+		// always update if dest is gone
 	  }
-	} catch(FileException) {
-	  writeln("markup not found ",markup);
-	  return;
 	}
+
 	
 	auto base = buildPath(basedir,name ~ ".html");
 	make(markup,base);
@@ -126,12 +133,9 @@ struct Update {
 	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
 
 	smackdir("html");
-	string outdir = buildPath("html",location);
 	smackdir(outdir);
 	writeln("writing to ",outdir,"/",chapter_name(chapter.which));
-	write(buildPath(outdir,
-					chapter_name(chapter.which) ~
-					".html"),doc.root.html);
+	write(dest,doc.root.html);
 	
 	string chapterTitle = to!string(querySelector(doc,"title").text);
 	story[which].update(modified, which, chapterTitle);
@@ -141,7 +145,29 @@ struct Update {
 bool[string] updated;
 string only_location = null;
 
-void check_chapter(SysTime modified, int which, string location, bool is_hish) {
+void check_chapter(SysTime modified, string spath) {
+  auto path = array(pathSplitter(spath));
+  if(path.length != 3) continue;
+  if(path[1] != "markup") continue;
+  
+  string name = stripExtension(to!string(path[path.length-1]));
+  string ext = extension(to!string(path[path.length-1]));
+  bool is_hish = ext == ".hish";
+  if(!(ext == ".txt" || is_hish)) continue;
+
+  string location = to!string(path[0]);
+
+	  handler(modified, chapter, to!string(path[0]), is_hish);
+	}	  
+	if(!name.startsWith("chapter")) continue;
+	
+	string derp = name["chapter".length..name.length];
+	if(!isNumeric(derp)) {
+	  continue;
+	}
+	int chapter = to!int(derp) - 1;
+
+
   if(!exists(location)) return;
   if(only_location && (!location.endsWith(only_location))) return;
 
