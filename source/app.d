@@ -1,3 +1,5 @@
+import ordered_map: ordered_map;
+
 import htmlderp: querySelector;
 static import git;
 static import db;
