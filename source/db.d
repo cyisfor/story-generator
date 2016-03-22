@@ -181,7 +181,7 @@ class Database {
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	update_story_modified = db.prepare("UPDATE stories SET modified = ? WHERE id = ?");
 	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
-	find_chapter = db.prepare("SELECT id,title, "~modified_format~" first_words FROM chapters WHERE story = ? AND which = ?");
+	find_chapter = db.prepare("SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");

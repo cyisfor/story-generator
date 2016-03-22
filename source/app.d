@@ -59,8 +59,9 @@ struct Update {
 	  story = stories[location];
 	} else {
 	  story = db.story(location);
-	  stories[location] = story;
 	  story.location = location;
+	  assert(story.location);
+	  stories[location] = story;
 	}
 	// find a better place to put stuff so it doesn't scram the source directory
 	string basedir = "tmp";
@@ -85,10 +86,11 @@ struct Update {
 	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
 
 	if(modified <= chapter.modified) {
-	  auto new_modified = timeLastModified(markup);
-	  if(new_modified > modified) {
+	  // this might require two passes!
+	  // but it skips statting every story that is... modified already da
+	  new_modified = timeLastModified(markup);
+	  if(new_modified > chapter.modified) {
 		modified = new_modified;
-		chapter.update(modified);
 	  } else {
 		if(exists(dest)) {
 		  writeln("unmodified");
@@ -96,8 +98,7 @@ struct Update {
 		}
 		// always update if dest is gone
 	  }
-	}
-
+	}   
 	
 	auto base = buildPath(basedir,name ~ ".html");
 	make(markup,base);
@@ -139,7 +140,9 @@ struct Update {
 	smackdir(outdir);
 	writeln("writing to ",outdir,"/",chapter_name(chapter.which));
 	write(dest,doc.root.html);
-	
+
+	import std.file: setTimes;
+	setTimes(dest,modified,modified);
 	string chapterTitle = to!string(querySelector(doc,"title").text);
 	story[which].update(modified, which, chapterTitle);
   }

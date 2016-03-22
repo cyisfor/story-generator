@@ -65,6 +65,7 @@ void reindex(string outdir, Story[string] stories) {
 	(stories.values);
   foreach(Story story; sorted) {
 	writeln("story ",story.location,story.modified);
+	assert(story.location);
 	SysTime modified = reindex(story);
 	setTimes(story.location, modified, modified);
 	maxTime = max(modified,maxTime);
