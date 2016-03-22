@@ -1,16 +1,28 @@
-import std.container: RedBlackTree;
+import std.container.rbtree: RedBlackTree;
+import std.container.util: make;
 import std.functional: binaryFun;
 import std.traits: hasMember;
 import std.range: InputRange, drop, take;
 import std.algorithm.iteration: map;
 import std.conv: to;
+import std.typecons: Nullable;
 
 struct pair(K,V) {
   K key;
-  V value;
-
+  Nullable!V value;
+  this(K k, V v) {
+	key = k;
+	value = v;
+  }
   string toString() {
-	return "(" ~ to!string(key) ~ "," ~ to!string(value) ~ ")";
+	string vstr;
+	if(value.isNull()) {
+	  vstr = "(null)";
+	} else {
+	  vstr = to!string(value.get());
+	}
+		
+	return "(" ~ to!string(key) ~ "," ~ vstr ~ ")";
   }
 }
 
@@ -29,7 +41,7 @@ template ordered_map(K, V, alias less = "a < b", bool allowDuplicates = false) {
 	return self.key;
   }
   V value_of(entry self) {
-	return self.value;
+	return self.value.get();
   }
 
   alias sub_tree = 	RedBlackTree!(entry,
@@ -39,6 +51,10 @@ template ordered_map(K, V, alias less = "a < b", bool allowDuplicates = false) {
   class ordered_map {
 	
 	sub_tree fuckyoufinal;
+
+	this() {
+	  fuckyoufinal = make!(sub_tree)();
+	}
 	
 	auto keys() {
 	  return map!(key_of)(this[0..$]);
@@ -63,17 +79,28 @@ template ordered_map(K, V, alias less = "a < b", bool allowDuplicates = false) {
 	  return fuckyoufinal[];
 	}
 	@property
-	auto opIndex(K key) {
-	  return fuckyoufinal.equalRange(key)[0];
+	V opIndex(K key) {
+	  Nullable!V nothin;
+	  auto r = fuckyoufinal.equalRange(entry(key,nothin));
+	  static if(allowDuplicates) {
+		return map!(&value_of)(r);
+	  } else {
+		return r.front.value.get();
+	  }
+	}
+	@property
+	auto opIndexAssign(V value, K key) {
+	  return fuckyoufinal.insert(entry(key,value));
 	}
   }
 }
 	
 unittest {
-  ordered_map!(string,int) foo;
+  ordered_map!(string,int) foo = make!(ordered_map!(string,int));
   foo["z"] = 1;
   foo["y"] = 2;
   foo["x"] = 3;
   import std.stdio: writeln;
-  writeln(foo.keys,foo);
+  writeln("keys: ",foo.keys);
+  writeln("both: ",foo);
 }
