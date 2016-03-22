@@ -44,6 +44,9 @@ SysTime reindex(Story story) {
   if(box) {
 	(*box)(contents);
   }
+  if(story.modified < maxTime) {
+	story.update_modified(maxTime);
+  }
   return maxTime;
   } catch(AssertError e) {
 	writeln(contents.root.outerHTML);
@@ -56,12 +59,14 @@ void reindex(string outdir, Story[string] stories) {
 	writeln("no stories to update?");
 	return;
   }
-  auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified")(stories.length);
-  copy(stories,sorted)
+  import std.container.rbtree: RedBlackTree;
+  import std.container.util: make;
+  auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified"))
+	(stories.values);
   foreach(Story story; sorted) {
-	writeln("story ",story.location);
+	writeln("story ",story.location,story.modified);
 	SysTime modified = reindex(story);
-	setTimes(location, modified, modified);
+	setTimes(story.location, modified, modified);
 	maxTime = max(modified,maxTime);
   }
 

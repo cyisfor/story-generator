@@ -30,13 +30,14 @@ struct Chapter {
 }
 
 SysTime parse_mytimestamp(string timestamp) {
-    // sometimes year is negative, before 0 AD!
+  import std.conv: to;
+  // sometimes year is negative, before 0 AD!
   auto when = timestamp.findSplit("/");
   auto derp = when[2].findSplitBefore(".");
   import std.datetime: Date, TimeOfDay, DateTime,
 	UTC, TimeException;
+  import core.exception: RangeError;
   import core.time: Duration, dur;
-  import std.conv: to;
   try {
 	const Date the_date = Date(to!short(when[0]),
 							   to!ubyte(derp[0][0..2]),
@@ -53,12 +54,16 @@ SysTime parse_mytimestamp(string timestamp) {
 	// fromJulianDay would be nice, but floating point error :p
 	return SysTime(DateTime(the_date,the_time),jeezus,UTC());
   } catch(TimeException e) {
-	writeln("uhhh",modified);
+	writeln("uhhh",timestamp);
+	throw(e);
+  } catch(RangeError e) {
+	writeln("huhh?",timestamp);
 	throw(e);
   }
 }
   
-Chapter fucking_hell(backend.Row row) {
+Chapter to_chapter(backend.Row row) {
+  import std.conv: to;
   struct temp {
 	string id;
 	string title;
@@ -92,26 +97,42 @@ struct Story {
 	  db.insert_chapter.inject(which, id);
 	  rset = db.find_chapter.execute();
 	}
-	Chapter ret = rset.front.fucking_hell();
+	Chapter ret = rset.front.to_chapter();
 	db.find_chapter.reset();
 	ret.db = db;
 	ret.story = this;
 	ret.which = which;
 	return ret;
   }
+  void update_modified(SysTime modified) {
+	this.modified = modified;
+	db.update_story_modified.inject(modified.toISOExtString(),id);
+  }
+  // SIGH
+  import std.format: FormatSpec,formatValue;
+  void toString(scope void delegate(const(char)[]) sink, FormatSpec!char fmt) const {
+	sink("Story(");
+	formatValue(sink,id,fmt);
+	sink(":");
+	formatValue(sink,title,fmt);
+	sink(")");
+  }
 };
 
 Story to_story(backend.Row row) {
+  import std.conv: to;
   struct temp {
 	long id;
 	string title;
 	string description;
+	string modified;
 	int chapters;
   }
   temp t = row.as!temp;
   Story ret = { id: t.id,
 				title: t.title,
 				description: t.description,
+				modified: parse_mytimestamp(t.modified),
 				chapters: t.chapters,
 				url: "http://hellifiknow/",
   };
@@ -133,6 +154,7 @@ class Database {
   backend.Database db;
   backend.Statement update_desc;
   backend.Statement find_story;
+  backend.Statement update_story_modified;
   backend.Statement insert_story;
   backend.Statement find_chapter;
   backend.Statement update_chapter;
@@ -141,6 +163,7 @@ class Database {
   void close() {
 	update_desc.finalize();
 	find_story.finalize();
+	update_story_modified.finalize();
 	insert_story.finalize();
 	find_chapter.finalize();
 	update_chapter.finalize();
@@ -149,13 +172,16 @@ class Database {
 	db.close();
   }
   this() {
-	immutable string story_fields = "id,title,description,location,(select count(id) from chapters where story = stories.id)";
+	immutable string modified_format =
+	  "strftime('%Y/%m%d%H%M%f',modified)";
+	immutable string story_fields = "id,title,description,"~modified_format~",location,(select count(id) from chapters where story = stories.id)";
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
+	update_story_modified = db.prepare("UPDATE stories SET modified = ? WHERE id = ?");
 	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
-	find_chapter = db.prepare("SELECT id,title, strftime('%Y/%m%d%H%M%f',modified), first_words FROM chapters WHERE story = ? AND which = ?");
+	find_chapter = db.prepare("SELECT id,title, "~modified_format~" first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");
