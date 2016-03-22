@@ -1,5 +1,3 @@
-import ordered_map: ordered_map;
-
 import htmlderp: querySelector;
 static import git;
 static import db;
@@ -62,7 +60,7 @@ struct Update {
 	} else {
 	  story = db.story(location);
 	  stories[location] = story;
-	  assert(stories.length > 0);
+	  story.location = location;
 	}
 	// find a better place to put stuff so it doesn't scram the source directory
 	string basedir = "tmp";

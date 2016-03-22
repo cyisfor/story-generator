@@ -94,13 +94,21 @@ template ordered_map(K, V, alias less = "a < b", bool allowDuplicates = false) {
 	}
   }
 }
-	
+
+version(unittestderp) { import unit_threaded; }
+else              {
+  void shouldEqual(T)(T a, T b) {
+	assert(a==b);
+  }
+ } // so production builds compile
+
 unittest {
   ordered_map!(string,int) foo = make!(ordered_map!(string,int));
   foo["z"] = 1;
   foo["y"] = 2;
   foo["x"] = 3;
   import std.stdio: writeln;
+  foo.keys.front.shouldEqual("x");
   writeln("keys: ",foo.keys);
   writeln("both: ",foo);
 }

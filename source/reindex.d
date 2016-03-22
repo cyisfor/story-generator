@@ -56,9 +56,10 @@ void reindex(string outdir, Story[string] stories) {
 	writeln("no stories to update?");
 	return;
   }
-  foreach(string location, Story story; stories) {
-	writeln("story ",location);
-	story.location = location;
+  auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified")(stories.length);
+  copy(stories,sorted)
+  foreach(Story story; sorted) {
+	writeln("story ",story.location);
 	SysTime modified = reindex(story);
 	setTimes(location, modified, modified);
 	maxTime = max(modified,maxTime);

@@ -29,6 +29,35 @@ struct Chapter {
   }
 }
 
+SysTime parse_mytimestamp(string timestamp) {
+    // sometimes year is negative, before 0 AD!
+  auto when = timestamp.findSplit("/");
+  auto derp = when[2].findSplitBefore(".");
+  import std.datetime: Date, TimeOfDay, DateTime,
+	UTC, TimeException;
+  import core.time: Duration, dur;
+  import std.conv: to;
+  try {
+	const Date the_date = Date(to!short(when[0]),
+							   to!ubyte(derp[0][0..2]),
+							   to!ubyte(derp[0][2..4]));
+	const TimeOfDay the_time = TimeOfDay.fromISOString
+	  (derp[0][4..derp[0].length]);
+	// restricted access to private members,
+	// because long compile times are a good thing!
+	const Duration jeezus = dur!"hnsecs"(to!long(
+												 100000000000 *
+												 to!float(derp[1])));
+	// sqlite dates cannot hold timezone info, so they're always relative to
+	// UTC.
+	// fromJulianDay would be nice, but floating point error :p
+	return SysTime(DateTime(the_date,the_time),jeezus,UTC());
+  } catch(TimeException e) {
+	writeln("uhhh",modified);
+	throw(e);
+  }
+}
+  
 Chapter fucking_hell(backend.Row row) {
   struct temp {
 	string id;
@@ -37,38 +66,13 @@ Chapter fucking_hell(backend.Row row) {
 	string first_words;
   }
   temp t = row.as!temp;
-  // sometimes year is negative, before 0 AD!
-  auto when = t.modified.findSplit("/");
-  auto derp = when[2].findSplitBefore(".");
-  import std.datetime: Date, TimeOfDay, DateTime,
-	UTC, TimeException;
-  import core.time: Duration, dur;
-  import std.conv: to;
-  try {
-  const Date the_date = Date(to!short(when[0]),
-					   to!ubyte(derp[0][0..2]),
-					   to!ubyte(derp[0][2..4]));
-  const TimeOfDay the_time = TimeOfDay.fromISOString
-	(derp[0][4..derp[0].length]);
-  // restricted access to private members,
-  // because long compile times are a good thing!
-  const Duration jeezus = dur!"hnsecs"(to!long(
-										   100000000000 *
-										   to!float(derp[1])));
-  // sqlite dates cannot hold timezone info, so they're always relative to
-  // UTC.
-  // fromJulianDay would be nice, but floating point error :p
+
   Chapter ret = { id: to!long(t.id),
 				  title: t.title,
-				  modified: SysTime(DateTime(the_date,the_time),
-									jeezus,UTC()),
+				  modified: parse_mytimestamp(t.modified),
 				  first_words: t.first_words
   };
   return ret;
-  } catch(TimeException e) {
-	writeln("uhhh",t.modified);
-	throw(e);
-  }
 }
 
 
@@ -77,6 +81,7 @@ struct Story {
   string title;
   string description;
   int chapters;
+  SysTime modified;
   Database db;
   string location;
   string url;
@@ -215,4 +220,10 @@ auto latest() {
 
 void close() {
   db.close();
+}
+
+unittest {
+  db.close(); // avoid memory leak error
+  import std.stdio;
+  writeln("derpaherp");
 }
