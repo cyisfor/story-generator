@@ -11,14 +11,14 @@ static import htmlish;
 import html: Document, createDocument;
 
 version(GNU) {
-  import std.algorithm: endsWith;
+  import std.algorithm: endsWith, findSplitBefore;
 } else {
-  import std.algorithm.searching: endsWith;
+  import std.algorithm.searching: endsWith, findSplitBefore;
 }
 import std.stdio: writeln, writefln;
 import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
   FileException;
-import std.path: buildPath;
+import std.path: buildPath, pathSplitter;
 import std.conv: to;
 import std.datetime : SysTime;
 
@@ -142,31 +142,31 @@ struct Update {
   }
 }
 
+void check_chapter(SysTime modified, string spath) {
+  auto path = array(pathSplitter(spath));
+  if(path.length != 3) return;
+  //  location / markup / chapterxx.xx
+  if(path[1] != "markup") return;
+  
+  check_chapter(modified, to!string(path[0]),
+				findSplitBefore(to!string(path[path.length-1]),'.').expand);
+}
+
 bool[string] updated;
 string only_location = null;
 
-void check_chapter(SysTime modified, string spath) {
-  auto path = array(pathSplitter(spath));
-  if(path.length != 3) continue;
-  if(path[1] != "markup") continue;
-  
-  string name = stripExtension(to!string(path[path.length-1]));
-  string ext = extension(to!string(path[path.length-1]));
+void check_chapter(SysTime modified,
+				   string location,
+				   string name,
+				   string ext) {
+  if(!name.startsWith("chapter")) return;
+
   bool is_hish = ext == ".hish";
-  if(!(ext == ".txt" || is_hish)) continue;
-
-  string location = to!string(path[0]);
-
-	  handler(modified, chapter, to!string(path[0]), is_hish);
-	}	  
-	if(!name.startsWith("chapter")) continue;
+  if(!(ext == ".txt" || is_hish)) return;
 	
-	string derp = name["chapter".length..name.length];
-	if(!isNumeric(derp)) {
-	  continue;
-	}
-	int chapter = to!int(derp) - 1;
-
+  string derp = name["chapter".length..name.length];
+  if(!isNumeric(derp)) return;  
+  int chapter = to!int(derp) - 1;
 
   if(!exists(location)) return;
   if(only_location && (!location.endsWith(only_location))) return;
@@ -184,17 +184,37 @@ void main(string[] args)
   scope(exit) {
 	db.close();
   }
-  // by default we just check the last commit
-  // (run this in a post-commit hook)
-  string since = "HEAD~1..HEAD";
   while(!exists(".git")) {
 	chdir("..");
   }
+  import std.c.stdlib.getenv;
+  only_location = getenv("story");
+  if(getenv("regenerate")) {
+	assert(only_location,"specify a story please!");
+	check_chapters_for(only_location);
+  } else {
+	check_git_log(args);
+  }
+  reindex(".",stories);
+}
+
+void check_chapters_for(string location) {
+  string top = buildPath(location,"markup");
+  foreach(string name; dirEntries(top)) {
+	string path = buildPath(top,name);
+	check_chapter(timeSinceModified(path),location,
+				  findSplitBefore(name,'.').expand);
+  }
+}
+
+void check_git_log(string[] args) {
+    // by default we just check the last commit
+  // (run this in a post-commit hook)
+  string since = "HEAD~1..HEAD";
   if(args.length > 1) {
 	since = args[1];
 	if(since=="") since = null;
   }
   writeln("since "~since);
   git.parse_log(since,&check_chapter);
-  reindex(".",stories);
 }

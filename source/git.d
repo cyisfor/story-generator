@@ -1,7 +1,6 @@
 import std.regex : regex, matchFirst;
 import std.conv : to;
 import std.process : pipeProcess, Redirect, wait;
-import std.path : pathSplitter, stripExtension, extension;
 import std.stdio : writeln;
 import std.array : array;
 import std.string : isNumeric, strip;
