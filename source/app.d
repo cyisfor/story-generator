@@ -43,6 +43,7 @@ struct Update {
   string location;
   bool is_hish;
   void update() {
+	import std.file: setTimes;
 	string ext;
 	if( is_hish ) {
 	  ext = ".hish";
@@ -85,20 +86,18 @@ struct Update {
 	string outdir = buildPath("html",location);
 	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
 
+	SysTime new_modified = timeLastModified(markup);
+	if(new_modified > chapter.modified) {
+	  modified = new_modified;
+	}
 	if(modified <= chapter.modified) {
-	  // this might require two passes!
-	  // but it skips statting every story that is... modified already da
-	  new_modified = timeLastModified(markup);
-	  if(new_modified > chapter.modified) {
-		modified = new_modified;
-	  } else {
-		if(exists(dest)) {
-		  writeln("unmodified");
-		  return;
-		}
-		// always update if dest is gone
+	  if(exists(dest)) {
+		writeln("unmodified");
+		//setTimes(dest,modified,modified);
+		return;
 	  }
-	}   
+	  // always update if dest is gone
+	}
 	
 	auto base = buildPath(basedir,name ~ ".html");
 	make(markup,base);
@@ -141,7 +140,6 @@ struct Update {
 	writeln("writing to ",outdir,"/",chapter_name(chapter.which));
 	write(dest,doc.root.html);
 
-	import std.file: setTimes;
 	setTimes(dest,modified,modified);
 	string chapterTitle = to!string(querySelector(doc,"title").text);
 	story[which].update(modified, which, chapterTitle);
