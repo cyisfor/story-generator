@@ -1,6 +1,7 @@
 import db: Story, Chapter;
 
-import html: createDocument,Document;
+import html: Document;
+import htmlderp: createDocument;
 
 import std.datetime: SysTime;
 import std.conv: to;

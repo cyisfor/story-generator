@@ -1,10 +1,8 @@
-import htmlderp: querySelector;
+import htmlderp: querySelector, createDocument;
 import feed: Feed;
 import db: Story, Chapter;
 static import db;
 import makers;
-
-import html: createDocument;
 
 import std.file: setTimes;
 import std.path: buildPath;

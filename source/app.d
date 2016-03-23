@@ -1,13 +1,10 @@
 static import db;
 import reindex: reindex, chapter_name;
+import std.file: exists;
 
 import std.stdio: writeln;
-import std.path: buildPath, pathSplitter;
 import std.conv: to;
 import std.datetime : SysTime;
-
-import core.stdc.stdlib: getenv;
-import core.memory: GC;
 
 db.Story[string] stories;
 
@@ -18,14 +15,14 @@ struct Update {
   bool is_hish;
   void update() {
 	import std.file: setTimes;
-	import htmlderp: querySelector;
+	import htmlderp: querySelector, createDocument;
 	import makers;
 	static import nada = makers.birthverse;
 	static import nada2 = makers.littlepip;
-	import html: Document, createDocument;
-	import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
-	  FileException, dirEntries, SpanMode;
-
+	import html: Document;
+	import std.file: write, mkdir, timeLastModified, readText;
+	import std.path: buildPath;
+	
 	void smackdir(string p) {
 	  try {
 		mkdir(p);
@@ -98,7 +95,11 @@ struct Update {
 
 	
 	auto head = querySelector(doc,"head");
-	auto links = querySelector(doc,"#links");
+	auto links = doc.querySelector("#links");
+	if(links is null) {
+	  links = doc.createElement("div", querySelector(doc,"body"));
+	  links.attr("class","links");
+	}
 	bool didlinks = false;
 	void dolink(string href, string rel, string title) {
 	  auto link = doc.createElement("link",head);
@@ -144,6 +145,7 @@ void check_chapter(SysTime modified, string spath) {
   } else {
 	import std.algorithm.searching: findSplitBefore;
   }
+  import std.path: pathSplitter;
 
   auto path = array(pathSplitter(spath));
   if(path.length != 3) return;
@@ -190,10 +192,12 @@ void check_chapter(SysTime modified,
 
 void main(string[] args)
 {
+  import core.stdc.stdlib: getenv;
   scope(exit) {
 	db.close();
   }
   while(!exists(".git")) {
+	import std.file: chdir;
 	chdir("..");
   }
   if(getenv("story")) {
@@ -209,6 +213,10 @@ void main(string[] args)
 }
 
 void check_chapters_for(string location) {
+  import std.file: dirEntries,
+		  FileException, SpanMode, timeLastModified;
+  import std.path: buildPath;
+  
   string top = buildPath(location,"markup");
   foreach(string spath; dirEntries(top,SpanMode.shallow)) {
 	check_chapter(timeLastModified(spath),spath);
