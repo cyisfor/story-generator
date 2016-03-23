@@ -1,7 +1,8 @@
 import std.stdio: File,writeln;
 import std.file: rename;
-import std.process: spawnProcess, wait;
-import std.socket: Socket, UnixAddress;
+import std.process: spawnProcess, wait, kill, Pid;
+import std.socket: Socket, UnixAddress,
+  AddressFamily, SocketType, ProtocolType;
 
 immutable string exe = "code/htmlish/parse";
 immutable string address = "parse.sock";
@@ -51,7 +52,7 @@ void copy(Socket source, File dest) {
 	dest.rawWrite(buf[0..amt]);
   }
 }
-	if( chunk.length == 0 ) break;
+
 Watcher watcher;
 void make(string src, string dest) {
 	writeln("htmlishhhhh ",dest);

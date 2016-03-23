@@ -1,25 +1,7 @@
-import htmlderp: querySelector;
-static import git;
 static import db;
 import reindex: reindex, chapter_name;
 
-import makers;
-static import nada = makers.birthverse;
-static import nada2 = makers.littlepip;
-static import htmlish;
-
-import html: Document, createDocument;
-
-version(GNU) {
-  import std.algorithm: startsWith, endsWith, findSplitBefore;
-} else {
-  import std.algorithm.searching: startsWith, endsWith, findSplitBefore;
-}
-import std.string : isNumeric, strip;
-import std.array : array;
-import std.stdio: writeln, writefln;
-import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
-  FileException, dirEntries, SpanMode;
+import std.stdio: writeln;
 import std.path: buildPath, pathSplitter;
 import std.conv: to;
 import std.datetime : SysTime;
@@ -29,14 +11,6 @@ import core.memory: GC;
 
 db.Story[string] stories;
 
-void smackdir(string p) {
-  try {
-	mkdir(p);
-  } catch {
-	
-  }
-}
-
 struct Update {
   SysTime modified;
   int which;
@@ -44,6 +18,20 @@ struct Update {
   bool is_hish;
   void update() {
 	import std.file: setTimes;
+	import htmlderp: querySelector;
+	import makers;
+	static import nada = makers.birthverse;
+	static import nada2 = makers.littlepip;
+	import html: Document, createDocument;
+	import std.file: write, mkdir, timeLastModified, readText, exists, chdir,
+	  FileException, dirEntries, SpanMode;
+
+	void smackdir(string p) {
+	  try {
+		mkdir(p);
+	  } catch {}
+	}
+
 	string ext;
 	if( is_hish ) {
 	  ext = ".hish";
@@ -77,6 +65,8 @@ struct Update {
 		writeln("found maker at ",location);
 		return *box;
 	  } else {
+		static import htmlish;
+
 		return &htmlish.make;
 	  }
 	}
@@ -106,6 +96,7 @@ struct Update {
 						  chapter_name(chapter.which) ~
 						  ".html")));
 
+	
 	auto head = querySelector(doc,"head");
 	auto links = querySelector(doc,"#links");
 	bool didlinks = false;
@@ -147,6 +138,13 @@ struct Update {
 }
 
 void check_chapter(SysTime modified, string spath) {
+  import std.array : array;
+  version(GNU) {
+	import std.algorithm: findSplitBefore;
+  } else {
+	import std.algorithm.searching: findSplitBefore;
+  }
+
   auto path = array(pathSplitter(spath));
   if(path.length != 3) return;
   //  location / markup / chapterxx.xx
@@ -163,7 +161,14 @@ void check_chapter(SysTime modified,
 				   string location,
 				   string name,
 				   string ext) {
-  if(!name.startsWith("chapter")) return;
+  import std.string : isNumeric;
+  version(GNU) {
+	import std.algorithm: startsWith, endsWith;
+  } else {
+	import std.algorithm.searching: startsWith, endsWith;
+  }
+
+ if(!name.startsWith("chapter")) return;
 
   bool is_hish = ext == ".hish";
   if(!(ext == ".txt" || is_hish)) return;
@@ -219,5 +224,6 @@ void check_git_log(string[] args) {
 	if(since=="") since = null;
   }
   writeln("since "~since);
+  static import git;
   git.parse_log(since,&check_chapter);
 }
