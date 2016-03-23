@@ -3,7 +3,11 @@ import std.container.util: make;
 import std.functional: binaryFun;
 import std.traits: hasMember;
 import std.range: InputRange, drop, take;
-import std.algorithm.iteration: map;
+version(GNU) {
+  import std.algorithm: map;
+} else {
+  import std.algorithm.iteration: map;
+ }
 import std.conv: to;
 import std.typecons: Nullable;
 

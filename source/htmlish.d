@@ -14,7 +14,6 @@ class Watcher {
   Pid pid;
   
   this() {
-	spawnProcess(["ls","."]);
 	pid = spawnProcess([exe,address]);
   }
   auto connect() {
@@ -38,7 +37,7 @@ class Watcher {
 }
 
 void copy(File source, Socket dest) {
-  static void[0x1000] buf;
+  static void[0x1000] buf = void;
   scope(exit) {
 	source.close();
   }
@@ -50,7 +49,7 @@ void copy(File source, Socket dest) {
 }
 
 void copy(Socket source, File dest) {
-  static void[0x1000] buf;
+  static void[0x1000] buf = void;
   scope(exit) {
 	// om nom nom
 	dest.close();

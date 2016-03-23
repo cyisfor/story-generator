@@ -26,6 +26,7 @@ SysTime reindex(Story story) {
   auto contents = createDocument(import("template/contents.xhtml"));
   assert(story.description != null);
   auto desc = querySelector(contents,"#description");
+  assert(desc); // desc isn't null? so how...
   desc.html = story.description;
   try {
 	auto toc = querySelector(contents,"#toc");

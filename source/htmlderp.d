@@ -1,7 +1,7 @@
-import html: Document;
+static import html;
 import std.stdio: writeln;
 
-auto querySelector(Document doc, string s) {
+auto querySelector(ref html.Document doc, html.HTMLString s) {
   auto res = doc.querySelector(s);
   if(res is null) {
 	writeln("failed to find ",s);

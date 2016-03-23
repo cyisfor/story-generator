@@ -44,14 +44,23 @@ SysTime parse_mytimestamp(string timestamp) {
 							   to!ubyte(derp[0][2..4]));
 	const TimeOfDay the_time = TimeOfDay.fromISOString
 	  (derp[0][4..derp[0].length]);
-	// restricted access to private members,
-	// because long compile times are a good thing!
-	const Duration jeezus = dur!"hnsecs"(to!long(
-												 100000000000 *
-												 to!float(derp[1])));
+
 	// sqlite dates cannot hold timezone info, so they're always relative to
 	// UTC.
 	// fromJulianDay would be nice, but floating point error :p
+
+	// restricted access to private members,
+	// because long compile times are a good thing!
+	version(GNU) {
+	  import core.time: FracSec;
+	  const FracSec jeezus = FracSec.from!"hnsecs"(to!long(
+									 100000000000 *
+									 to!float(derp[1])));
+	} else {
+	  const Duration jeezus = dur!"hnsecs"(to!long(
+												   100000000000 *
+												   to!float(derp[1])));
+	}
 	return SysTime(DateTime(the_date,the_time),jeezus,UTC());
   } catch(TimeException e) {
 	writeln("uhhh",timestamp);
