@@ -126,12 +126,9 @@ struct Story {
 	formatValue(sink,title,fmt);
 	sink(")");
   }
-  void check_length(int which) {
-	if(chapters <= which) {
-	  // uh oh, new chapters found!
-	  chapters = which+1;
-	  db.update_story_chapters.inject(chapters,id);
-	}
+  void set_chapters(int nchaps) {
+	chapters = which+1;
+	db.update_story_chapters.inject(chapters,id);
   }
 };
 
@@ -265,6 +262,25 @@ auto latest() {
 
 void close() {
   db.close();
+}
+
+
+struct Transaction {
+  bool committed;
+  ~this() {
+	if(!committed) 
+	  db.execute("ROLLBACK");
+  }
+  void commit() {
+	db.execute("COMMIT");
+	committed = true;
+  }
+};
+
+Transaction transaction() {
+  Transaction t;
+  t.committed = false;
+  return t;
 }
 
 unittest {

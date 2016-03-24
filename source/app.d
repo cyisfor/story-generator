@@ -6,17 +6,21 @@ import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
 import std.array: appender, Appender;
+import std.algorithm: move;
+import std.conv: emplace;
 
 db.Story[string] stories;
 
 struct Update {
   @disable this(this);
-  Story story;
+  db.Story story;
   SysTime modified;
   int which;
   string location;
   bool is_hish;
-  void update() {
+  void perform() {
+	auto transaction = db.transaction();
+	scope(success) transaction.commit();
 	import std.file: setTimes;
 	import htmlderp: querySelector, createDocument;
 	import makers;
@@ -41,7 +45,12 @@ struct Update {
 	
 	auto name = chapter_name(which);
 	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
-	if(!exists(markup)) return;
+	if(!exists(markup)) {
+	  if(which + 1 >= story.chapters) {
+		story.set_chapters(which+1);
+	  }
+	  return;
+	}
 
 	// find a better place to put stuff so it doesn't scram the source directory
 	string basedir = "tmp";
@@ -194,13 +203,21 @@ void check_chapter(SysTime modified,
 	}
 	// new chapters at the end need to increase the story's number of
 	// chapters, before performing ANY updates.
-	story.check_length(which);
-	pending_updates.put(Update(story,modified,which,location,is_hish));
+	if(story.chapters <= which) {
+	  // uh oh, new chapter found!
+	  story.set_chapters(which+1);
+	}
+	// note: do not try to shrink the story if fewer chapters are found.
+	// unless the markup doesn't exist. We might not be processing the full
+	// git log, and the highest chapter might not have updated this time.
+	pending_updates.reserve(pending_updates.capacity+1);
+	emplace!Update(&pending_updates.data[$-1],
+				   story,modified,which,location,is_hish);
   }
 }
 
 void perform_updates() {
-  for(update; pending_updates.data) {
+  foreach(ref update; pending_updates.data) {
 	update.perform();
   }
 }
