@@ -210,6 +210,7 @@ void main(string[] args)
   }
   check_git_log(args);  
   reindex(".",stories);
+  print("dunZ");
 }
 
 void check_chapters_for(string location) {
