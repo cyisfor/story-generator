@@ -1,6 +1,7 @@
 import html: HTMLString;
+import std.algorithm.iteration: filter;
 
-auto for_all(bool depth_first = false)(auto parent) {
+auto for_all(bool depth_first = false,T)(T parent) {
   import std.range: chain;
   import std.algorithm.iteration: map, joiner, filter;
   static if(depth_first) {
@@ -15,7 +16,7 @@ auto maybe4all(T)(T mayberange) {
   static if( isInputRange!T ) {
 	return mayberange;
   } else {
-	return for_all(maybe);
+	return for_all(mayberange);
   }
 }
 
@@ -23,15 +24,19 @@ auto is_element(T)(T range) {
   return maybe4all(range).filter!((e) => e.isElementNode);
 }
 
-auto by_name(HTMLString name)(auto range) {
-  return maybe4all(range).is_element.filter!((e) => e.name == name);
+bool derp(HTMLString name,E)(E e) {
+  return e.tag == name;
 }
-auto by_id(HTMLString ident)(auto range) {
+
+auto by_name(HTMLString name,T)(T range) {
+  return maybe4all(range).is_element.filter!(derp!(name,T));
+}
+auto by_id(HTMLString ident,T)(T range) {
   return maybe4all(range).is_element.filter!((e) => e.attr("id") == ident);
 }
-auto by_class(HTMLString ident)(auto range) {
+auto by_class(HTMLString ident,T)(T range) {
   return maybe4all(range).is_element.filter!((e) => e.attr("class") == ident);
 }
-auto has_attr(HTMLString attr)(auto range) {
+auto has_attr(HTMLString attr,T)(T range) {
   return maybe4all(range).is_element.filter!((e) => e.attr(attr) !is null);
 }

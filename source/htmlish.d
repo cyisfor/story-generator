@@ -22,7 +22,7 @@ struct Context(NodeType) {
 	this.doc = doc;
 	this.e = root;
   }
-  void next(auto e) {
+  void next(NodeType e) {
 	if(in_paragraph) {
 	  this.e.appendChild(e);
 	} else {
@@ -45,13 +45,16 @@ struct Context(NodeType) {
 }
 
 void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
+  import std.string: strip;
+  import std.algorithm.iteration: splitter;
+  import std.algorithm.searching: any;
   if(!text) return ;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
   } else {
 	ctx.ended_newline = text[$] == '\n';
   }
-  foreach(line; text.strip().split('\n')) {
+  foreach(line; text.strip().splitter('\n')) {
 	line = line.strip();
 	if(line.empty) continue;
 	ctx.maybe_start("beginning");
@@ -60,16 +63,16 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   }
 }
 
-auto process_root(NodeType)(Document!NodeType dest) {
-  return (auto root) {
+auto process_root(Document dest) {
+  return (typeof(dest.root) root) {
 	if(!root.attr("hish")) return false;
 	root.removeAttr("hish");
-	Context ctx = Context(root);
+	auto ctx = Context!(typeof(root))(dest,root);
 	bool in_paragraph = false;
 	foreach(e; root.children) {
-	  auto next = e.next;
+	  auto next = e.nextSibling;
 	  if(e.isTextNode) {
-		process_text(e.text);
+		process_text(ctx,e.text);
 	  } else if(e.isElementNode) {
 		bool block_element =
 		  any!((a) => a == e.name)
@@ -86,6 +89,7 @@ auto process_root(NodeType)(Document!NodeType dest) {
 			 otherwise the last text node and this should be in the same
 			 paragraph */
 		  if(ctx.ended_newline) {
+			import std.format: format;
 			auto buf = format("wimp tag {{%s}}",e.name);
 			ctx.maybe_end(buf);
 			ctx.maybe_start(buf);
@@ -98,15 +102,17 @@ auto process_root(NodeType)(Document!NodeType dest) {
 	  e = next;
 	}
 	return true;
-  }
+  };
 }
-  
-auto parse(HTMLString source, ref Document templit = null) {
+
+import std.typecons: Nullable;
+
+auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   import std.algorithm.searching: until;
   import std.range: chain;
   import htmlderp: createDocument;
   
-  if(templit == null) {
+  if(templit.isNull) {
 	templit = default_template;
   }
 
