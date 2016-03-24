@@ -1,5 +1,5 @@
 static import backend = d2sqlite3;
-
+import print: print;
 version(GNU) {
   import std.algorithm: map, findSplit, findSplitBefore;
 } else {
@@ -20,6 +20,10 @@ struct Chapter {
   Database db;
   Story story;
   int which;
+  void remove() {
+	story.remove(which);
+	this = Chapter.init;
+  }
   void update(SysTime modified) {
 	update(modified,which,title);
   }
@@ -113,8 +117,14 @@ struct Story {
 	ret.which = which;
 	return ret;
   }
+  void remove(int which) {
+	db.delete_chapter.inject(which,id);
+	update();
+  }
+
   void update() {
 	db.update_story.inject(id);
+	chapters = db.num_story_chapters.inject(id).front;
   }
 
   // SIGH
@@ -145,6 +155,7 @@ Story to_story(backend.Row row) {
 				chapters: t.chapters,
 				url: "http://hellifiknow/",
   };
+  print("modified",t.modified,ret.modified);
   return ret;
 }
 
@@ -159,36 +170,69 @@ string readToDot() {
   return lines.data;
 }
 
+immutable string[string] statements =
+  [
+   "update_desc": "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"
+   ];
+
+string declare_statements() {
+  string ret;
+  foreach(stmt; statements.keys) {
+	ret += q{backend.Statement }~stmt~";\n";
+  }
+  return ret;
+}
+
+string finalize_statements() {
+  string ret;
+  foreach(stmt; statements.keys) {
+	ret += stmt~".finalize();\n";
+  }
+  return ret;
+}
+
+string initialize_statements() {
+  string ret;
+  foreach(ident,stmt; statements) {
+	ret += format(q{ %s = db.prepare("%s");
+	  },ident,stmt);
+  }
+  return ret;
+}
+
 class Database {
   backend.Database db;
-  backend.Statement update_desc;
+  mixin declare_statements();
+
   backend.Statement find_story;
   backend.Statement update_story;
   backend.Statement insert_story;
   backend.Statement find_chapter;
   backend.Statement update_chapter;
   backend.Statement insert_chapter;
+  backend.Statement delete_chapter;
   backend.Statement latest_stories;
   void close() {
-	update_desc.finalize();
+	mixin finalize_statements();
 	find_story.finalize();
 	update_story.finalize();
 	insert_story.finalize();
 	find_chapter.finalize();
 	update_chapter.finalize();
 	insert_chapter.finalize();
+	delete_chapter.finalize();
 	latest_stories.finalize();
 	db.close();
   }
   this() {
 	immutable string modified_format =
 	  "strftime('%Y/%m%d%H%M%f',modified)";
-	immutable string story_fields = "id,title,description,"~modified_format~",location,(select count(id) from chapters where story = stories.id)";
+	immutable string story_fields = "id,title,description,"~modified_format~",location,chapters";
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
 	import print: print;
 	print("derp ran schema");
-	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
+	mixin initialize_statements();
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	// just some shortcut bookkeeping
 	update_story = db.prepare(`UPDATE stories SET
@@ -198,6 +242,7 @@ WHERE id = ?`);
 	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
 	find_chapter = db.prepare("SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
+	delete_chapter = db.prepare("DELETE FROM chapters WHERE which = ? AND story = ?");
 	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
 	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");
   }

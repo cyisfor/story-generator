@@ -10,11 +10,4 @@
 	"description": "Generate HTML versions of story markup",
 	"copyright": "meh",
 	"license": "whatever",
-	"configurations": [
-		{
-			"name": "printloc",
-			"versions": ["printloc"],
-			"targetType": "executable"
-		}
-	]
 }

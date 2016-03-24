@@ -47,9 +47,7 @@ struct Update {
 	auto name = chapter_name(which);
 	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
 	if(!exists(markup)) {
-	  if(which + 1 < story.chapters) {
-		story.shrink(which+1);
-	  }
+	  story.remove(which);
 	  return;
 	}
 
@@ -187,13 +185,11 @@ void check_chapter(SysTime modified,
   if(!exists(location)) return;
   if(only_location && (!location.endsWith(only_location))) return;
 
-  print(location,which," updated!");
-
   for(int i=which-1;i<=which+1;++i) {
 	string key = location ~ "/" ~ to!string(which);
 	if(key in updated) continue;
 	updated[key] = true;
-	
+	print(location,which," needs an update!");   
 	db.Story story;
 	if(location in stories) {
 	  story = stories[location];
@@ -203,10 +199,9 @@ void check_chapter(SysTime modified,
 	  assert(story.location);
 	  stories[location] = story;
 	}
-	// new chapters at the end need to increase the story's number of
+	// new chapters at the end, we need to increase the story's number of
 	// chapters, before performing ANY updates.
 	if(story.chapters <= which) {
-	  print("uh oh, new chapter found!",which);
 	  story.chapters = which+1;
 	}
 	// note: do not try to shrink the story if fewer chapters are found.

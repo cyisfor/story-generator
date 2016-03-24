@@ -31,19 +31,22 @@ SysTime reindex(Story story) {
 	auto toc = querySelector(contents,"#toc");
 
   SysTime maxTime = SysTime(0);
-  Chapter[] chapters;
+  if(story.chapters == 0) {
+	story.update();
+  }
   for(int which=0;which<story.chapters;++which) {
 	auto chapter = story[which];
+	print("hmmm",chapter.id,chapter.modified);
 	maxTime = max(maxTime,chapter.modified);
 	auto link = contents.createElement("a",contents.createElement("li",toc));
 	link.attr("href",chapter_name(which));
   }
-  auto box = story.location in makers.contents;
-  if(box) {
+  if(auto box = story.location in makers.contents) {
 	(*box)(contents);
   }
+  print("uhhh",maxTime);
   if(story.modified < maxTime) {
-	story.update_modified(maxTime);
+	story.update();
   }
   return maxTime;
   } catch(AssertError e) {
@@ -59,7 +62,7 @@ void reindex(string outdir, Story[string] stories) {
   }
   import std.container.rbtree: RedBlackTree;
   import std.container.util: make;
-  auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified"))
+  auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified",true))
 	(stories.values);
   foreach(Story story; sorted) {
 	print("story",story.location,story.modified);
