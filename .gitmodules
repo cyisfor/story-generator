@@ -1,3 +1,4 @@
 [submodule "htmlish"]
 	path = htmlish
 	url = https://github.com/cyisfor/htmlish
+	ignore = untracked
