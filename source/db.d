@@ -127,7 +127,7 @@ struct Story {
 	sink(")");
   }
   void set_chapters(int nchaps) {
-	chapters = which+1;
+	chapters = nchaps;
 	db.update_story_chapters.inject(chapters,id);
   }
 };
@@ -192,6 +192,8 @@ class Database {
 	immutable string story_fields = "id,title,description,"~modified_format~",location,(select count(id) from chapters where story = stories.id)";
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
+	import print: print;
+	print("derp ran schema");
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	update_story_modified = db.prepare("UPDATE stories SET modified = ? WHERE id = ?");
@@ -249,9 +251,10 @@ class Database {
 }
 
 Database db;
-static this() {
+void open() {
   db = new Database();
 }
+
 Story story(string location) {
   return db.story(location);
 }
@@ -269,10 +272,10 @@ struct Transaction {
   bool committed;
   ~this() {
 	if(!committed) 
-	  db.execute("ROLLBACK");
+	  db.db.rollback();
   }
   void commit() {
-	db.execute("COMMIT");
+	db.db.commit();
 	committed = true;
   }
 };
@@ -280,6 +283,7 @@ struct Transaction {
 Transaction transaction() {
   Transaction t;
   t.committed = false;
+  db.db.begin();
   return t;
 }
 

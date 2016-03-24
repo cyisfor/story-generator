@@ -1,4 +1,7 @@
 static import db;
+
+import hax: emplace;
+
 import reindex: reindex, chapter_name;
 import std.file: exists;
 
@@ -123,11 +126,12 @@ struct Update {
 	  dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
 	}
 
-	auto box = location in makers.chapter;
-	if(box) {
+	if(auto box = location in makers.chapter) {
 	  (*box)(doc);
 	}
-	chapter.update(modified, which, to!string(querySelector(doc,"title").html));
+	chapter.update(modified,
+				   chapter.which,
+				   to!string(querySelector(doc,"title").html));
 
 	smackdir("html");
 	smackdir(outdir);
@@ -210,9 +214,8 @@ void check_chapter(SysTime modified,
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
-	pending_updates.reserve(pending_updates.capacity+1);
-	emplace!Update(&pending_updates.data[$-1],
-				   story,modified,which,location,is_hish);
+
+	pending_updates.emplace!Update(story,modified,which,location,is_hish);
   }
 }
 
@@ -225,13 +228,13 @@ void perform_updates() {
 void main(string[] args)
 {
   import core.stdc.stdlib: getenv;
-  scope(exit) {
-	db.close();
-  }  
-  while(!exists(".git")) {
+  while(!exists("code")) {
 	import std.file: chdir;
 	chdir("..");
   }
+  db.open();
+  scope(exit) db.close();
+
   pending_updates = appender!(Update[]);
   if(getenv("story")) {
 	only_location = to!string(getenv("story"));
