@@ -124,7 +124,9 @@ struct Story {
 
   void update() {
 	db.update_story.inject(id);
-	chapters = db.num_story_chapters.inject(id).front;
+	db.num_story_chapters.bindAll(id);
+	scope(exit) db.num_story_chapters.reset();
+	chapters = db.num_story_chapters.execute().front.peek!int(0);
   }
 
   // SIGH
@@ -170,81 +172,92 @@ string readToDot() {
   return lines.data;
 }
 
-immutable string[string] statements =
-  [
-   "update_desc": "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"
-   ];
+struct Derp {
+  string name;
+  string stmt;
+}
+
+immutable string modified_format =
+  "strftime('%Y/%m%d%H%M%f',modified)";
+immutable string story_fields = "id,title,description,"~modified_format~",location,chapters";
+
+
+immutable Derp[] statements = [
+  {q{update_desc},
+   "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
+  
+  {q{num_story_chapters},
+   "SELECT COUNT(1) FROM chapters WHERE story = ?"},
+
+  {q{find_story},
+   "SELECT "~story_fields~" from stories where location = ?"},
+
+  // just some shortcut bookkeeping
+  {q{update_story},
+   `UPDATE stories SET
+modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
+chapters = (select count(1) from chapters where story = stories.id)
+WHERE id = ?`},
+  
+  {q{insert_story},
+   "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
+
+  {q{find_chapter},
+   "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
+  
+  {q{insert_chapter},
+   "INSERT INTO chapters (which, story) VALUES (?,?)"},
+
+  {q{delete_chapter},
+   "DELETE FROM chapters WHERE which = ? AND story = ?"},
+
+  {q{update_chapter},
+   "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
+  {q{latest_stories},
+   "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
+];
 
 string declare_statements() {
   string ret;
-  foreach(stmt; statements.keys) {
-	ret += q{backend.Statement }~stmt~";\n";
+  foreach(stmt; statements) {
+	ret ~= q{backend.Statement }~stmt.name~";\n";
   }
   return ret;
 }
 
 string finalize_statements() {
   string ret;
-  foreach(stmt; statements.keys) {
-	ret += stmt~".finalize();\n";
+  foreach(stmt; statements) {
+	ret ~= stmt.name~".finalize();\n";
   }
   return ret;
 }
 
 string initialize_statements() {
+  import std.format: format;
   string ret;
-  foreach(ident,stmt; statements) {
-	ret += format(q{ %s = db.prepare("%s");
-	  },ident,stmt);
+  foreach(stmt; statements) {
+	ret ~= format(q{
+		%s = db.prepare("%s");
+	  },stmt.name,stmt.stmt);
   }
   return ret;
 }
 
 class Database {
   backend.Database db;
-  mixin declare_statements();
-
-  backend.Statement find_story;
-  backend.Statement update_story;
-  backend.Statement insert_story;
-  backend.Statement find_chapter;
-  backend.Statement update_chapter;
-  backend.Statement insert_chapter;
-  backend.Statement delete_chapter;
-  backend.Statement latest_stories;
+  mixin(declare_statements());
+  
   void close() {
-	mixin finalize_statements();
-	find_story.finalize();
-	update_story.finalize();
-	insert_story.finalize();
-	find_chapter.finalize();
-	update_chapter.finalize();
-	insert_chapter.finalize();
-	delete_chapter.finalize();
-	latest_stories.finalize();
+	mixin(finalize_statements());
 	db.close();
   }
   this() {
-	immutable string modified_format =
-	  "strftime('%Y/%m%d%H%M%f',modified)";
-	immutable string story_fields = "id,title,description,"~modified_format~",location,chapters";
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
 	import print: print;
 	print("derp ran schema");
-	mixin initialize_statements();
-	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
-	// just some shortcut bookkeeping
-	update_story = db.prepare(`UPDATE stories SET
-modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
-chapters = (select count(1) from chapters where story = stories.id)
-WHERE id = ?`);
-	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
-	find_chapter = db.prepare("SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?");
-	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");
-	delete_chapter = db.prepare("DELETE FROM chapters WHERE which = ? AND story = ?");
-	update_chapter = db.prepare("UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?");
-	latest_stories = db.prepare("SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100");
+	mixin(initialize_statements());
   }
 
   void check_for_desc(Story story) {
