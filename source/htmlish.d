@@ -47,7 +47,6 @@ struct Context(NodeType) {
 void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
   import std.algorithm.iteration: splitter;
-  import std.algorithm.searching: any;
   if(!text) return ;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
@@ -56,53 +55,52 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   }
   foreach(line; text.strip().splitter('\n')) {
 	line = line.strip();
-	if(line.empty) continue;
+	if(line.length==0) continue;
 	ctx.maybe_start("beginning");
-	e.text ~= line;
+	ctx.e.text(ctx.e.text ~ line);
 	ctx.maybe_end("beginning");
   }
 }
 
-auto process_root(Document dest) {
-  return (typeof(dest.root) root) {
-	if(!root.attr("hish")) return false;
-	root.removeAttr("hish");
-	auto ctx = Context!(typeof(root))(dest,root);
-	bool in_paragraph = false;
-	foreach(e; root.children) {
-	  auto next = e.nextSibling;
-	  if(e.isTextNode) {
-		process_text(ctx,e.text);
-	  } else if(e.isElementNode) {
-		bool block_element =
-		  any!((a) => a == e.name)
-		  (["ul","ol","p","div","table","blockquote"]);
-		if(block_element) {
-		  ctx.maybe_end("block");
-		  if(process_root(e,ctx)) {
-			e = next;
-			continue;
-		  }
-		} else {
-		  /* start a paragraph if this element is a wimp
-			 but only if the last text node ended on a newline.
-			 otherwise the last text node and this should be in the same
-			 paragraph */
-		  if(ctx.ended_newline) {
-			import std.format: format;
-			auto buf = format("wimp tag {{%s}}",e.name);
-			ctx.maybe_end(buf);
-			ctx.maybe_start(buf);
-			ctx.ended_newline = false;
-		  }
+auto process_root(NodeType)(Document dest, NodeType root) {
+  import std.algorithm.searching: any;
+  if(!root.attr("hish")) return false;
+  root.removeAttr("hish");
+  auto ctx = Context!(typeof(root))(dest,root);
+  bool in_paragraph = false;
+  foreach(e; root.children) {
+	auto next = e.nextSibling;
+	if(e.isTextNode) {
+	  process_text(ctx,e.text);
+	} else if(e.isElementNode) {
+	  bool block_element =
+		any!((a) => a == e.tag)
+		(["ul","ol","p","div","table","blockquote"]);
+	  if(block_element) {
+		ctx.maybe_end("block");
+		if(process_root(dest,e)) {
+		  e = next;
+		  continue;
 		}
 	  } else {
-		ctx.next(e);
+		/* start a paragraph if this element is a wimp
+		   but only if the last text node ended on a newline.
+		   otherwise the last text node and this should be in the same
+		   paragraph */
+		if(ctx.ended_newline) {
+		  import std.format: format;
+		  auto buf = format("wimp tag {{%s}}",e.tag);
+		  ctx.maybe_end(buf);
+		  ctx.maybe_start(buf);
+		  ctx.ended_newline = false;
+		}
 	  }
-	  e = next;
+	} else {
+	  ctx.next(e);
 	}
-	return true;
-  };
+	e = next;
+  }
+  return true;
 }
 
 import std.typecons: Nullable;
@@ -119,20 +117,23 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   auto dest = templit.clone();
   
   // find where we're going to dump this htmlish
-  auto content = until!"a !is null"
+  auto derp = until!"a !is null"
 	(chain(dest.root.by_name!"content",
 		   dest.root.by_name!"div".by_id!"content",
-		   dest.root.by_name!"body")).front;
-  if(content is null) {
+		   dest.root.by_name!"body"));
+  auto content;
+  if(derp.empty) {
 	content = dest.createElement("body");
 	dest.root.appendChild(content);
+  } else {
+	content = derp.front;
   }
   
   auto src = createDocument(source);
   assert(src.root);
 
   content.html(source);
-  process_root(dest)(content);
+  process_root(dest,content);
   return dest;
 }
 
