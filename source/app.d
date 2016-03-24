@@ -9,6 +9,7 @@ import std.datetime : SysTime;
 db.Story[string] stories;
 
 struct Update {
+  @disable this(this);
   SysTime modified;
   int which;
   string location;
@@ -93,9 +94,10 @@ struct Update {
 						  chapter_name(chapter.which) ~
 						  ".html")));
 
-	
+	doc.check();
 	auto head = querySelector(doc,"head");
 	auto links = doc.querySelector("#links");
+	doc.check();
 	if(links is null) {
 	  links = doc.createElement("div", querySelector(doc,"body"));
 	  links.attr("class","links");

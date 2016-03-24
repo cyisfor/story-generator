@@ -24,10 +24,14 @@ string chapter_name(int which) {
 
 SysTime reindex(Story story) {
   auto contents = createDocument(import("template/contents.xhtml"));
+  writeln(contents.root.outerHTML);
   assert(story.description != null);
+  writeln(story.description);
   auto desc = querySelector(contents,"#description");
   assert(desc); // desc isn't null? so how...
-  desc.html = story.description;
+  writeln(desc);
+  contents.check();
+  desc.appendChild(contents.createTextNode(story.description));
   try {
 	auto toc = querySelector(contents,"#toc");
 

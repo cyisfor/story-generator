@@ -1,6 +1,6 @@
 import std.stdio: File,writeln;
 import std.file: rename;
-import std.process: spawnProcess, wait, kill, Pid;
+import std.process: spawnProcess, wait, kill, Pid, ProcessException;
 import std.socket: Socket, UnixAddress,
   SocketOSException, SocketShutdown,
   AddressFamily, SocketType, ProtocolType;
@@ -12,11 +12,17 @@ Socket socket;
 
 class Watcher {
   Pid pid;
-  
+  bool disabled;
   this() {
-	pid = spawnProcess([exe,address]);
+	try {
+	  pid = spawnProcess([exe,address]);
+	  disabled = false;
+	} catch(ProcessException e) {
+	  disabled = true;
+	}
   }
   auto connect() {
+	assert(!disabled);
 	socket = new Socket(AddressFamily.UNIX,
 						SocketType.STREAM,
 						ProtocolType.IP);
