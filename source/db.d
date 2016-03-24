@@ -126,6 +126,13 @@ struct Story {
 	formatValue(sink,title,fmt);
 	sink(")");
   }
+  void check_length(int which) {
+	if(chapters <= which) {
+	  // uh oh, new chapters found!
+	  chapters = which+1;
+	  db.update_story_chapters.inject(chapters,id);
+	}
+  }
 };
 
 Story to_story(backend.Row row) {
@@ -164,6 +171,7 @@ class Database {
   backend.Statement update_desc;
   backend.Statement find_story;
   backend.Statement update_story_modified;
+  backend.Statement update_story_chapters;
   backend.Statement insert_story;
   backend.Statement find_chapter;
   backend.Statement update_chapter;
@@ -173,6 +181,7 @@ class Database {
 	update_desc.finalize();
 	find_story.finalize();
 	update_story_modified.finalize();
+	update_story_chapters.finalize();
 	insert_story.finalize();
 	find_chapter.finalize();
 	update_chapter.finalize();
@@ -189,6 +198,7 @@ class Database {
 	update_desc = db.prepare("UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?");
 	find_story = db.prepare("SELECT "~story_fields~" from stories where location = ?");
 	update_story_modified = db.prepare("UPDATE stories SET modified = ? WHERE id = ?");
+	update_story_chapters = db.prepare("UPDATE stories SET chapters = ? WHERE id = ?");
 	insert_story = db.prepare("INSERT INTO stories (location,title,description) VALUES (?,?,?)");
 	find_chapter = db.prepare("SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?");
 	insert_chapter = db.prepare("INSERT INTO chapters (which, story) VALUES (?,?)");

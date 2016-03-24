@@ -5,11 +5,13 @@ import std.file: exists;
 import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
+import std.array: appender, Appender;
 
 db.Story[string] stories;
 
 struct Update {
   @disable this(this);
+  Story story;
   SysTime modified;
   int which;
   string location;
@@ -41,15 +43,6 @@ struct Update {
 	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
 	if(!exists(markup)) return;
 
-	db.Story story;
-	if(location in stories) {
-	  story = stories[location];
-	} else {
-	  story = db.story(location);
-	  story.location = location;
-	  assert(story.location);
-	  stories[location] = story;
-	}
 	// find a better place to put stuff so it doesn't scram the source directory
 	string basedir = "tmp";
 	smackdir(basedir);
@@ -115,10 +108,10 @@ struct Update {
 	  link.appendText(title);
 	}
 	if( chapter.which > 0 ) {
-	  dolink(chapter_name(chapter.which-1), "prev", "Previous");
+	  dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
 	}
 	if( chapter.which + 1 < story.chapters ) {
-	  dolink(chapter_name(chapter.which+1), "next", "Next");
+	  dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
 	}
 
 	auto box = location in makers.chapter;
@@ -156,6 +149,7 @@ void check_chapter(SysTime modified, string spath) {
 				findSplitBefore(to!string(path[path.length-1]),".").expand);
 }
 
+Appender!(Update[]) pending_updates;
 bool[string] updated;
 string only_location = null;
 
@@ -182,33 +176,57 @@ void check_chapter(SysTime modified,
   if(!exists(location)) return;
   if(only_location && (!location.endsWith(only_location))) return;
 
-  string key = location ~ "/" ~ to!string(which);
-  if(key in updated) return;
-  updated[key] = true;
-  print(location,' ',which," updated!");
-  Update(modified,which,location,is_hish).update();
+  print(location,which," updated!");
+
+  for(int i=which-1;i<=which+1;++i) {
+	string key = location ~ "/" ~ to!string(which);
+	if(key in updated) continue;
+	updated[key] = true;
+	
+	db.Story story;
+	if(location in stories) {
+	  story = stories[location];
+	} else {
+	  story = db.story(location);
+	  story.location = location;
+	  assert(story.location);
+	  stories[location] = story;
+	}
+	// new chapters at the end need to increase the story's number of
+	// chapters, before performing ANY updates.
+	story.check_length(which);
+	pending_updates.put(Update(story,modified,which,location,is_hish));
+  }
 }
 
+void perform_updates() {
+  for(update; pending_updates.data) {
+	update.perform();
+  }
+}
 
 void main(string[] args)
 {
   import core.stdc.stdlib: getenv;
   scope(exit) {
 	db.close();
-  }
+  }  
   while(!exists(".git")) {
 	import std.file: chdir;
 	chdir("..");
   }
+  pending_updates = appender!(Update[]);
   if(getenv("story")) {
 	only_location = to!string(getenv("story"));
 	if(getenv("regenerate")) {
 	  assert(only_location,"specify a story please!");
 	  check_chapters_for(only_location);
+	  perform_updates();
 	  return;
 	}
   }
-  check_git_log(args);  
+  check_git_log(args);
+  perform_updates();
   reindex(".",stories);
   print("dunZ");
 }
