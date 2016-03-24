@@ -1,3 +1,4 @@
+import print: print;
 import htmlderp: querySelector, createDocument;
 import feed: Feed;
 import db: Story, Chapter;
@@ -61,7 +62,7 @@ void reindex(string outdir, Story[string] stories) {
   auto sorted = make!(RedBlackTree!(Story,"a.modified < b.modified"))
 	(stories.values);
   foreach(Story story; sorted) {
-	writeln("story ",story.location,story.modified);
+	print("story",story.location,story.modified);
 	assert(story.location);
 	SysTime modified = reindex(story);
 	setTimes(story.location, modified, modified);
