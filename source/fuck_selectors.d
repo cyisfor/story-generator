@@ -1,4 +1,6 @@
-auto for_all!(bool depth_first = false)(auto parent) {
+import html: HTMLString;
+
+auto for_all(bool depth_first = false)(auto parent) {
   import std.range: chain;
   import std.algorithm.iteration: map, joiner, filter;
   static if(depth_first) {
@@ -8,28 +10,28 @@ auto for_all!(bool depth_first = false)(auto parent) {
   }
 }
 
-auto maybe4all(auto mayberange) {
+auto maybe4all(T)(T mayberange) {
   import std.range.primitives: isInputRange;
-  static if( isInputRange(mayberange) ) {
+  static if( isInputRange!T ) {
 	return mayberange;
   } else {
 	return for_all(maybe);
   }
 }
 
-auto is_element(auto range) {
+auto is_element(T)(T range) {
   return maybe4all(range).filter!((e) => e.isElementNode);
 }
 
-auto by_name(HTMLstring name)(auto range) {
+auto by_name(HTMLString name)(auto range) {
   return maybe4all(range).is_element.filter!((e) => e.name == name);
 }
-auto by_id(HTMLstring ident)(auto range) {
+auto by_id(HTMLString ident)(auto range) {
   return maybe4all(range).is_element.filter!((e) => e.attr("id") == ident);
 }
-auto by_class(HTMLstring ident)(auto range) {
+auto by_class(HTMLString ident)(auto range) {
   return maybe4all(range).is_element.filter!((e) => e.attr("class") == ident);
 }
-auto has_attr(HTMLstring attr)(auto range) {
+auto has_attr(HTMLString attr)(auto range) {
   return maybe4all(range).is_element.filter!((e) => e.attr(attr) !is null);
 }

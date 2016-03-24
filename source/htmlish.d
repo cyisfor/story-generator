@@ -1,6 +1,6 @@
 import print: print;
 import htmlderp: createDocument, querySelector;
-import html: Document, HTMLstring;
+import html: Document, HTMLString;
 
 import std.stdio: File;
 import std.file: rename;
@@ -44,14 +44,14 @@ struct Context(NodeType) {
   }
 }
 
-void process_text(Context ctx, HTMLString text) {
+void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   if(!text) return ;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
   } else {
 	ctx.ended_newline = text[$] == '\n';
   }
-  for(line; text.strip().split('\n')) {
+  foreach(line; text.strip().split('\n')) {
 	line = line.strip();
 	if(line.empty) continue;
 	ctx.maybe_start("beginning");
@@ -60,50 +60,48 @@ void process_text(Context ctx, HTMLString text) {
   }
 }
 
-bool process_root(Document dest) => (auto root) {
-  if(!root.attr("hish")) return false;
-  root.removeAttr("hish");
-  Context ctx = Context(root);
-  bool in_paragraph = false;
-  while(auto e = root.children) {
-	auto next = e.next;
-	if(e.isTextNode) {
-	  process_text(e.text);
-	} else if(e.isElementNode) {
-	  bool block_element =
-		any!((a) => a == e.name)
-		(["ul","ol","p","div","table","blockquote"]);
-	  if(block_element) {
-		ctx.maybe_end("block");
-		if(process_root(e,ctx)) {
-		  e = next;
-		  continue;
+auto process_root(NodeType)(Document!NodeType dest) {
+  return (auto root) {
+	if(!root.attr("hish")) return false;
+	root.removeAttr("hish");
+	Context ctx = Context(root);
+	bool in_paragraph = false;
+	foreach(e; root.children) {
+	  auto next = e.next;
+	  if(e.isTextNode) {
+		process_text(e.text);
+	  } else if(e.isElementNode) {
+		bool block_element =
+		  any!((a) => a == e.name)
+		  (["ul","ol","p","div","table","blockquote"]);
+		if(block_element) {
+		  ctx.maybe_end("block");
+		  if(process_root(e,ctx)) {
+			e = next;
+			continue;
+		  }
+		} else {
+		  /* start a paragraph if this element is a wimp
+			 but only if the last text node ended on a newline.
+			 otherwise the last text node and this should be in the same
+			 paragraph */
+		  if(ctx.ended_newline) {
+			auto buf = format("wimp tag {{%s}}",e.name);
+			ctx.maybe_end(buf);
+			ctx.maybe_start(buf);
+			ctx.ended_newline = false;
+		  }
 		}
 	  } else {
-		/* start a paragraph if this element is a wimp
-		   but only if the last text node ended on a newline.
-		   otherwise the last text node and this should be in the same
-		   paragraph */
-		if(ctx.ended_newline) {
-		  auto buf = format("wimp tag {{%s}}",e.name);
-		  ctx.maybe_end(buf);
-		  ctx.maybe_start(buf);
-		  ctx.ended_newline = false;
-		}
+		ctx.next(e);
 	  }
-	} else {
-	  ctx.next(e);
+	  e = next;
 	}
-	e = next;
+	return true;
   }
-  return true;
 }
-
-		
   
-	
-  
-auto parse(HTMLstring source, ref Document templit = null) {
+auto parse(HTMLString source, ref Document templit = null) {
   import std.algorithm.searching: until;
   import std.range: chain;
   import htmlderp: createDocument;
@@ -129,17 +127,12 @@ auto parse(HTMLstring source, ref Document templit = null) {
 
   content.html(source);
   process_root(dest)(content);
+  return dest;
 }
 
 void make(string src, string dest) {
-	print("htmlishhhhh ",dest);
-	File source = File(src,"r");
-	File destination = File(dest~".temp","w");
-	auto socket = watcher.connect();
-	copy(source,socket);
-	socket.shutdown(SocketShutdown.SEND);
-	print("Okay, sent it");
-	copy(socket,destination);
-	print("Okay, got it back");
-	rename(dest~".temp",dest);
+  import std.file: readText,write;
+  string source = readText(src);
+  (dest~".temp").write(parse(readText(src)).root.html);
+  rename(dest~".temp",dest);
 }
