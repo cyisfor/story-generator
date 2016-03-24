@@ -213,6 +213,7 @@ WHERE id = ?`},
 
   {q{update_chapter},
    "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
+  
   {q{latest_stories},
    "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
 ];
