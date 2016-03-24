@@ -3031,6 +3031,7 @@ unittest {
   assert(a.data == [Uncopyable(1),Uncopyable(2),Uncopyable(3)]);
 }
 
+
 //Calculates an efficient growth scheme based on the old capacity
 //of data, and the minimum requested capacity.
 //arg curLen: The current length
@@ -3048,6 +3049,90 @@ private size_t appenderNewCapacity(size_t TSizeOf)(size_t curLen, size_t reqLen)
         mult = 200;
     auto sugLen = cast(size_t)((curLen * mult + 99) / 100);
     return max(reqLen, sugLen);
+}
+
+/**
+ * An appender that can update an array in-place.  It forwards all calls to an
+ * underlying appender implementation.  Any calls made to the appender also update
+ * the pointer to the original array passed in.
+ */
+struct RefAppender(A)
+if (isDynamicArray!A)
+{
+    private
+    {
+        alias T = ElementEncodingType!A;
+        Appender!A impl;
+        T[] *arr;
+    }
+
+    /**
+     * Construct a ref appender with a given array reference.  This does not copy the
+     * data.  If the array has a larger capacity as determined by arr.capacity, it
+     * will be used by the appender.  $(D RefAppender) assumes that arr is a non-null
+     * value.
+     *
+     * Note, do not use builtin appending (i.e. ~=) on the original array passed in
+     * until you are done with the appender, because calls to the appender override
+     * those appends.
+     */
+    this(T[] *arr)
+    {
+        impl = Appender!A(*arr);
+        this.arr = arr;
+    }
+
+    auto opDispatch(string fn, Args...)(Args args) if (is(typeof(mixin("impl." ~ fn ~ "(args)"))))
+    {
+        // we do it this way because we can't cache a void return
+        scope(exit) *this.arr = impl.data;
+        mixin("return impl." ~ fn ~ "(args);");
+    }
+
+    private alias AppenderType = Appender!A;
+
+    /**
+     * Appends one item to the managed array.
+     */
+    void opOpAssign(string op : "~", U)(U item) if (AppenderType.canPutItem!U)
+    {
+        scope(exit) *this.arr = impl.data;
+        impl.put(item);
+    }
+
+    // Const fixing hack.
+    void opOpAssign(string op : "~", Range)(Range items) if (AppenderType.canPutConstRange!Range)
+    {
+        scope(exit) *this.arr = impl.data;
+        impl.put(items);
+    }
+
+    /**
+     * Appends an entire range to the managed array.
+     */
+    void opOpAssign(string op : "~", Range)(Range items) if (AppenderType.canPutRange!Range)
+    {
+        scope(exit) *this.arr = impl.data;
+        impl.put(items);
+    }
+
+    /**
+     * Returns the capacity of the array (the maximum number of elements the
+     * managed array can accommodate before triggering a reallocation).  If any
+     * appending will reallocate, $(D capacity) returns $(D 0).
+     */
+    @property size_t capacity() const
+    {
+        return impl.capacity;
+    }
+
+    /**
+     * Returns the managed array.
+     */
+    @property inout(T)[] data() inout
+    {
+        return impl.data;
+    }
 }
 
 /++
