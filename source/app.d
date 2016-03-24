@@ -94,10 +94,8 @@ struct Update {
 						  chapter_name(chapter.which) ~
 						  ".html")));
 
-	doc.check();
 	auto head = querySelector(doc,"head");
 	auto links = doc.querySelector("#links");
-	doc.check();
 	if(links is null) {
 	  links = doc.createElement("div", querySelector(doc,"body"));
 	  links.attr("class","links");

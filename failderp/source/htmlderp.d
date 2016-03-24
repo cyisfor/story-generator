@@ -11,6 +11,5 @@ auto querySelector(ref html.Document doc, html.HTMLString s) {
   return res.front;
 }
 
-auto createDocument(html.HTMLString source) {
-  return html.createDocument!(html.DOMCreateOptions.None)(source);
-}
+alias createDocument =
+  html.createDocument!(html.DOMCreateOptions.None);
