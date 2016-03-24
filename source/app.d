@@ -1,6 +1,6 @@
 static import db;
 
-import hax: emplace;
+import hax: emplace_put;
 
 import reindex: reindex, chapter_name;
 import std.file: exists;
@@ -10,7 +10,6 @@ import std.conv: to;
 import std.datetime : SysTime;
 import std.array: appender, Appender;
 import std.algorithm: move;
-import std.conv: emplace;
 
 db.Story[string] stories;
 
@@ -215,7 +214,7 @@ void check_chapter(SysTime modified,
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
 
-	pending_updates.emplace!Update(story,modified,which,location,is_hish);
+	pending_updates.emplace_put(story,modified,which,location,is_hish);
   }
 }
 
