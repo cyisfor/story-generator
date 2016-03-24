@@ -20,13 +20,12 @@ struct Context(NodeType) {
   Document doc;
   this(Document doc, NodeType root) {
 	this.doc = doc;
-	this.e = root;
+	this.e = root.firstChild;
   }
   void next(NodeType e) {
 	if(in_paragraph) {
 	  this.e.appendChild(e);
 	} else {
-	  this.e.insertAfter(e);
 	  this.e = e;
 	}
   }
@@ -47,11 +46,11 @@ struct Context(NodeType) {
 void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
   import std.algorithm.iteration: splitter;
-  if(!text) return ;
+  if(text.length == 0) return ;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
   } else {
-	ctx.ended_newline = text[$] == '\n';
+	ctx.ended_newline = text[$-1] == '\n';
   }
   foreach(line; text.strip().splitter('\n')) {
 	line = line.strip();
@@ -62,11 +61,11 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   }
 }
 
-auto process_root(NodeType)(Document dest, NodeType root) {
+void process_root(NodeType)(Document dest, NodeType root) {
   import std.algorithm.searching: any;
-  if(!root.attr("hish")) return false;
-  root.removeAttr("hish");
-  auto ctx = Context!(typeof(root))(dest,root);
+  import print: print;
+  print("uhm",root);
+  auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
   foreach(e; root.children) {
 	auto next = e.nextSibling;
@@ -78,7 +77,9 @@ auto process_root(NodeType)(Document dest, NodeType root) {
 		(["ul","ol","p","div","table","blockquote"]);
 	  if(block_element) {
 		ctx.maybe_end("block");
-		if(process_root(dest,e)) {
+		if(e.attr("hish")) {
+		  e.removeAttr("hish");
+		  process_root(dest,e);
 		  e = next;
 		  continue;
 		}
@@ -100,7 +101,6 @@ auto process_root(NodeType)(Document dest, NodeType root) {
 	}
 	e = next;
   }
-  return true;
 }
 
 import std.typecons: Nullable;
@@ -121,8 +121,10 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	(chain(dest.root.by_name!"content",
 		   dest.root.by_name!"div".by_id!"content",
 		   dest.root.by_name!"body"));
-  auto content;
+  typeof(derp.front) content;
   if(derp.empty) {
+	import print: print;
+	print("no content found!");
 	content = dest.createElement("body");
 	dest.root.appendChild(content);
   } else {
@@ -143,3 +145,11 @@ void make(string src, string dest) {
   (dest~".temp").write(parse(readText(src)).root.html);
   rename(dest~".temp",dest);
 }
+
+unittest {
+  import std.stdio: writeln;
+  writeln(parse(`hi
+there
+this
+is <i>a</i> test`).root.html);
+  }

@@ -40,3 +40,23 @@ auto by_class(HTMLString ident,T)(T range) {
 auto has_attr(HTMLString attr,T)(T range) {
   return maybe4all(range).is_element.filter!((e) => e.attr(attr) !is null);
 }
+
+unittest {
+  import print: print;
+  import std.array: array;
+  import std.algorithm.iteration: map;
+  import html: createDocument;
+  assert(["a","a","a"] ==
+		 array(createDocument("<a/><a/><a/>")
+			   .root.by_name!"a".map!"a.tag"));
+  assert(["a","a","a"] ==
+		 array(createDocument("<a/><a/><b/><a/>")
+			   .root.by_name!"a".map!"a.tag"));
+  assert(["a","a","a"] ==
+		 array(createDocument(`<a id="1"/><a id="2"/><a id="1"/><a id="1"/>`)
+			   .root.by_id!"1".map!"a.tag"));
+  assert(["a","a","a"] ==
+		 array(createDocument(`<a id="1"/> text in here
+<a id="2"/><a id="1"/><a id="1"/>`)
+			   .root.by_id!"1".map!"a.tag"));
+}  

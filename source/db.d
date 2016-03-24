@@ -343,7 +343,7 @@ Transaction transaction() {
 }
 
 unittest {
-  db.close(); // avoid memory leak error
+  if(db !is null) db.close(); // avoid memory leak error
   import std.stdio;
   writeln("derpaherp");
 }
