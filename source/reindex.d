@@ -54,7 +54,7 @@ SysTime reindex(Story story) {
 void reindex(string outdir, Story[string] stories) {
   SysTime maxTime = SysTime(0);
   if(stories.length == 0) {
-	writeln("no stories to update?");
+	print("no stories to update?");
 	return;
   }
   import std.container.rbtree: RedBlackTree;
@@ -69,7 +69,7 @@ void reindex(string outdir, Story[string] stories) {
 	maxTime = max(modified,maxTime);
   }
 
-  writeln(stories.length," at ",maxTime);
+  print(stories.length," at ",maxTime);
   Feed.Params p = {
   title: "Recently Updated",
   url: "./",

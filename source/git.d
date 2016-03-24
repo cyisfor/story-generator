@@ -1,7 +1,8 @@
+import print: print;
+
 import std.regex : regex, matchFirst;
 import std.conv : to;
 import std.process : pipeProcess, Redirect, wait;
-import std.stdio : writeln;
 import std.datetime : SysTime;
 import std.functional : toDelegate;
 import core.time: TimeException;
@@ -29,7 +30,6 @@ void parse_log(string since, void delegate(SysTime, string) handler) {
   SysTime modified = 0;
 
   foreach (line; git.stdout.byLine) {
-	//writeln(line);
 	auto res = matchFirst(line,adp);
 	if( res.empty ) {
 	  try {
@@ -46,9 +46,7 @@ void parse_log(string since, void delegate(SysTime, string) handler) {
 
 unittest {
   void handle(SysTime modified, string path) {
-	writeln("hokay " ~
-			to!(string)(modified) ~ " " ~
-			path);
+	print("hokay",modified,path);
   }
   parse_log("HEAD~2..HEAD",&handle);
 }

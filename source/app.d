@@ -2,7 +2,7 @@ static import db;
 import reindex: reindex, chapter_name;
 import std.file: exists;
 
-import std.stdio: writeln;
+import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
 
@@ -60,7 +60,7 @@ struct Update {
 	auto herpaderp() {
 	  auto box = location in makers.make;
 	  if(box) {
-		writeln("found maker at ",location);
+		print("found maker at ",location);
 		return *box;
 	  } else {
 		static import htmlish;
@@ -80,7 +80,7 @@ struct Update {
 	}
 	if(modified <= chapter.modified) {
 	  if(exists(dest)) {
-		writeln("unmodified");
+		print("unmodified");
 		//setTimes(dest,modified,modified);
 		return;
 	  }
@@ -129,7 +129,7 @@ struct Update {
 
 	smackdir("html");
 	smackdir(outdir);
-	writeln("writing to ",outdir,"/",chapter_name(chapter.which));
+	print("writing to ",outdir,"/",chapter_name(chapter.which));
 	write(dest,doc.root.html);
 
 	setTimes(dest,modified,modified);
@@ -185,7 +185,7 @@ void check_chapter(SysTime modified,
   string key = location ~ "/" ~ to!string(which);
   if(key in updated) return;
   updated[key] = true;
-  writeln(location,' ',which," updated!");
+  print(location,' ',which," updated!");
   Update(modified,which,location,is_hish).update();
 }
 
@@ -231,7 +231,7 @@ void check_git_log(string[] args) {
 	since = args[1];
 	if(since=="") since = null;
   }
-  writeln("since "~since);
+  print("since "~since);
   static import git;
   git.parse_log(since,&check_chapter);
 }
