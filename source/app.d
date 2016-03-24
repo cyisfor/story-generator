@@ -1,6 +1,6 @@
 static import db;
 
-import hax: emplace_put;
+import std.arrayhax: appender, Appender;
 
 import reindex: reindex, chapter_name;
 import std.file: exists;
@@ -8,7 +8,6 @@ import std.file: exists;
 import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
-import std.array: appender, Appender;
 import std.algorithm: move;
 
 db.Story[string] stories;
