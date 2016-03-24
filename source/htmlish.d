@@ -1,25 +1,45 @@
 import print: print;
+import htmlderp: createDocument, querySelector;
+import html: Document, HTMLstring;
 
 import std.stdio: File;
 import std.file: rename;
-import std.process: spawnProcess, wait, kill, Pid, ProcessException;
-import std.socket: Socket, UnixAddress,
-  SocketOSException, SocketShutdown,
-  AddressFamily, SocketType, ProtocolType;
 
-immutable string exe = "code/generate.d/htmlish/parse";
-immutable string address = "parse.sock";
+Document default_template;
+static this() {
+  // one to be there at compile time j/i/c
+  default_template = createDocument(import("template/default.html"));
+}
 
-Socket socket;
 
-class Watcher {
+
+void process_root(auto root) {
+
+auto parse(HTMLstring source, ref Document templit = null) {
+  if(templit == null) {
+	templit = default_template;
+  }
+  bool ended_newline = false;
+  auto dest = templit.clone();
+  auto content = chain(dest.root.by_name("content"),
+					   dest.root.by_name("div")
+  
+
+  fuck_selectors.has_attr(src.root,"hish").each(&process_root);
+	
+  
+  class Watcher {
   Pid pid;
   bool disabled;
   void get() {
 	if(pid !is null) return;
 	disabled = false;
 	try {
-	  pid = spawnProcess([exe,address]);
+	  pid = spawnProcess([exe,address],
+						 [
+						  "template":"template/chapter.xhtml",
+						  "title": "???"
+						  ]);
 	} catch(ProcessException e) {
 	  disabled = true;
 	}
