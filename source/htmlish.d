@@ -1,4 +1,6 @@
-import std.stdio: File,writeln;
+import print: print;
+
+import std.stdio: File;
 import std.file: rename;
 import std.process: spawnProcess, wait, kill, Pid, ProcessException;
 import std.socket: Socket, UnixAddress,
@@ -26,7 +28,7 @@ class Watcher {
 	socket = new Socket(AddressFamily.UNIX,
 						SocketType.STREAM,
 						ProtocolType.IP);
-	writeln(address);
+	print(address);
 	for(;;) {
 	  try {
 		socket.connect(new UnixAddress(address));
@@ -72,14 +74,14 @@ static this() {
   watcher = new Watcher();
 }
 void make(string src, string dest) {
-	writeln("htmlishhhhh ",dest);
+	print("htmlishhhhh ",dest);
 	File source = File(src,"r");
 	File destination = File(dest~".temp","w");
 	auto socket = watcher.connect();
 	copy(source,socket);
 	socket.shutdown(SocketShutdown.SEND);
-	writeln("Okay, sent it");
+	print("Okay, sent it");
 	copy(socket,destination);
-	writeln("Okay, got it back");
+	print("Okay, got it back");
 	rename(dest~".temp",dest);
 }

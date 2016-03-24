@@ -47,7 +47,7 @@ SysTime reindex(Story story) {
   }
   return maxTime;
   } catch(AssertError e) {
-	writeln(contents.root.outerHTML);
+	print(contents.root.outerHTML);
 	throw e;
   }
 }

@@ -1,9 +1,11 @@
 module makers.birthverse;
+import print: print;
+
 import htmlderp: querySelector;
 import html: createDocument;
 
 import std.file: readText,write;
-import std.stdio: File, writeln;
+import std.stdio: File;
 import std.conv: to;
 import std.string: strip;
 
@@ -44,7 +46,7 @@ void make(string src, string dest) {
 	e.detach();
   }
   write(dest,doc.root.outerHTML);
-  writeln("okie wrote to ",dest);
+  print("okie wrote to",dest);
 }
 
 static this() {

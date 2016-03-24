@@ -1,9 +1,9 @@
 module makers.littlepip;
+import print: print;
 
 import htmlderp: querySelector;
 import html: Document;
 
-import std.stdio: writeln;
 import core.exception: AssertError;
 
 void add_style(ref Document doc) {
@@ -17,7 +17,7 @@ void add_style(ref Document doc) {
 	link.attr("type","text/css");
 	head.appendChild(link);
   } catch(AssertError e) {
-	writeln(doc.root.outerHTML);
+	print(doc.root.outerHTML);
 	throw(e);
   }
 }

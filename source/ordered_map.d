@@ -111,8 +111,8 @@ unittest {
   foo["z"] = 1;
   foo["y"] = 2;
   foo["x"] = 3;
-  import std.stdio: writeln;
+  import print: print;
   foo.keys.front.shouldEqual("x");
-  writeln("keys: ",foo.keys);
-  writeln("both: ",foo);
+  print("keys:",foo.keys);
+  print("both:",foo);
 }
