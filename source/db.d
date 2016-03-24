@@ -147,6 +147,7 @@ Story to_story(backend.Row row) {
 	string title;
 	string description;
 	string modified;
+	string location;
 	int chapters;
   }
   temp t = row.as!temp;
@@ -157,7 +158,6 @@ Story to_story(backend.Row row) {
 				chapters: t.chapters,
 				url: "http://hellifiknow/",
   };
-  print("modified",t.modified,ret.modified);
   return ret;
 }
 
@@ -257,7 +257,6 @@ class Database {
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
 	import print: print;
-	print("derp ran schema");
 	mixin(initialize_statements());
   }
 

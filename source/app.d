@@ -81,7 +81,7 @@ struct Update {
 	}
 	if(modified <= chapter.modified) {
 	  if(exists(dest)) {
-		print("unmodified");
+		print("unmodified",story.title,chapter.which);
 		//setTimes(dest,modified,modified);
 		return;
 	  }
@@ -189,7 +189,7 @@ void check_chapter(SysTime modified,
 	string key = location ~ "/" ~ to!string(which);
 	if(key in updated) continue;
 	updated[key] = true;
-	print(location,which," needs an update!");   
+	print("checking",location,which,"for updates!");   
 	db.Story story;
 	if(location in stories) {
 	  story = stories[location];

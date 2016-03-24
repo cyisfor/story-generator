@@ -32,11 +32,11 @@ SysTime reindex(Story story) {
 
   SysTime maxTime = SysTime(0);
   if(story.chapters == 0) {
+	print("updoot");
 	story.update();
   }
   for(int which=0;which<story.chapters;++which) {
 	auto chapter = story[which];
-	print("hmmm",chapter.id,chapter.modified);
 	maxTime = max(maxTime,chapter.modified);
 	auto link = contents.createElement("a",contents.createElement("li",toc));
 	link.attr("href",chapter_name(which));
@@ -44,7 +44,6 @@ SysTime reindex(Story story) {
   if(auto box = story.location in makers.contents) {
 	(*box)(contents);
   }
-  print("uhhh",maxTime);
   if(story.modified < maxTime) {
 	story.update();
   }
@@ -72,7 +71,7 @@ void reindex(string outdir, Story[string] stories) {
 	maxTime = max(modified,maxTime);
   }
 
-  print(stories.length," at ",maxTime);
+  print(stories.length,"chapters at",maxTime);
   Feed.Params p = {
   title: "Recently Updated",
   url: "./",
