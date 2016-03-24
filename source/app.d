@@ -1,6 +1,6 @@
 static import db;
 
-import std.arrayhax: appender, Appender;
+import std.array: appender, Appender;
 
 import reindex: reindex, chapter_name;
 import std.file: exists;
@@ -47,8 +47,8 @@ struct Update {
 	auto name = chapter_name(which);
 	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
 	if(!exists(markup)) {
-	  if(which + 1 >= story.chapters) {
-		story.set_chapters(which+1);
+	  if(which + 1 < story.chapters) {
+		story.shrink(which+1);
 	  }
 	  return;
 	}
@@ -206,14 +206,14 @@ void check_chapter(SysTime modified,
 	// new chapters at the end need to increase the story's number of
 	// chapters, before performing ANY updates.
 	if(story.chapters <= which) {
-	  // uh oh, new chapter found!
-	  story.set_chapters(which+1);
+	  print("uh oh, new chapter found!",which);
+	  story.chapters = which+1;
 	}
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
 
-	pending_updates.emplace_put(story,modified,which,location,is_hish);
+	pending_updates.emplacePut(story,modified,which,location,is_hish);
   }
 }
 

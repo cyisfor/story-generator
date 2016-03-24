@@ -15,15 +15,17 @@ Socket socket;
 class Watcher {
   Pid pid;
   bool disabled;
-  this() {
+  void get() {
+	if(pid !is null) return;
+	disabled = false;
 	try {
 	  pid = spawnProcess([exe,address]);
-	  disabled = false;
 	} catch(ProcessException e) {
 	  disabled = true;
 	}
   }
   auto connect() {
+	get();
 	assert(!disabled);
 	socket = new Socket(AddressFamily.UNIX,
 						SocketType.STREAM,
@@ -39,8 +41,10 @@ class Watcher {
 	return socket;
   }	  
   ~this() {
-	pid.kill();
-	pid.wait();
+	if(pid !is null) {
+	  pid.kill();
+	  pid.wait();
+	}
   }
 }
 
