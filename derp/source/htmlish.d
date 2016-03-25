@@ -72,7 +72,7 @@ struct Context(NodeType) {
 
 bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
-  import cross.iter: splat, map, filter;
+  import std.algorithm.iteration: splat, map, filter;
   if(text.length == 0) return false;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
