@@ -71,7 +71,7 @@ struct Context(NodeType) {
 		this.e.appendChild(detach(e));
 		sanity_check(this.e);
 	  } else {
-		this.e.insertAfter(detach(e));
+		e.insertBefore(this.e);
 		print("oy",e.html);
 		this.e = e;
 	  }
@@ -145,20 +145,15 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
 
 void process_root(NodeType)(ref Document dest, NodeType root) {
   import std.algorithm.searching: any;
+  import std.algorithm.iteration: cache;
   import print: print;
   print("uhm",root);
   auto ctx = Context!NodeType(&dest,root);
   bool in_paragraph = false;
-  auto e = root.firstChild;
-  while(e.node_) {
-	auto next = e.nextSibling;
-	bool noprev = false;
-	if(next.isNull) {
-	  noprev = true;
-	} else {
-	  next = next.nextSibling;
-	}
+
+  foreach(e;cache(root.children)) {
 	print("hhhhmmm",e.outerHTML);
+
 	if(e.isTextNode) {
 	  sanity_check(ctx.e);
 	  if(process_text(ctx,e.text)) {
@@ -195,9 +190,6 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 	} else {
 	  ctx.next(detach(e));
 	}
-	if(!noprev)
-	  next = next.previousSibling;
-	e = next;
   }
 }
 
@@ -232,19 +224,13 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	}
   } else {
 	// have to replace <content>
-	derp.front.appendText("huhh?");
 	auto derrp = derp.front;
 	content = dest.createElement("div");
 	foreach(e;derrp.children) {
-	  print("boing?",e);
 	  content.appendChild(detach(e));
 	}
-	derrp.insertAfter(detach(content));
-	dest.root.appendChild(content);
-	print("ugh",dest.root.outerHTML);
-	assert(!content.nextSibling.isNull);
+	content.insertBefore(derrp);
 	derrp.detach();
-	content.appendText("foo");
 	print("ugh",dest.root.outerHTML);
   }
 
