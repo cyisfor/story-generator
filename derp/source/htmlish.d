@@ -26,19 +26,19 @@ struct Context(NodeType) {
 	this.e = root;
   }
   void next(NodeType e) {
+	assert(this.e.nextSibling.nextSibling == null);
 	if(!started) {
 	  this.e.appendChild(e);
+	  assert(this.e.lastChild.nextSibling == null);
 	  this.e = e;
 	  started = true;
 	} else {
 	  if(in_paragraph) {
 		this.e.appendChild(e);
+		assert(this.e.lastChild.nextSibling == null);
 	  } else {
-		e.insertBefore(this.e);
+		this.e.insertBefore(e);
 		print("oy",e.html);
-		if(e.html.strip() == "a") {
-		  throw new Exception("oy");
-		}
 		this.e = e;
 	  }
 	}
@@ -62,17 +62,18 @@ struct Context(NodeType) {
 	scope(failure) {
 	  print("failed",e.lastChild.html);
 	}
-	if(this.e.isTextNode) {
-	  this.e.text(this.e.text ~ text);
-	} else {
+	if(this.e.isElementNode) {
 	  this.e.appendText(text);
+	  assert(this.e.lastChild.nextSibling == null);
+	} else {
+	  this.e.text(this.e.text ~ text);
 	}
   }
 }
 
 bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
-  import std.algorithm.iteration: splat, map, filter;
+  import std.algorithm.iteration: splitter, map, filter;
   if(text.length == 0) return false;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
@@ -80,7 +81,7 @@ bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 	ctx.ended_newline = text[$-1] == '\n';
   }
   auto lines = text.strip()
-	.splat('\n')
+	.splitter('\n')
 	.map!"a.strip()"
 	.filter!"a.length > 0";
 	
@@ -136,9 +137,10 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 		  ctx.ended_newline = false;
 		}
 	  }
+	  e.detach();
 	  ctx.next(e);
-	  print("beep");
 	} else {
+	  e.detach();
 	  ctx.next(e);
 	}
 	e = next;
@@ -179,6 +181,7 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	content = dest.createElement("div");
 	foreach(e;derp.front.children) {
 	  e.detach();
+	  assert(e.nextSibling == null);
 	  content.appendChild(e);
 	}
 	derp.front.insertBefore(content);
@@ -187,7 +190,6 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 
   content.html(source);
   process_root(dest,content);
-  print("boop");
   return dest;
 }
 
@@ -206,8 +208,30 @@ unittest {
 	detailedForN: 5,
   };
   backtrace.install(stdout,opts,5);
-  writeln(parse(`hi
+  auto p = parse(`hi
 there
 this
-is <i>a</i> test`).root.html);
+is <i>a</i> test`);
+  print("beep");
+  bool[typeof(p.root)] cycles;
+  foreach(e; p.root.descendants) {
+	if(e in cycles) {
+	  import std.conv: to;
+	  void dump(int indent, typeof(p.root) e) {
+		foreach(ee; e.children) {
+		  import std.stdio;
+		  print(indent,to!string(ee));
+		  if(ee == e) {
+			print("here!");
+			throw new Exception("cycle detected..." ~ to!string(e));
+		  } else {
+			dump(indent+1,ee);
+		  }
+		}
+	  }
+	  dump(0,e);
+	}
+	cycles[e] = true;
   }
+  writeln(p.root.html);
+}
