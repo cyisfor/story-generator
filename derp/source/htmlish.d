@@ -1,11 +1,6 @@
-static import backtrace;
 import print: print;
-import htmlderp: createDocument, querySelector, detach;
+import htmlderp: createDocument, detach;
 import html: Document, HTMLString;
-
-import std.string: strip;
-import std.stdio: File;
-import std.file: rename;
 
 Document default_template;
 static this() {
@@ -35,14 +30,12 @@ struct Context(NodeType) {
 		this.e.appendChild(detach(e));
 	  } else {
 		e.insertBefore(this.e);
-		print("oy",e.html);
 		this.e = e;
 	  }
 	}
   }
   void maybe_start(string where) {
 	if(!in_paragraph) {
-	  print("start",where);
 	  appendText("\n");
 	  next(detach(doc.createElement("p")));
 	  appendText("\n");
@@ -51,7 +44,6 @@ struct Context(NodeType) {
   }
   void maybe_end(string where) {
 	if(in_paragraph) {
-	  print("end",where);		
 	  in_paragraph = false; // defer to next maybe_start
 	}
   }
@@ -62,7 +54,6 @@ struct Context(NodeType) {
 	if(this.e.isElementNode) {
 	  this.e.appendChild(detach(doc.createTextNode(text)));
 	} else {
-	  print("whoop",text);
 	  this.e.text(this.e.text ~ text);
 	}
   }
@@ -84,10 +75,8 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
-  print("begin",lines.front);
   lines.popFront();
   foreach(line; lines) {
-	print("mid",line);
 	// end before start, to leave the last one dangling out there.
 	ctx.maybe_end("middle");
 	ctx.maybe_start("middle");
@@ -100,13 +89,10 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
   import std.algorithm.searching: any;
   import std.algorithm.iteration: cache;
   import print: print;
-  print("uhm",root);
   auto ctx = Context!NodeType(&dest,root);
   bool in_paragraph = false;
 
   foreach(e;cache(root.children)) {
-	print("hhhhmmm",e.outerHTML);
-
 	if(e.isTextNode) {
 	  if(process_text(ctx,e.text)) {
 		e.detach();
@@ -164,7 +150,6 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	if(dsux.empty) {
 	  import print: print;
 	  print("no content found!");
-	  print(dest.root.html);
 	  content = dest.createElement("body");
 	  dest.root.appendChild(detach(content));
 	} else {
@@ -179,7 +164,6 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	}
 	content.insertBefore(derrp);
 	derrp.detach();
-	print("ugh",dest.root.outerHTML);
   }
 
   content.html(source);
@@ -187,10 +171,11 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   return dest;
 }
 
-void make(string src, string dest) {
-  import std.file: readText,write;
+void make(Nullable!Document templit = Nullable!Document())
+  (string src, string dest) {
+  import std.file: readText,write,rename;
   string source = readText(src);
-  (dest~".temp").write(parse(readText(src)).root.html);
+  (dest~".temp").write(parse(readText(src),templit).root.html);
   rename(dest~".temp",dest);
 }
 
@@ -206,6 +191,5 @@ unittest {
 there
 this
 is <i>a</i> test`);
-  print("beep");
   writeln(p.root.html);
 }
