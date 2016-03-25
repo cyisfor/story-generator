@@ -11,4 +11,14 @@
 	"description": "Generate HTML versions of story markup",
 	"copyright": "meh",
 	"license": "whatever",
+	"buildTypes": {
+		"debug": {
+			"buildRequirements": ["allowWarnings"],
+		},
+		"unittest": {
+			"buildOptions": ["unittests","debugInfo","debugMode","alwaysStackFrame"],
+			"buildRequirements": ["allowWarnings"],
+		}
+		
+	}
 }

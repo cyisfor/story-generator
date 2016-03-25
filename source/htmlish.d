@@ -191,44 +191,15 @@ void make(string src, string dest) {
   (dest~".temp").write(parse(readText(src)).root.html);
   rename(dest~".temp",dest);
 }
-version(unittest) {
-  import core.sync.condition: Condition;
-  __gshared Condition cond;
-  __gshared bool failing = false;
+
+unittest {
+  import std.stdio: writeln,stdout;
+  static import backtrace;
   static backtrace.PrintOptions opts = {
 	colored:  true,
 	detailedForN: 5,
   };
-  extern(C) void handle(int sig) @system {
-	import std.stdio: stderr;
-	import print: print;
-	failing = true;
-	cond.notifyAll();
-	print("beep");
-	backtrace.printPrettyTrace(stdout,opts);
-	print("boop");
-  }
-  extern(C) void signal(int,void function(int));
-}
-
-unittest {
-  import core.sync.mutex: Mutex;
-  cond = new Condition(new Mutex());
-
-  import std.stdio: writeln,stdout;
   backtrace.install(stdout,opts,7);
-  import core.thread: Thread;
-  void showerror() {
-	for(;;) {
-	  cond.wait();
-	  if(failing) {
-		backtrace.printPrettyTrace(stdout,opts);
-		throw new Exception("foo");
-	  }
-	}
-  }
-  (new Thread(&showerror)).start();
-  signal(2,&handle);
   writeln(parse(`hi
 there
 this

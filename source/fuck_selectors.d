@@ -1,5 +1,5 @@
 import html: HTMLString;
-import std.algorithm.iteration: filter;
+import iter: filter;
 
 auto for_all(bool depth_first = false,T)(T parent) {
   import std.range: chain;
