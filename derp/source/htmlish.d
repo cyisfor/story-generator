@@ -15,38 +15,6 @@ static this() {
 
 import fuck_selectors: by_name, by_class, by_id;
 
-void sanity_check(T)(T ee) {
-  assert(ee.lastChild.isNull ||
-		 ee.lastChild.nextSibling.isNull,
-		 ee.html);
-  bool[typeof(ee)] cycles;
-  import std.array: appender;
-  auto seen = appender!(typeof(ee)[]);
-  foreach(e; ee.descendants) {
-	if(e in cycles) {
-	  import std.conv: to;
-	  print(seen.data);
-	  throw new Exception(to!string("cycle detected..." ~ to!string(e) ~ "<- " ~ to!string(cycles.keys)));
-	  void dump(int indent, typeof(e) e) {
-		foreach(ee; e.children) {
-		  import std.stdio;
-		  print(indent,to!string(ee));
-		  if(ee == e) {
-			print("here!");
-		  } else {
-			dump(indent+1,ee);
-		  }
-		}
-	  }
-	  dump(0,e);
-	}
-	cycles[e] = true;
-	seen.put(e);
-  }
-
-}
-  
-
 struct Context(NodeType) {
   bool ended_newline;
   bool in_paragraph;
@@ -58,18 +26,13 @@ struct Context(NodeType) {
 	this.e = root;
   }
   void next(NodeType e) {
-	sanity_check(this.e);
-	sanity_check(e);
 	if(!started) {
 	  this.e.appendChild(detach(e));
-	  sanity_check(this.e);
-	  sanity_check(e);
 	  this.e = e;
 	  started = true;
 	} else {
 	  if(in_paragraph) {
 		this.e.appendChild(detach(e));
-		sanity_check(this.e);
 	  } else {
 		e.insertBefore(this.e);
 		print("oy",e.html);
@@ -81,11 +44,8 @@ struct Context(NodeType) {
 	if(!in_paragraph) {
 	  print("start",where);
 	  appendText("\n");
-	  sanity_check(e);
 	  next(detach(doc.createElement("p")));
-	  sanity_check(e);
 	  appendText("\n");
-	  sanity_check(e);
 	  in_paragraph = true;
 	}
   }
@@ -101,11 +61,9 @@ struct Context(NodeType) {
 	}
 	if(this.e.isElementNode) {
 	  this.e.appendChild(detach(doc.createTextNode(text)));
-	  sanity_check(this.e);
 	} else {
 	  print("whoop",text);
 	  this.e.text(this.e.text ~ text);
-	  sanity_check(e);
 	}
   }
 }
@@ -116,7 +74,6 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   if(text.length == 0) return false;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
-	sanity_check(ctx.e);
   } else {
 	ctx.ended_newline = text[$-1] == '\n';
   }
@@ -127,7 +84,6 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
-  sanity_check(ctx.e);
   print("begin",lines.front);
   lines.popFront();
   foreach(line; lines) {
@@ -135,11 +91,8 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
 	// end before start, to leave the last one dangling out there.
 	ctx.maybe_end("middle");
 	ctx.maybe_start("middle");
-	sanity_check(ctx.e);
 	ctx.appendText(line);
-	sanity_check(ctx.e);
   }
-  sanity_check(ctx.e);			
   return true;  
 }
 
@@ -155,13 +108,9 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 	print("hhhhmmm",e.outerHTML);
 
 	if(e.isTextNode) {
-	  sanity_check(ctx.e);
 	  if(process_text(ctx,e.text)) {
-		sanity_check(ctx.e);
 		e.detach();
-	  } else {
-		sanity_check(ctx.e);
-	  }
+	  } 
 	} else if(e.isElementNode) {
 	  bool block_element =
 		any!((a) => a == e.tag)
@@ -177,7 +126,6 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 		   but only if the last text node ended on a newline.
 		   otherwise the last text node and this should be in the same
 		   paragraph */
-		sanity_check(ctx.e);
 		if(ctx.ended_newline) {
 		  import std.format: format;
 		  auto buf = format("wimp tag {{%s}}",e.tag);
