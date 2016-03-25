@@ -12,3 +12,8 @@ auto querySelector(ref html.Document doc, html.HTMLString s) {
 
 alias createDocument =
   html.createDocument!(html.DOMCreateOptions.None);
+
+E detach(E)(E e) {
+  e.detach();
+  return e;
+}

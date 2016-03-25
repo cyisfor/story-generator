@@ -1,9 +1,9 @@
 import html: HTMLString;
-import cross.iter: filter;
+import std.algorithm.iteration: filter;
 
 auto for_all(bool depth_first = false,T)(T parent) {
   import std.range: chain;
-  import cross.iter: map, joiner, filter;
+  import std.algorithm.iteration: map, joiner, filter;
   static if(depth_first) {
 	return chain(map!for_all(parent.children).joiner,[parent]);
   } else {
@@ -12,7 +12,7 @@ auto for_all(bool depth_first = false,T)(T parent) {
 }
 
 auto maybe4all(T)(T mayberange) {
-  import cross.range: isInputRange;
+  import std.range.primitives: isInputRange;
   static if( isInputRange!T ) {
 	return mayberange;
   } else {
@@ -44,7 +44,7 @@ auto has_attr(HTMLString attr,T)(T range) {
 unittest {
   import print: print;
   import std.array: array;
-  import cross.iter: map;
+  import std.algorithm.iteration: map;
   import html: createDocument;
   assert(["a","a","a"] ==
 		 array(createDocument("<a/><a/><a/>")
