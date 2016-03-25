@@ -52,12 +52,22 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   } else {
 	ctx.ended_newline = text[$-1] == '\n';
   }
-  foreach(line; text.strip().splitter('\n')) {
+  auto lines = text.strip()
+	.splitter('\n')
+	.map!"a.strip()"
+	.filter!"a.length > 0";
+  if(lines.empty) return;
+  if(ctx.in_paragraph) {
+	ctx.e.appendText(lines.front);
+	lines.popFront();
+	ctx.maybeEnd("firstline");
+  }
+  foreach(line; lines) {
 	line = line.strip();
 	if(line.length==0) continue;
-	ctx.maybe_start("beginning");
-	ctx.e.text(ctx.e.text ~ line);
-	ctx.maybe_end("beginning");
+	ctx.maybe_start("middle");
+	ctx.e.appendText(line);
+	ctx.maybe_end("middle");
   }
 }
 
@@ -69,6 +79,7 @@ void process_root(NodeType)(Document dest, NodeType root) {
   bool in_paragraph = false;
   foreach(e; root.children) {
 	auto next = e.nextSibling;
+	print("hhhhmmm",e);
 	if(e.isTextNode) {
 	  process_text(ctx,e.text);
 	} else if(e.isElementNode) {
@@ -107,7 +118,7 @@ import std.typecons: Nullable;
 
 auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   import std.algorithm.searching: until;
-  import std.range: chain;
+  import std.range: chain, InputRange;
   import htmlderp: createDocument;
   
   if(templit.isNull) {
@@ -117,20 +128,32 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   auto dest = templit.clone();
   
   // find where we're going to dump this htmlish
-  auto derp = until!"a !is null"
-	(chain(dest.root.by_name!"content",
-		   dest.root.by_name!"div".by_id!"content",
-		   dest.root.by_name!"body"));
+  auto derp = dest.root.by_name!"content";
   typeof(derp.front) content;
   if(derp.empty) {
-	import print: print;
-	print("no content found!");
-	content = dest.createElement("body");
-	dest.root.appendChild(content);
+	auto dsux = chain(dest.root.by_name!"div".by_id!"content",
+					  dest.root.by_name!"body");
+	
+	if(dsux.empty) {
+	  import print: print;
+	  print("no content found!");
+	  print(dest.root.html);
+	  content = dest.createElement("body");
+	  dest.root.appendChild(content);
+	} else {
+	  content = dsux.front;
+	}
   } else {
-	content = derp.front;
+	// have to replace <content>
+	content = dest.createElement("div");
+	foreach(e;derp.front.children) {
+	  e.detach();
+	  content.appendChild(e);
+	}
+	content.insertAfter(derp.front);
+	derp.front.detach();
   }
-  
+
   auto src = createDocument(source);
   assert(src.root);
 
