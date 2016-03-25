@@ -16,37 +16,55 @@ import fuck_selectors: for_all, is_element, by_name, by_class, by_id;
 struct Context(NodeType) {
   bool ended_newline;
   bool in_paragraph;
+  bool started;
   NodeType e;
   Document doc;
   this(Document doc, NodeType root) {
 	this.doc = doc;
-	this.e = root.firstChild;
+	this.e = root;
   }
   void next(NodeType e) {
-	if(in_paragraph) {
+	if(!started) {
 	  this.e.appendChild(e);
-	} else {
 	  this.e = e;
+	  started = true;
+	} else {
+	  if(in_paragraph) {
+		this.e.appendChild(e);
+	  } else {
+		e.insertAfter(this.e);
+		this.e = e;
+	  }
 	}
   }
   void maybe_start(string where) {
 	if(!in_paragraph) {
-	  e.appendText("\n");
+	  print("start",where);
+	  appendText("\n");
 	  next(doc.createElement("p"));
-	  e.appendText("\n");
+	  appendText("\n");
 	  in_paragraph = true;
 	}
   }
   void maybe_end(string where) {
-	if(in_paragraph)
+	if(in_paragraph) {
+	  print("end",where);		
 	  in_paragraph = false; // defer to next maybe_start
+	}
+  }
+  void appendText(HTMLString text) {
+	if(this.e.isTextNode) {
+	  this.e.text(this.e.text ~ text);
+	} else {
+	  this.e.appendText(text);
+	}
   }
 }
 
-void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
+bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
-  import std.algorithm.iteration: splitter, map;
-  if(text.length == 0) return ;
+  import std.algorithm.iteration: splitter, map, filter;
+  if(text.length == 0) return false;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
   } else {
@@ -56,19 +74,19 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 	.splitter('\n')
 	.map!"a.strip()"
 	.filter!"a.length > 0";
-  if(lines.empty) return;
+  if(lines.empty) return false;
   ctx.maybe_start("beginning");
-  ctx.e.appendText(lines.front);
+  ctx.appendText(lines.front);
+  print("begin",lines.front);
   lines.popFront();
   foreach(line; lines) {
-	line = line.strip();
-	if(line.length==0) continue;
+	print("mid",line);
 	// end before start, to leave the last one dangling out there.
 	ctx.maybe_end("middle");
 	ctx.maybe_start("middle");
-	ctx.e.appendText(line);
+	ctx.appendText(line);
   }
-  
+  return true;  
 }
 
 void process_root(NodeType)(Document dest, NodeType root) {
@@ -77,11 +95,14 @@ void process_root(NodeType)(Document dest, NodeType root) {
   print("uhm",root);
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
-  foreach(e; root.children) {
+  auto e = root.firstChild;
+  while(e.node_) {
 	auto next = e.nextSibling;
-	print("hhhhmmm",e);
+	print("hhhhmmm",e.text);
 	if(e.isTextNode) {
-	  process_text(ctx,e.text);
+	  if(process_text(ctx,e.text)) {
+		e.detach();
+	  }
 	} else if(e.isElementNode) {
 	  bool block_element =
 		any!((a) => a == e.tag)
@@ -91,8 +112,6 @@ void process_root(NodeType)(Document dest, NodeType root) {
 		if(e.attr("hish")) {
 		  e.removeAttr("hish");
 		  process_root(dest,e);
-		  e = next;
-		  continue;
 		}
 	  } else {
 		/* start a paragraph if this element is a wimp
