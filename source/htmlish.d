@@ -1,3 +1,4 @@
+static import backtrace;
 import print: print;
 import htmlderp: createDocument, querySelector;
 import html: Document, HTMLString;
@@ -11,15 +12,15 @@ static this() {
   default_template = createDocument(import("template/default.html"));
 }
 
-import fuck_selectors: for_all, is_element, by_name, by_class, by_id;
+import fuck_selectors: by_name, by_class, by_id;
 
 struct Context(NodeType) {
   bool ended_newline;
   bool in_paragraph;
   bool started;
   NodeType e;
-  Document doc;
-  this(Document doc, NodeType root) {
+  Document* doc;
+  this(Document* doc, NodeType root) {
 	this.doc = doc;
 	this.e = root;
   }
@@ -32,7 +33,8 @@ struct Context(NodeType) {
 	  if(in_paragraph) {
 		this.e.appendChild(e);
 	  } else {
-		e.insertAfter(this.e);
+		e.insertBefore(this.e);
+		print("oy",e.html);
 		this.e = e;
 	  }
 	}
@@ -53,6 +55,9 @@ struct Context(NodeType) {
 	}
   }
   void appendText(HTMLString text) {
+	scope(failure) {
+	  print("failed",e.lastChild.html);
+	}
 	if(this.e.isTextNode) {
 	  this.e.text(this.e.text ~ text);
 	} else {
@@ -74,6 +79,7 @@ bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 	.splitter('\n')
 	.map!"a.strip()"
 	.filter!"a.length > 0";
+	
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
@@ -89,11 +95,11 @@ bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   return true;  
 }
 
-void process_root(NodeType)(Document dest, NodeType root) {
+void process_root(NodeType)(ref Document dest, NodeType root) {
   import std.algorithm.searching: any;
   import print: print;
   print("uhm",root);
-  auto ctx = Context!NodeType(dest,root);
+  auto ctx = Context!NodeType(&dest,root);
   bool in_paragraph = false;
   auto e = root.firstChild;
   while(e.node_) {
@@ -126,6 +132,7 @@ void process_root(NodeType)(Document dest, NodeType root) {
 		  ctx.ended_newline = false;
 		}
 	  }
+	  ctx.next(e);
 	} else {
 	  ctx.next(e);
 	}
@@ -169,12 +176,9 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	  e.detach();
 	  content.appendChild(e);
 	}
-	content.insertAfter(derp.front);
+	derp.front.insertBefore(content);
 	derp.front.detach();
   }
-
-  auto src = createDocument(source);
-  assert(src.root);
 
   content.html(source);
   process_root(dest,content);
@@ -189,7 +193,21 @@ void make(string src, string dest) {
 }
 
 unittest {
-  import std.stdio: writeln;
+  import std.stdio: writeln,stdout;
+  immutable backtrace.PrintOptions opts = {
+	colored:  true,
+	detailedForN: 5,
+  };
+  backtrace.install(stdout,opts,7);
+  import core.sys.posix.signal: signal;
+  import core.sys.posix.stdlib: exit;
+  extern(C) void handle(int sig) {
+	import std.stdio: stdout;
+	static import backtrace;
+	backtrace.printPrettyTrace(stdout,opts);
+	exit(23);
+  }
+  signal(2,&handle);
   writeln(parse(`hi
 there
 this

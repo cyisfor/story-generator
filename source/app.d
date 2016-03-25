@@ -30,7 +30,7 @@ struct Update {
 	import html: Document;
 	import std.file: write, mkdir, timeLastModified, readText;
 	import std.path: buildPath;
-	
+
 	void smackdir(string p) {
 	  try {
 		mkdir(p);
@@ -43,7 +43,7 @@ struct Update {
 	} else {
 	  ext = ".txt";
 	}
-	
+
 	auto name = chapter_name(which);
 	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
 	if(!exists(markup)) {
@@ -87,7 +87,7 @@ struct Update {
 	  }
 	  // always update if dest is gone
 	}
-	
+
 	auto base = buildPath(basedir,name ~ ".html");
 	make(markup,base);
 	Document doc = createDocument
@@ -153,7 +153,7 @@ void check_chapter(SysTime modified, string spath) {
   if(path.length != 3) return;
   //  location / markup / chapterxx.xx
   if(path[1] != "markup") return;
-  
+
   check_chapter(modified, to!string(path[0]),
 				findSplitBefore(to!string(path[path.length-1]),".").expand);
 }
@@ -177,9 +177,9 @@ void check_chapter(SysTime modified,
 
   bool is_hish = ext == ".hish";
   if(!(ext == ".txt" || is_hish)) return;
-	
+
   string derp = name["chapter".length..name.length];
-  if(!isNumeric(derp)) return;  
+  if(!isNumeric(derp)) return;
   int which = to!int(derp) - 1;
 
   if(!exists(location)) return;
@@ -189,7 +189,7 @@ void check_chapter(SysTime modified,
 	string key = location ~ "/" ~ to!string(which);
 	if(key in updated) continue;
 	updated[key] = true;
-	print("checking",location,which,"for updates!");   
+	print("checking",location,which,"for updates!");
 	db.Story story;
 	if(location in stories) {
 	  story = stories[location];
@@ -248,7 +248,7 @@ void check_chapters_for(string location) {
   import std.file: dirEntries,
 		  FileException, SpanMode, timeLastModified;
   import std.path: buildPath;
-  
+
   string top = buildPath(location,"markup");
   foreach(string spath; dirEntries(top,SpanMode.shallow)) {
 	check_chapter(timeLastModified(spath),spath);

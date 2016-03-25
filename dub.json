@@ -5,9 +5,21 @@
 	],
 	"dependencies": {
 		"htmld": "~>0.2.13",		
-		"d2sqlite3": "~>0.9.7"
+		"d2sqlite3": "~>0.9.7",
+		"backtrace-d": "~>0.1.0",
 	},
 	"description": "Generate HTML versions of story markup",
 	"copyright": "meh",
 	"license": "whatever",
+	"buildTypes": {
+		"debug": {
+			"buildOptions": ["debugMode","debugInfo","alwaysStackFrame"],
+			"buildRequirements": ["allowWarnings"],
+		},
+		"unittest": {
+			"buildOptions": ["unittests","debugMode","debugInfo","alwaysStackFrame"],
+			"buildRequirements": ["allowWarnings"],
+		}
+		
+	}
 }

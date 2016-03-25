@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"backtrace-d": "0.1.0",
 		"d2sqlite3": "0.9.7",
 		"htmld": "0.2.13+commit.22.gedfbc81",
 		"unit-threaded": "0.6.5"
