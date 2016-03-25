@@ -57,18 +57,18 @@ void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 	.map!"a.strip()"
 	.filter!"a.length > 0";
   if(lines.empty) return;
-  if(ctx.in_paragraph) {
-	ctx.e.appendText(lines.front);
-	lines.popFront();
-	ctx.maybeEnd("firstline");
-  }
+  ctx.maybe_start("beginning");
+  ctx.e.appendText(lines.front);
+  lines.popFront();
   foreach(line; lines) {
 	line = line.strip();
 	if(line.length==0) continue;
+	// end before start, to leave the last one dangling out there.
+	ctx.maybe_end("middle");
 	ctx.maybe_start("middle");
 	ctx.e.appendText(line);
-	ctx.maybe_end("middle");
   }
+  
 }
 
 void process_root(NodeType)(Document dest, NodeType root) {
