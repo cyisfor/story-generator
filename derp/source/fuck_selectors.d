@@ -12,7 +12,7 @@ auto for_all(bool depth_first = false,T)(T parent) {
 }
 
 auto maybe4all(T)(T mayberange) {
-  import cross.range: isInputRange;
+  import std.range.primitives: isInputRange;
   static if( isInputRange!T ) {
 	return mayberange;
   } else {
