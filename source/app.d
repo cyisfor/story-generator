@@ -12,6 +12,17 @@ import std.algorithm: move;
 
 db.Story[string] stories;
 
+void delegate(string,string) default_make_chapter;
+
+static this() {
+  import html: Document;
+  import htmlderp: createDocument;
+  static import htmlish;
+		
+  Document chapter = createDocument(import("template/chapter.xhtml"));
+  default_make_chapter = htmlish.make(chapter);
+}
+
 struct Update {
   @disable this(this);
   db.Story story;
@@ -64,9 +75,7 @@ struct Update {
 		print("found maker at ",location);
 		return *box;
 	  } else {
-		static import htmlish;
-
-		return &htmlish.make;
+		return default_make_chapter;
 	  }
 	}
 	auto make = herpaderp();

@@ -171,15 +171,20 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   return dest;
 }
 
-void make(string src, string dest, (Nullable!Document templit = Nullable!Document())) {
+void make(string src, string dest, Nullable!Document templit = Nullable!Document()) {
   import std.file: readText,write,rename;
   string source = readText(src);
   (dest~".temp").write(parse(readText(src),templit).root.html);
   rename(dest~".temp",dest);
 }
 
-void make(Nullable!Document templit = Nullable!Document()) =>
-  (string src, string dest) => make(src,dest,templit);
+auto make(Nullable!Document templit = Nullable!Document()) {
+  return (string src, string dest) => make(src,dest,templit);
+}
+
+auto make(Document templit) {
+  return make(Nullable!Document(templit));
+}
 
 unittest {
   import std.stdio: writeln,stdout;

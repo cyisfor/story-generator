@@ -24,6 +24,7 @@ void add_style(ref Document doc) {
 
 static this() {
   static import makers;
-  makers.contents["littlepip"] = &add_style;
-  makers.chapter["littlepip"] = &add_style;
+  import std.functional: toDelegate;
+  makers.contents["littlepip"] = toDelegate(&add_style);
+  makers.chapter["littlepip"] = toDelegate(&add_style);
 }

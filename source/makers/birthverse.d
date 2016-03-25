@@ -51,5 +51,6 @@ void make(string src, string dest) {
 
 static this() {
   static import makers;
-  makers.make["birthverse"] = &make;
+  import std.functional: toDelegate;
+  makers.make["birthverse"] = toDelegate(&make);
 }
