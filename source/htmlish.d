@@ -3,6 +3,7 @@ import print: print;
 import htmlderp: createDocument, querySelector;
 import html: Document, HTMLString;
 
+import std.string: strip;
 import std.stdio: File;
 import std.file: rename;
 
@@ -35,6 +36,9 @@ struct Context(NodeType) {
 	  } else {
 		e.insertBefore(this.e);
 		print("oy",e.html);
+		if(e.html.strip() == "a") {
+		  throw new Exception("oy");
+		}
 		this.e = e;
 	  }
 	}
@@ -68,7 +72,7 @@ struct Context(NodeType) {
 
 bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
-  import std.algorithm.iteration: splitter, map, filter;
+  import cross.iter: splat, map, filter;
   if(text.length == 0) return false;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
@@ -76,7 +80,7 @@ bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 	ctx.ended_newline = text[$-1] == '\n';
   }
   auto lines = text.strip()
-	.splitter('\n')
+	.splat('\n')
 	.map!"a.strip()"
 	.filter!"a.length > 0";
 	
@@ -96,7 +100,7 @@ bool process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
 }
 
 void process_root(NodeType)(ref Document dest, NodeType root) {
-  import std.algorithm.searching: any;
+  import cross.searching: any;
   import print: print;
   print("uhm",root);
   auto ctx = Context!NodeType(&dest,root);
@@ -133,6 +137,7 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 		}
 	  }
 	  ctx.next(e);
+	  print("beep");
 	} else {
 	  ctx.next(e);
 	}
@@ -143,7 +148,7 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 import std.typecons: Nullable;
 
 auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
-  import std.algorithm.searching: until;
+  import cross.searching: until;
   import std.range: chain, InputRange;
   import htmlderp: createDocument;
   
@@ -199,7 +204,7 @@ unittest {
 	colored:  true,
 	detailedForN: 5,
   };
-  backtrace.install(stdout,opts,7);
+  backtrace.install(stdout,opts,5);
   writeln(parse(`hi
 there
 this
