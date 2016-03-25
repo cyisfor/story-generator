@@ -1,0 +1,12 @@
+{
+	"name": "derp",
+	"authors": [
+		"user"
+	],
+	"dependencies": {
+		"htmld": "~>0.2.13"
+	},
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2016, user",
+	"license": "proprietary"
+}
