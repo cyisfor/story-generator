@@ -15,5 +15,6 @@ alias createDocument =
 
 E detach(E)(E e) {
   e.detach();
+  assert(e.nextSibling.isNull);
   return e;
 }

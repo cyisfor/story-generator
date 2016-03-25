@@ -16,8 +16,8 @@ static this() {
 import fuck_selectors: by_name, by_class, by_id;
 
 void sanity_check(T)(T ee) {
-  assert(ee.lastChild == null ||
-		 ee.lastChild.nextSibling == null,
+  assert(ee.lastChild.isNull ||
+		 ee.lastChild.nextSibling.isNull,
 		 ee.html);
   bool[typeof(ee)] cycles;
   import std.array: appender;
@@ -61,19 +61,17 @@ struct Context(NodeType) {
 	sanity_check(this.e);
 	sanity_check(e);
 	if(!started) {
-	  e.detach();
-	  this.e.appendChild(e);
+	  this.e.appendChild(detach(e));
 	  sanity_check(this.e);
 	  sanity_check(e);
 	  this.e = e;
 	  started = true;
 	} else {
 	  if(in_paragraph) {
-		e.detach();
-		this.e.appendChild(e);
+		this.e.appendChild(detach(e));
 		sanity_check(this.e);
 	  } else {
-		this.e.insertBefore(e);
+		this.e.insertAfter(detach(e));
 		print("oy",e.html);
 		this.e = e;
 	  }
@@ -84,7 +82,7 @@ struct Context(NodeType) {
 	  print("start",where);
 	  appendText("\n");
 	  sanity_check(e);
-	  next(doc.createElement("p"));
+	  next(detach(doc.createElement("p")));
 	  sanity_check(e);
 	  appendText("\n");
 	  sanity_check(e);
@@ -154,6 +152,12 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
   auto e = root.firstChild;
   while(e.node_) {
 	auto next = e.nextSibling;
+	bool noprev = false;
+	if(next.isNull) {
+	  noprev = true;
+	} else {
+	  next = next.nextSibling;
+	}
 	print("hhhhmmm",e.outerHTML);
 	if(e.isTextNode) {
 	  sanity_check(ctx.e);
@@ -187,12 +191,12 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 		  ctx.ended_newline = false;
 		}
 	  }
-	  e.detach();
-	  ctx.next(e);
+	  ctx.next(detach(e));
 	} else {
-	  e.detach();
-	  ctx.next(e);
+	  ctx.next(detach(e));
 	}
+	if(!noprev)
+	  next = next.previousSibling;
 	e = next;
   }
 }
@@ -222,21 +226,26 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	  print("no content found!");
 	  print(dest.root.html);
 	  content = dest.createElement("body");
-	  content.detach();
-	  dest.root.appendChild(content);
+	  dest.root.appendChild(detach(content));
 	} else {
 	  content = dsux.front;
 	}
   } else {
 	// have to replace <content>
+	derp.front.appendText("huhh?");
+	auto derrp = derp.front;
 	content = dest.createElement("div");
-	foreach(e;derp.front.children) {
-	  e.detach();
-	  assert(e.nextSibling == null);
-	  content.appendChild(e);
+	foreach(e;derrp.children) {
+	  print("boing?",e);
+	  content.appendChild(detach(e));
 	}
-	derp.front.insertBefore(content);
-	derp.front.detach();
+	derrp.insertAfter(detach(content));
+	dest.root.appendChild(content);
+	print("ugh",dest.root.outerHTML);
+	assert(!content.nextSibling.isNull);
+	derrp.detach();
+	content.appendText("foo");
+	print("ugh",dest.root.outerHTML);
   }
 
   content.html(source);
