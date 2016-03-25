@@ -45,7 +45,7 @@ struct Context(NodeType) {
 
 void process_text(NodeType)(Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
-  import std.algorithm.iteration: splitter;
+  import std.algorithm.iteration: splitter, map;
   if(text.length == 0) return ;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
