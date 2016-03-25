@@ -9,5 +9,16 @@
 	},
 	"description": "A minimal D application.",
 	"copyright": "Copyright © 2016, user",
-	"license": "proprietary"
+	"license": "",
+	        "buildTypes": {
+                "debug": {
+                        "buildRequirements": ["allowWarnings"],
+                },
+                "unittest": {
+                        "buildOptions": ["unittests","debugInfo","debugMode","alwaysStackFrame"],
+                        "buildRequirements": ["allowWarnings"],
+                }
+                
+        }
+
 }

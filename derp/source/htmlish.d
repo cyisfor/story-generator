@@ -1,6 +1,6 @@
 static import backtrace;
 import print: print;
-import htmlderp: createDocument, querySelector;
+import htmlderp: createDocument, querySelector, detach;
 import html: Document, HTMLString;
 
 import std.string: strip;
@@ -15,21 +15,24 @@ static this() {
 
 import fuck_selectors: by_name, by_class, by_id;
 
-void sanity_check(T)(T e) {
-  assert(e.lastChild == null ||
-		 e.lastChild.nextSibling == null,
-		 e.html);
-  bool[typeof(p.root)] cycles;
-  foreach(e; p.root.descendants) {
+void sanity_check(T)(T ee) {
+  assert(ee.lastChild == null ||
+		 ee.lastChild.nextSibling == null,
+		 ee.html);
+  bool[typeof(ee)] cycles;
+  import std.array: appender;
+  auto seen = appender!(typeof(ee)[]);
+  foreach(e; ee.descendants) {
 	if(e in cycles) {
 	  import std.conv: to;
-	  void dump(int indent, typeof(p.root) e) {
+	  print(seen.data);
+	  throw new Exception(to!string("cycle detected..." ~ to!string(e) ~ "<- " ~ to!string(cycles.keys)));
+	  void dump(int indent, typeof(e) e) {
 		foreach(ee; e.children) {
 		  import std.stdio;
 		  print(indent,to!string(ee));
 		  if(ee == e) {
 			print("here!");
-			throw new Exception("cycle detected..." ~ to!string(e));
 		  } else {
 			dump(indent+1,ee);
 		  }
@@ -38,6 +41,7 @@ void sanity_check(T)(T e) {
 	  dump(0,e);
 	}
 	cycles[e] = true;
+	seen.put(e);
   }
 
 }
@@ -57,12 +61,15 @@ struct Context(NodeType) {
 	sanity_check(this.e);
 	sanity_check(e);
 	if(!started) {
+	  e.detach();
 	  this.e.appendChild(e);
 	  sanity_check(this.e);
+	  sanity_check(e);
 	  this.e = e;
 	  started = true;
 	} else {
 	  if(in_paragraph) {
+		e.detach();
 		this.e.appendChild(e);
 		sanity_check(this.e);
 	  } else {
@@ -95,7 +102,7 @@ struct Context(NodeType) {
 	  print("failed",e.lastChild.html);
 	}
 	if(this.e.isElementNode) {
-	  this.e.appendText(text);
+	  this.e.appendChild(detach(doc.createTextNode(text)));
 	  sanity_check(this.e);
 	} else {
 	  print("whoop",text);
@@ -215,6 +222,7 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
 	  print("no content found!");
 	  print(dest.root.html);
 	  content = dest.createElement("body");
+	  content.detach();
 	  dest.root.appendChild(content);
 	} else {
 	  content = dsux.front;
