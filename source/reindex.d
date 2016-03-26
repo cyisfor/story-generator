@@ -6,6 +6,8 @@ import db : Story, Chapter;
 static import db;
 import makers;
 
+import html: Document;
+
 import std.file : setTimes;
 import std.path : buildPath;
 
@@ -32,9 +34,12 @@ static this() {
 	contents = createDocument(import("template/contents.xhtml"));
 }
 
-SysTime reindex(Story story) {
+SysTime reindex(string outdir, Story story) {
+		static import htmlish;
+		import std.algorithm.mutation: move;
+		Document doc = htmlish.parse!"description"(story.description,contents);
 	try {
-		auto toc = querySelector(contents, "#toc");
+		auto toc = querySelector(doc, "#toc");
 
 		SysTime maxTime = SysTime(0);
 		if (story.chapters == 0) {
@@ -44,20 +49,27 @@ SysTime reindex(Story story) {
 		for (int which = 0; which < story.chapters; ++which) {
 			auto chapter = story[which];
 			maxTime = max(maxTime, chapter.modified);
-			auto link = contents.createElement("a",
-					contents.createElement("li", toc));
+			auto link = doc.createElement("a",
+					doc.createElement("li", toc));
 			link.attr("href", chapter_name(which));
 		}
 		if (auto box = story.location in makers.contents) {
-			(*box)(contents);
+			(*box)(doc);
 		}
 		if (story.modified < maxTime) {
 			story.update();
 		}
+		import std.file: write;
+		print("uhhhh",outdir);
+		try {
+			buildPath(outdir,"doc.html").write(doc.root.html);
+		} catch(Exception e) {
+			print("uhhhh",outdir);
+		}
 		return maxTime;
 	}
 	catch (AssertError e) {
-		print(contents.root.outerHTML);
+		print(doc.root.outerHTML);
 		throw e;
 	}
 }
@@ -76,7 +88,7 @@ void reindex(string outdir, Story[string] stories) {
 	foreach (Story story; sorted) {
 		print("story", story.location, story.modified);
 		assert(story.location);
-		SysTime modified = reindex(story);
+		SysTime modified = reindex(outdir, story);
 		setTimes(story.location, modified, modified);
 		maxTime = max(modified, maxTime);
 	}

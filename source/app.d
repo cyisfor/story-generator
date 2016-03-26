@@ -1,3 +1,13 @@
+static this() {
+	static import backtrace;
+	import std.stdio: stdout;
+	backtrace.PrintOptions options = {
+		colored: true,
+		detailedForN: 5,
+	};
+	backtrace.install(stdout,options);
+}
+
 static import db;
 
 import std.array: appender, Appender;
@@ -249,7 +259,7 @@ void main(string[] args)
 	}
 	check_git_log(args);
 	perform_updates();
-	reindex(".",stories);
+	reindex("html",stories);
 	print("dunZ");
 }
 

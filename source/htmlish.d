@@ -129,7 +129,9 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
 
 import std.typecons: Nullable;
 
-auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
+auto parse(string ident = "content")
+	(HTMLString source, 
+		Nullable!Document templit = Nullable!Document()) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
   import htmlderp: createDocument;
@@ -141,10 +143,10 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   auto dest = templit.clone();
   
   // find where we're going to dump this htmlish
-  auto derp = dest.root.by_name!"content";
+  auto derp = dest.root.by_name!(ident);
   typeof(derp.front) content;
   if(derp.empty) {
-	auto dsux = chain(dest.root.by_name!"div".by_id!"content",
+	auto dsux = chain(dest.root.by_id!(ident),
 					  dest.root.by_name!"body");
 	
 	if(dsux.empty) {
@@ -169,6 +171,12 @@ auto parse(HTMLString source, Nullable!Document templit = Nullable!Document()) {
   content.html(source);
   process_root(dest,content);
   return dest;
+}
+
+auto parse(string ident = "content")
+	(HTMLString source, 
+		Document templit) {
+	return parse!ident(source,Nullable!Document(templit));
 }
 
 void make(string src, string dest, Nullable!Document templit = Nullable!Document()) {
