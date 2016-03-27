@@ -19,7 +19,7 @@ class Feed {
   struct Params {
 	string title;
 	string url;
-	string feed_url;
+	string name;
 	string id;
 	string content;
 	string author;
@@ -31,6 +31,7 @@ class Feed {
   typeof(doc.root) feed;
 
   this(Params params) {
+	assert(params.url[$] == '/');
 	this.p = params;
 	doc = createDocument(`<feed xmlns="http://www.w3.org/2005/Atom"/>`);
 	feed = doc.root;
@@ -41,7 +42,7 @@ class Feed {
 	link.attr("href", p.url);
 	link.attr("rel", "alternate");
 	link = doc.createElement("link",feed);
-	link.attr("href", p.feed_url);
+	link.attr("href", p.url ~ p.name);
 	link.attr("rel", "self");
 	doc.createElement("updated",feed).appendText(encode_date(p.updated));
   }
@@ -56,7 +57,7 @@ class Feed {
 	return entry;
   }
   void put(Story story) {
-	auto entry = start_out(story.url);
+	auto entry = start_out(p.url~story.location);
 	if(story.description != null) {
 	  auto content = doc.createElement("content",entry);
 	  content.html = story.description;
@@ -66,8 +67,10 @@ class Feed {
   }
 
   void put(Chapter chapter) {
-	auto entry = start_out(chapter.story.url ~ "/chapter" ~
-						   to!string(chapter.which));
+	auto entry = start_out(p.url
+						   ~ chapter.story.location
+						   ~ "/chapter"
+						   ~ to!string(chapter.which));
 	if(chapter.first_words != null) {
 	  auto content = doc.createElement("content",entry);
 	  content.html = chapter.first_words;

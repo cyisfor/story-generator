@@ -80,7 +80,7 @@ SysTime reindex(string outdir, Story story) {
 	}
 }
 
-void reindex(string outdir, Story*[string] stories) {
+void reindex(string outdir, Story[string] stories) {
 	SysTime maxTime = SysTime(0);
 	if (stories.length == 0) {
 		print("no stories to update?");
@@ -91,9 +91,9 @@ void reindex(string outdir, Story*[string] stories) {
 	import std.algorithm.iteration: map;
 
 	auto sorted = make!
-	  (RedBlackTree!(Story*,
+	  (RedBlackTree!(Story,
 					 "a.modified < b.modified", true))
-	  (map!((auto ref story) => &story)(stories.byValue));
+	  (stories.byValue);
 	foreach (Story story; sorted) {
 		print("story", story.location, story.modified);
 		assert(story.location);
@@ -106,8 +106,8 @@ void reindex(string outdir, Story*[string] stories) {
 	//dfmt off
 	Feed.Params p = {
 		title: "Recently Updated",
-		url: "./",
-		feed_url: "updates.atom",
+		url: "http://[fcd9:e703:498e:5d07:e5fc:d525:80a6:a51c]/stories/",
+		name: "updates.atom",
 		id: "updated-derp-etc",
 		content: "Recently Updated Stories",
 		author: "Skybrook",

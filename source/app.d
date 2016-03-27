@@ -186,14 +186,14 @@ void check_chapter(SysTime modified,
 					string location,
 					string name,
 					string ext) {
-	import std.string : isNumeric;
-	version(GNU) {
+  import std.string : isNumeric;
+  version(GNU) {
 	import std.algorithm: startsWith, endsWith;
-	} else {
+  } else {
 	import std.algorithm.searching: startsWith, endsWith;
-	}
+  }
 
- if(!name.startsWith("chapter")) return;
+  if(!name.startsWith("chapter")) return;
 
 	bool is_hish = ext == ".hish";
 	if(!(ext == ".txt" || is_hish)) return;

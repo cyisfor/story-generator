@@ -19,7 +19,7 @@ struct Chapter {
   string title;
   SysTime modified;
   string first_words;
-  Database* db;
+  Database db;
   Story story;
   int which;
   void remove() {
@@ -81,7 +81,7 @@ SysTime parse_mytimestamp(string timestamp) {
 }
   
 Chapter to_chapter(backend.Row row,
-				   Database* db, Story story, int which) {
+				   Database db, Story story, int which) {
   import std.conv: to;
   struct temp {
 	string id;
@@ -104,8 +104,7 @@ Chapter to_chapter(backend.Row row,
 
 
 class Story {
-  @disable this(this);
-  struct Params {
+  static struct Params {
 	long id;
 	string title;
 	string description;
@@ -113,13 +112,12 @@ class Story {
 	string location;
 	int chapters;
   };
-  this(Params p, Database* db) {
+  this(Params p, Database db) {
 	id = p.id;
 	title = p.title;
 	description = p.description;
 	modified = parse_mytimestamp(p.modified);
 	chapters = p.chapters;
-	url = p.url;
 	db = db;
   }  
 
@@ -128,23 +126,22 @@ class Story {
   string description;
   int chapters;
   SysTime modified;
-  Database* db;
+  Database db;
   string location;
-  string url;
   Chapter[int] cache;
   alias opIndex = get_chapter!false;
 
   Chapter* get_chapter(bool create = true)(int which) {
 	if(!(which in cache)) {
 	  db.find_chapter.bindAll(id, which);
-	  auto rset = db.find_chapter.execute();
 	  scope(exit) db.find_chapter.reset();
+	  auto rset = db.find_chapter.execute();
 	  if(rset.empty) {
 		db.insert_chapter.inject(which, id);
 		db.find_chapter.reset();
 		rset = db.find_chapter.execute();
 	  }
-	  cache[which] = rset.front.to_chapter(db,&this,which);
+	  cache[which] = rset.front.to_chapter(db,this,which);
 	}
 	return &cache[which];
   }
@@ -182,11 +179,10 @@ class Story {
   }
 };
 
-Story to_story(backend.Row row, Database* db) {
+Story to_story(backend.Row row, Database db) {
   import std.conv: to;
 
-  Story.Params t = row.as!temp;
-  return new Story(t,db)
+  return new Story(row.as!(Story.Params),db);
 }
 
 string readToDot() {
@@ -305,7 +301,7 @@ class Database {
 	}
   }
 
-  void get_info(backend.Statement stmt) {
+  void get_info(ref backend.Statement stmt) {
 	write("Title: ");
 	stmt.bind(2,readln().strip());
 	writeln("Description: (end with a dot)");
@@ -328,13 +324,13 @@ class Database {
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
-	Story s = rows.front.to_story(&this);
+	Story s = rows.front.to_story(this);
 	check_for_desc(s);
 	return s;
   }
 
   auto latest() {
-	return map!((row) => to_story(row,&this))
+	return map!((auto ref row) => to_story(row,this))
 	  (latest_stories.execute());
   }
 }
