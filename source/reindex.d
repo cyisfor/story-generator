@@ -37,9 +37,11 @@ static this() {
 SysTime reindex(string outdir, Story story) {
 		static import htmlish;
 		import std.algorithm.mutation: move;
-		Document doc = htmlish.parse!"description"(story.description,contents);
+		Document* doc = htmlish.parse!"description"(story.description,contents);
+		print("errr",doc,&contents);
+		print("errrdocument should be",doc.root.document_,contents.root.document_);
 	try {
-		auto toc = querySelector(doc, "#toc");
+		auto toc = querySelector(*doc, "#toc");
 
 		SysTime maxTime = SysTime(0);
 		if (story.chapters == 0) {

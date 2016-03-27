@@ -1,4 +1,6 @@
 import print: print;
+import std.conv: to;
+import std.algorithm.mutation: move;
 import htmlderp: createDocument, detach;
 import html: Document, HTMLString;
 
@@ -127,20 +129,21 @@ void process_root(NodeType)(ref Document dest, NodeType root) {
   }
 }
 
-import std.typecons: Nullable;
+import std.typecons: NullableRef;
 
-auto parse(string ident = "content")
+auto ref parse(string ident = "content")
 	(HTMLString source, 
-		Nullable!Document templit = Nullable!Document()) {
+		ref NullableRef!Document templit) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
   import htmlderp: createDocument;
   
   if(templit.isNull) {
-	templit = default_template;
+	templit.bind(&default_template);
   }
 
   auto dest = templit.clone();
+  assert(dest.root.document_ == &dest,to!string(&dest));
   
   // find where we're going to dump this htmlish
   auto derp = dest.root.by_name!(ident);
@@ -170,28 +173,37 @@ auto parse(string ident = "content")
 
   content.html(source);
   process_root(dest,content);
-  return dest;
+  assert(dest.root.document_ == &dest,to!string(&dest));
+  return move(dest);
 }
 
-auto parse(string ident = "content")
+auto ref parse(string ident = "content")
 	(HTMLString source, 
 		Document templit) {
-	return parse!ident(source,Nullable!Document(templit));
+	return parse!ident(source,NullableRef!Document(&templit));
 }
 
-void make(string src, string dest, Nullable!Document templit = Nullable!Document()) {
+auto ref parse(string ident = "content")
+	(HTMLString source) {
+	return parse!ident(source,NullableRef!Document(&default_template));
+}
+
+void make(string src, string dest, NullableRef!Document templit = NullableRef!Document()) {
   import std.file: readText,write,rename;
   string source = readText(src);
   (dest~".temp").write(parse(readText(src),templit).root.html);
   rename(dest~".temp",dest);
 }
 
-auto make(Nullable!Document templit = Nullable!Document()) {
-  return (string src, string dest) => make(src,dest,templit);
+auto make(NullableRef!Document templit) {
+	void derp(string src, string dest) {
+		make(src,dest,templit);
+	}
+	return &derp;
 }
 
-auto make(Document templit) {
-  return make(Nullable!Document(templit));
+auto make(ref Document templit) {
+  return make(NullableRef!Document(&templit));
 }
 
 unittest {

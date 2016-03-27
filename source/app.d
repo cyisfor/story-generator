@@ -25,12 +25,11 @@ db.Story[string] stories;
 void delegate(string,string) default_make_chapter;
 
 static this() {
-	import html: Document;
 	import htmlderp: createDocument;
 	static import htmlish;
 		
-	Document chapter = createDocument(import("template/chapter.xhtml"));
-	default_make_chapter = htmlish.make(chapter);
+	default_make_chapter = htmlish.make
+	  (createDocument(import("template/chapter.xhtml"));
 }
 
 struct Update {
@@ -48,7 +47,6 @@ struct Update {
 	import makers;
 	static import nada = makers.birthverse;
 	static import nada2 = makers.littlepip;
-	import html: Document;
 	import std.file: write, mkdir, timeLastModified, readText;
 	import std.path: buildPath;
 
@@ -109,7 +107,7 @@ struct Update {
 
 	auto base = buildPath(basedir,name ~ ".html");
 	make(markup,base);
-	Document doc = createDocument
+	auto doc = createDocument
 		(readText(buildPath(basedir,
 							chapter_name(chapter.which) ~
 							".html")));
