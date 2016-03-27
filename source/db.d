@@ -20,7 +20,7 @@ struct Chapter {
   SysTime modified;
   string first_words;
   Database* db;
-  Story* story;
+  Story story;
   int which;
   void remove() {
 	story.remove(which);
@@ -81,7 +81,7 @@ SysTime parse_mytimestamp(string timestamp) {
 }
   
 Chapter to_chapter(backend.Row row,
-				   Database* db, Story* story, int which) {
+				   Database* db, Story story, int which) {
   import std.conv: to;
   struct temp {
 	string id;
@@ -103,8 +103,26 @@ Chapter to_chapter(backend.Row row,
 }
 
 
-struct Story {
-    @disable this(this);
+class Story {
+  @disable this(this);
+  struct Params {
+	long id;
+	string title;
+	string description;
+	string modified;
+	string location;
+	int chapters;
+  };
+  this(Params p, Database* db) {
+	id = p.id;
+	title = p.title;
+	description = p.description;
+	modified = parse_mytimestamp(p.modified);
+	chapters = p.chapters;
+	url = p.url;
+	db = db;
+  }  
+
   long id;
   string title;
   string description;
@@ -116,7 +134,7 @@ struct Story {
   Chapter[int] cache;
   alias opIndex = get_chapter!false;
 
-  ref Chapter* get_chapter(bool create = true)(int which) {
+  Chapter* get_chapter(bool create = true)(int which) {
 	if(!(which in cache)) {
 	  db.find_chapter.bindAll(id, which);
 	  auto rset = db.find_chapter.execute();
@@ -166,24 +184,9 @@ struct Story {
 
 Story to_story(backend.Row row, Database* db) {
   import std.conv: to;
-  struct temp {
-	long id;
-	string title;
-	string description;
-	string modified;
-	string location;
-	int chapters;
-  }
-  temp t = row.as!temp;
-  Story ret = { id: t.id,
-				title: t.title,
-				description: t.description,
-				modified: parse_mytimestamp(t.modified),
-				chapters: t.chapters,
-				url: "http://hellifiknow/",
-				db: db
-  };
-  return ret;
+
+  Story.Params t = row.as!temp;
+  return new Story(t,db)
 }
 
 string readToDot() {
@@ -288,7 +291,7 @@ class Database {
 	mixin(initialize_statements());
   }
 
-  void check_for_desc(Story story) {
+  void check_for_desc(ref Story story) {
 	string title = null;
 	string description = null;
 	if(exists(buildPath(story.location,"title"))) {
@@ -325,7 +328,7 @@ class Database {
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
-	Story s = to_story(rows.front,&this);
+	Story s = rows.front.to_story(&this);
 	check_for_desc(s);
 	return s;
   }

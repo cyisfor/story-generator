@@ -80,7 +80,7 @@ SysTime reindex(string outdir, Story story) {
 	}
 }
 
-void reindex(string outdir, Story[string] stories) {
+void reindex(string outdir, Story*[string] stories) {
 	SysTime maxTime = SysTime(0);
 	if (stories.length == 0) {
 		print("no stories to update?");
@@ -88,9 +88,12 @@ void reindex(string outdir, Story[string] stories) {
 	}
 	import std.container.rbtree : RedBlackTree;
 	import std.container.util : make;
+	import std.algorithm.iteration: map;
 
-	auto sorted = make!(RedBlackTree!(Story, "a.modified < b.modified", true))(
-			stories.values);
+	auto sorted = make!
+	  (RedBlackTree!(Story*,
+					 "a.modified < b.modified", true))
+	  (map!((auto ref story) => &story)(stories.byValue));
 	foreach (Story story; sorted) {
 		print("story", story.location, story.modified);
 		assert(story.location);

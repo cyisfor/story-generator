@@ -34,7 +34,7 @@ static this() {
 
 struct Update {
 	@disable this(this);
-	db.Story story;
+	db.Story* story;
 	SysTime modified;
 	int which;
 	string location;
@@ -156,7 +156,7 @@ struct Update {
 
 	setTimes(dest,modified,modified);
 	string chapterTitle = to!string(querySelector(doc,"title").text);
-	story[which].update(modified, which, chapterTitle);
+	(*story)[which].update(modified, which, chapterTitle);
 	}
 }
 
