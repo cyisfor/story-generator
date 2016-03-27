@@ -14,12 +14,13 @@ import std.string: strip;
 import std.array: join, appender;
 
 struct Chapter {
+  @disable this(this);
   long id;
   string title;
   SysTime modified;
   string first_words;
   Database* db;
-  Story story;
+  Story* story;
   int which;
   void remove() {
 	story.remove(which);
@@ -79,15 +80,15 @@ SysTime parse_mytimestamp(string timestamp) {
   }
 }
   
-Chapter to_chapter(ref backend.Row row,
-				   backend.Database* db, Story* story, int which) {
+Chapter to_chapter(backend.Row row,
+				   Database* db, Story* story, int which) {
   import std.conv: to;
   struct temp {
 	string id;
 	string title;
 	string modified;
 	string first_words;
-  };
+  }
   temp t = row.as!temp;
 
   Chapter ret = { id: to!long(t.id),
@@ -96,13 +97,14 @@ Chapter to_chapter(ref backend.Row row,
 				  first_words: t.first_words,
 				  db: db,
 				  story: story,
-				  which: which;
+				  which: which
   };
   return ret;
 }
 
 
 struct Story {
+    @disable this(this);
   long id;
   string title;
   string description;
@@ -111,24 +113,22 @@ struct Story {
   Database* db;
   string location;
   string url;
-  Chapter[int] chapters;
+  Chapter[int] cache;
   alias opIndex = get_chapter!false;
 
-  Chapter ref get_chapter(bool create = true)(int which) {
-	if(!which in chapters) {
+  ref Chapter* get_chapter(bool create = true)(int which) {
+	if(!(which in cache)) {
 	  db.find_chapter.bindAll(id, which);
-	auto rset = db.find_chapter.execute();
-	scope(exit) db.find_chapter.reset();
-	if(rset.empty) {
-	  db.insert_chapter.inject(which, id);
-	  db.find_chapter.reset();
-	  rset = db.find_chapter.execute();
+	  auto rset = db.find_chapter.execute();
+	  scope(exit) db.find_chapter.reset();
+	  if(rset.empty) {
+		db.insert_chapter.inject(which, id);
+		db.find_chapter.reset();
+		rset = db.find_chapter.execute();
+	  }
+	  cache[which] = rset.front.to_chapter(db,&this,which);
 	}
-	  if(chapters.length <= which)
-		chapters.length = which;
-	  chapters[which] = rset.front.to_chapter(db,story,which);
-	}
-	return chapters[which];
+	return &cache[which];
   }
   
   void remove(int which) {
@@ -164,7 +164,7 @@ struct Story {
   }
 };
 
-Story to_story(ref backend.Row row, backend.Database* db) {
+Story to_story(backend.Row row, Database* db) {
   import std.conv: to;
   struct temp {
 	long id;
@@ -325,13 +325,13 @@ class Database {
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
-	Story story = rows.front.to_story(&this);
-	check_for_desc(story);
-	return story;
+	Story s = to_story(rows.front,&this);
+	check_for_desc(s);
+	return s;
   }
 
   auto latest() {
-	return map!(to_story)
+	return map!((row) => to_story(row,&this))
 	  (latest_stories.execute());
   }
 }

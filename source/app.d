@@ -210,14 +210,14 @@ void check_chapter(SysTime modified,
 	if(key in updated) continue;
 	updated[key] = true;
 	print("checking",location,which,"for updates!");
-	db.Story story;
+	db.Story* story;
 	if(location in stories) {
-		story = stories[location];
+		story = &stories[location];
 	} else {
-		story = db.story(location);
-		story.location = location;
-		assert(story.location);
-		stories[location] = story;
+	  stories[location] = db.story(location);
+	  story = &stories[location];
+	  story.location = location;
+	  assert(story.location);
 	}
 	// new chapters at the end, we need to increase the story's number of
 	// chapters, before performing ANY updates.
