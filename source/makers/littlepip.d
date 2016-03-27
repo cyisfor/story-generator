@@ -6,7 +6,7 @@ import html: Document;
 
 import core.exception: AssertError;
 
-void add_style(ref Document doc) {
+void add_style(Document* doc) {
   try {
 	auto link = doc.createElement("link");
 	auto head = querySelector(doc, "head");

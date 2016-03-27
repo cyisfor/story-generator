@@ -29,7 +29,7 @@ string chapter_name(int which) {
 	return "chapter" ~ to!string(which + 1);
 }
 
-Document contents;
+Document* contents;
 static this() {
 	contents = createDocument(import("template/contents.xhtml"));
 }
@@ -41,7 +41,7 @@ SysTime reindex(string outdir, Story story) {
 		print("errr",doc,&contents);
 		print("errrdocument should be",doc.root.document_,contents.root.document_);
 	try {
-		auto toc = querySelector(*doc, "#toc");
+		auto toc = querySelector(doc, "#toc");
 
 		SysTime maxTime = SysTime(0);
 		if (story.chapters == 0) {
@@ -62,12 +62,8 @@ SysTime reindex(string outdir, Story story) {
 			story.update();
 		}
 		import std.file: write;
-		print("uhhhh",outdir);
-		try {
-			buildPath(outdir,"doc.html").write(doc.root.html);
-		} catch(Exception e) {
-			print("uhhhh",outdir);
-		}
+		buildPath(outdir,story.location,"contents.html")
+		  .write(doc.root.html);
 		return maxTime;
 	}
 	catch (AssertError e) {

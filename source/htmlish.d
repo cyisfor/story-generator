@@ -4,7 +4,7 @@ import std.algorithm.mutation: move;
 import htmlderp: createDocument, detach;
 import html: Document, HTMLString;
 
-Document default_template;
+Document* default_template;
 static this() {
   // one to be there at compile time j/i/c
   default_template = createDocument(import("template/default.html"));
@@ -87,11 +87,11 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   return true;  
 }
 
-void process_root(NodeType)(ref Document dest, NodeType root) {
+void process_root(NodeType)(Document* dest, NodeType root) {
   import std.algorithm.searching: any;
   import std.algorithm.iteration: cache;
   import print: print;
-  auto ctx = Context!NodeType(&dest,root);
+  auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
   foreach(e;cache(root.children)) {
@@ -133,17 +133,17 @@ import std.typecons: NullableRef;
 
 auto ref parse(string ident = "content")
 	(HTMLString source, 
-		ref NullableRef!Document templit) {
+	 Document* templit = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
   import htmlderp: createDocument;
   
-  if(templit.isNull) {
-	templit.bind(&default_template);
+  if(templit == null) {
+	templit = default_template;
   }
 
   auto dest = templit.clone();
-  assert(dest.root.document_ == &dest,to!string(&dest));
+  assert(dest.root.document_ == dest,to!string(dest));
   
   // find where we're going to dump this htmlish
   auto derp = dest.root.by_name!(ident);
@@ -173,37 +173,22 @@ auto ref parse(string ident = "content")
 
   content.html(source);
   process_root(dest,content);
-  assert(dest.root.document_ == &dest,to!string(&dest));
+  assert(dest.root.document_ == dest,to!string(dest));
   return move(dest);
 }
 
-auto ref parse(string ident = "content")
-	(HTMLString source, 
-		Document templit) {
-	return parse!ident(source,NullableRef!Document(&templit));
-}
-
-auto ref parse(string ident = "content")
-	(HTMLString source) {
-	return parse!ident(source,NullableRef!Document(&default_template));
-}
-
-void make(string src, string dest, NullableRef!Document templit = NullableRef!Document()) {
+void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;
   string source = readText(src);
   (dest~".temp").write(parse(readText(src),templit).root.html);
   rename(dest~".temp",dest);
 }
 
-auto make(NullableRef!Document templit) {
+auto make(Document* templit) {
 	void derp(string src, string dest) {
 		make(src,dest,templit);
 	}
 	return &derp;
-}
-
-auto make(ref Document templit) {
-  return make(NullableRef!Document(&templit));
 }
 
 unittest {

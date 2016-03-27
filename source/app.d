@@ -29,7 +29,7 @@ static this() {
 	static import htmlish;
 		
 	default_make_chapter = htmlish.make
-	  (createDocument(import("template/chapter.xhtml"));
+	  (createDocument(import("template/chapter.xhtml")));
 }
 
 struct Update {

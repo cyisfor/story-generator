@@ -27,7 +27,7 @@ class Feed {
   }
   Params p;
 
-  Document doc;
+  Document* doc;
   typeof(doc.root) feed;
 
   this(Params params) {
