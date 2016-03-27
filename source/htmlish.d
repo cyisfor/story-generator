@@ -31,7 +31,7 @@ struct Context(NodeType) {
 	  if(in_paragraph) {
 		this.e.appendChild(detach(e));
 	  } else {
-		e.insertBefore(this.e);
+		e.insertAfter(this.e);
 		this.e = e;
 	  }
 	}
@@ -131,7 +131,7 @@ void process_root(NodeType)(Document* dest, NodeType root) {
 
 import std.typecons: NullableRef;
 
-auto ref parse(string ident = "content")
+auto ref parse(string ident = "content",bool replace=false)
 	(HTMLString source, 
 	 Document* templit = null) {
   import std.algorithm.searching: until;
@@ -167,12 +167,20 @@ auto ref parse(string ident = "content")
 	foreach(e;derrp.children) {
 	  content.appendChild(detach(e));
 	}
-	content.insertBefore(derrp);
+	content.insertAfter(derrp);
 	derrp.detach();
   }
 
   content.html(source);
   process_root(dest,content);
+  if(replace) {
+	while(content.firstChild) {
+	  auto c = content.firstChild;
+	  c.detach();
+	  c.insertBefore(content);
+	}
+	content.detach();
+  }
   assert(dest.root.document_ == dest,to!string(dest));
   return move(dest);
 }

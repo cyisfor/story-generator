@@ -37,6 +37,9 @@ static this() {
 SysTime reindex(string outdir, Story story) {
 		static import htmlish;
 		import std.algorithm.mutation: move;
+		if(story.description == null) {
+		  story.edit();
+		}
 		Document* doc = htmlish.parse!"description"(story.description,contents);
 		print("errr",doc,&contents);
 		print("errrdocument should be",doc.root.document_,contents.root.document_);
@@ -53,7 +56,12 @@ SysTime reindex(string outdir, Story story) {
 			maxTime = max(maxTime, chapter.modified);
 			auto link = doc.createElement("a",
 					doc.createElement("li", toc));
-			link.attr("href", chapter_name(which));
+			link.attr("href", chapter_name(which)~".html");
+			if(chapter.title.length==0) {
+			  link.appendText("(untitled)");
+			} else {
+			  link.appendText(chapter.title);
+			}
 		}
 		if (auto box = story.location in makers.contents) {
 			(*box)(doc);

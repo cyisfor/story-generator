@@ -245,6 +245,12 @@ void main(string[] args)
 	db.open();
 	scope(exit) db.close();
 
+	if(auto location = getenv("edit")) {
+	  db.story(to!string(location)).edit();
+	  print("Edited");
+	  return;
+	}
+
 	pending_updates = appender!(Update[]);
 	if(getenv("story")) {
 	only_location = to!string(getenv("story"));

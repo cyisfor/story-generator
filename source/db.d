@@ -138,6 +138,16 @@ struct Story {
 	formatValue(sink,title,fmt);
 	sink(")");
   }
+
+  void edit() {
+	import std.stdio: writeln;
+	writeln("Title: ",title);
+	writeln(description);
+	db.edit_story.bind(1,id);
+	db.get_info(db.edit_story);
+	db.edit_story.execute();
+	db.edit_story.reset();
+  }
 };
 
 Story to_story(backend.Row row) {
@@ -202,6 +212,9 @@ WHERE id = ?`},
   {q{insert_story},
    "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
 
+  {q{edit_story},
+   "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
+  
   {q{find_chapter},
    "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
   
@@ -274,6 +287,13 @@ class Database {
 	}
   }
 
+  void get_info(backend.Statement stmt) {
+	write("Title: ");
+	stmt.bind(2,readln().strip());
+	writeln("Description: (end with a dot)");
+	stmt.bind(3,readToDot());
+  }
+
   Story story(string location) {
 	find_story.bind(1,location);
 	auto rows = find_story.execute();
@@ -286,10 +306,7 @@ class Database {
 	  }
 	  insert_story.bind(1,location);
 	  writeln(location);
-	  write("Title: ");
-	  insert_story.bind(2,readln().strip());
-	  writeln("Description: (end with a dot)");
-	  insert_story.bind(3,readToDot());
+	  get_info(insert_story);
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
