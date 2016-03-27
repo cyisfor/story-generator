@@ -88,7 +88,8 @@ struct Update {
 	}
 	auto make = herpaderp();
 
-	auto chapter = story[which];
+	print("creating cahpter",which,markup);
+	auto chapter = story.get_chapter(which);
 	string outdir = buildPath("html",location);
 	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
 
@@ -149,6 +150,8 @@ struct Update {
 	smackdir("html");
 	smackdir(outdir);
 	print("writing to ",outdir,"/",chapter_name(chapter.which));
+	print(doc);
+	print(doc.root.document_);
 	write(dest,doc.root.html);
 
 	setTimes(dest,modified,modified);

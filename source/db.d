@@ -12,12 +12,13 @@ import std.path: buildPath;
 import std.stdio: writeln,readln,write;
 import std.string: strip;
 import std.array: join, appender;
+
 struct Chapter {
   long id;
   string title;
   SysTime modified;
   string first_words;
-  Database db;
+  Database* db;
   Story story;
   int which;
   void remove() {
@@ -29,9 +30,12 @@ struct Chapter {
   }
   void update(SysTime modified, int which, string title) {
 	this.which = which;
+	import std.stdio;
+	writeln("foop",modified.toISOExtString());
+	if(title is null) { title = "???"; }
 	db.update_chapter.inject(title,modified.toISOExtString(),which,story.id);
   }
-}
+};
 
 SysTime parse_mytimestamp(string timestamp) {
   import std.conv: to;
@@ -75,20 +79,24 @@ SysTime parse_mytimestamp(string timestamp) {
   }
 }
   
-Chapter to_chapter(backend.Row row) {
+Chapter to_chapter(ref backend.Row row,
+				   backend.Database* db, Story* story, int which) {
   import std.conv: to;
   struct temp {
 	string id;
 	string title;
 	string modified;
 	string first_words;
-  }
+  };
   temp t = row.as!temp;
 
   Chapter ret = { id: to!long(t.id),
 				  title: t.title,
 				  modified: parse_mytimestamp(t.modified),
-				  first_words: t.first_words
+				  first_words: t.first_words,
+				  db: db,
+				  story: story,
+				  which: which;
   };
   return ret;
 }
@@ -100,23 +108,29 @@ struct Story {
   string description;
   int chapters;
   SysTime modified;
-  Database db;
+  Database* db;
   string location;
   string url;
-  Chapter opIndex(int which) {
-	db.find_chapter.bindAll(id, which);
+  Chapter[int] chapters;
+  alias opIndex = get_chapter!false;
+
+  Chapter ref get_chapter(bool create = true)(int which) {
+	if(!which in chapters) {
+	  db.find_chapter.bindAll(id, which);
 	auto rset = db.find_chapter.execute();
+	scope(exit) db.find_chapter.reset();
 	if(rset.empty) {
 	  db.insert_chapter.inject(which, id);
+	  db.find_chapter.reset();
 	  rset = db.find_chapter.execute();
 	}
-	Chapter ret = rset.front.to_chapter();
-	db.find_chapter.reset();
-	ret.db = db;
-	ret.story = this;
-	ret.which = which;
-	return ret;
+	  if(chapters.length <= which)
+		chapters.length = which;
+	  chapters[which] = rset.front.to_chapter(db,story,which);
+	}
+	return chapters[which];
   }
+  
   void remove(int which) {
 	db.delete_chapter.inject(which,id);
 	update();
@@ -150,7 +164,7 @@ struct Story {
   }
 };
 
-Story to_story(backend.Row row) {
+Story to_story(ref backend.Row row, backend.Database* db) {
   import std.conv: to;
   struct temp {
 	long id;
@@ -167,6 +181,7 @@ Story to_story(backend.Row row) {
 				modified: parse_mytimestamp(t.modified),
 				chapters: t.chapters,
 				url: "http://hellifiknow/",
+				db: db
   };
   return ret;
 }
@@ -310,8 +325,7 @@ class Database {
 	  insert_story.execute();
 	  rows = find_story.execute();
 	}
-	Story story = rows.front.to_story();
-	story.db = this;
+	Story story = rows.front.to_story(&this);
 	check_for_desc(story);
 	return story;
   }
@@ -337,6 +351,7 @@ auto latest() {
 
 void close() {
   db.close();
+  db = null;
 }
 
 
