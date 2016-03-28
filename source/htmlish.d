@@ -87,6 +87,53 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   return true;
 }
 
+auto cacheForward(int n = 2, Range)(Range r) {
+  import std.range: ElementType;
+  struct CacheForward {
+	@disable this(this);
+	ElementType!Range[n] cache;
+	int put = 0;
+	int get = 0;
+	bool full = false;
+	void initialize() {
+	  while(!r.empty) {
+		print("cache!");
+		cache[put] = r.front;
+		r.popFront();
+		++put;
+		if(put == n) {
+		  put = 0;
+		  full = true;
+		  break;
+		}
+	  }
+	}
+	bool empty() {
+	  return !full && put == get;
+	}
+	typeof(r.front()) front() {
+	  return cache[get];
+	}
+	void popFront() {
+	  assert(full || put != get);
+	  get = (get + 1) % n;
+	  if(r.empty) {
+		full = false;
+	  } else {
+		// never not full since we put for every get
+		// until the underlying range is empty
+		cache[put] = r.front;
+		r.popFront();
+		put = (put + 1) % n;
+	  }
+	}
+  }
+  CacheForward ret;
+  ret.initialize();
+  return ret;
+}
+	  
+
 void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
   import std.algorithm.searching: any;
   import std.algorithm.iteration: cache;
@@ -94,7 +141,8 @@ void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
-  auto derp = cache(root.children);
+  auto derp = cacheForward!2(root.children);
+  print("uhm derp",derp.get,derp.put, derp.empty);
   foreach(e;derp) {
 	if(e.isTextNode) {
 	  if(process_text(ctx,e.text)) {
@@ -190,6 +238,7 @@ auto ref parse(string ident = "content",bool replace=false)
   }
 
   content.html(source);
+  print("okay, process");
   process_root(dest,content, head);
   if(replace) {
 	while(content.firstChild) {
@@ -205,6 +254,7 @@ auto ref parse(string ident = "content",bool replace=false)
 void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;
   string source = readText(src);
+  print("make",dest);
   (dest~".temp").write(parse(readText(src),templit).root.html);
   rename(dest~".temp",dest);
 }
