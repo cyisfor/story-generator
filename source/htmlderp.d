@@ -13,8 +13,10 @@ auto ref querySelector(html.Document* doc, html.HTMLString s) {
   return res.front;
 }
 
-alias createDocument =
-  html.createDocument!(html.DOMCreateOptions.None);
+auto createDocument(html.HTMLString source) {
+  // no verbose entities in my utf-8 please
+  return html.createDocument!(html.DOMCreateOptions.None)(source);
+}
 
 E detach(E)(E e) {
   e.detach();

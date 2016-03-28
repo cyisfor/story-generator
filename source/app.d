@@ -78,17 +78,16 @@ struct Update {
 	basedir = buildPath(basedir,location);
 	smackdir(basedir);
 	auto herpaderp() {
-		auto box = location in makers.make;
-		if(box) {
+	  if(auto box = location in makers.make) {
 		print("found maker at ",location);
 		return *box;
-		} else {
+	  } else {
 		return default_make_chapter;
-		}
+	  }
 	}
 	auto make = herpaderp();
 
-	print("creating cahpter",which,markup);
+	print("creating cahpter",which,markup,story);
 	auto chapter = story.get_chapter(which);
 	string outdir = buildPath("html",location);
 	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");

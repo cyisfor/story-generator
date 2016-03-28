@@ -272,9 +272,22 @@ string initialize_statements() {
   return ret;
 }
 
+struct OneShot {
+  backend.Statement stmt;
+  auto opCall() {
+	auto ret = stmt.execute();
+	stmt.reset();
+	return ret;
+  }
+}
+	  
 class Database {
   backend.Database db;
   mixin(declare_statements());
+
+  OneShot begin;
+  OneShot commit;
+  OneShot rollback;
   
   void close() {
 	mixin(finalize_statements());
@@ -285,6 +298,9 @@ class Database {
 	db.run(import("schema.sql"));
 	import print: print;
 	mixin(initialize_statements());
+	begin.stmt = db.prepare("BEGIN");
+	commit.stmt = db.prepare("COMMIT");
+	rollback.stmt = db.prepare("ROLLBACK");
   }
 
   void check_for_desc(ref Story story) {
@@ -358,10 +374,10 @@ struct Transaction {
   bool committed;
   ~this() {
 	if(!committed) 
-	  db.db.rollback();
+	  db.rollback();
   }
   void commit() {
-	db.db.commit();
+	db.commit();
 	committed = true;
   }
 };
@@ -369,7 +385,7 @@ struct Transaction {
 Transaction transaction() {
   Transaction t;
   t.committed = false;
-  db.db.begin();
+  db.begin();
   return t;
 }
 
