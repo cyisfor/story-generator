@@ -118,7 +118,7 @@ class Story {
 	description = p.description;
 	modified = parse_mytimestamp(p.modified);
 	chapters = p.chapters;
-	db = db;
+	this.db = db;
   }  
 
   long id;
@@ -132,9 +132,8 @@ class Story {
   alias opIndex = get_chapter!false;
 
   Chapter* get_chapter(bool create = true)(int which) {
-	if(!(which in cache)) {
+	{//if(!(which in cache)) {
 	  db.find_chapter.bindAll(id, which);
-	  scope(exit) db.find_chapter.reset();
 	  auto rset = db.find_chapter.execute();
 	  if(rset.empty) {
 		db.insert_chapter.inject(which, id);
@@ -142,6 +141,7 @@ class Story {
 		rset = db.find_chapter.execute();
 	  }
 	  cache[which] = rset.front.to_chapter(db,this,which);
+	  db.find_chapter.reset();
 	}
 	return &cache[which];
   }
@@ -154,8 +154,9 @@ class Story {
   void update() {
 	db.update_story.inject(id);
 	db.num_story_chapters.bindAll(id);
-	scope(exit) db.num_story_chapters.reset();
+	
 	chapters = db.num_story_chapters.execute().front.peek!int(0);
+	db.num_story_chapters.reset();
   }
 
   // SIGH
@@ -327,20 +328,16 @@ class Database {
   Story story(string location) {
 	find_story.bind(1,location);
 	auto rows = find_story.execute();
-	scope(exit) {
-	  find_story.reset();
-	}
 	if(rows.empty) {
-	  scope(exit) {
-		insert_story.reset();
-	  }
 	  insert_story.bind(1,location);
 	  writeln(location);
 	  get_info(insert_story);
 	  insert_story.execute();
+	  insert_story.reset();
 	  rows = find_story.execute();
 	}
 	Story s = rows.front.to_story(this);
+	find_story.reset();
 	check_for_desc(s);
 	return s;
   }

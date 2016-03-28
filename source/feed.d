@@ -31,7 +31,7 @@ class Feed {
   typeof(doc.root) feed;
 
   this(Params params) {
-	assert(params.url[$] == '/');
+	assert(params.url[$-1] == '/');
 	this.p = params;
 	doc = createDocument(`<feed xmlns="http://www.w3.org/2005/Atom"/>`);
 	feed = doc.root;

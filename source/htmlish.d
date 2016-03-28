@@ -39,7 +39,7 @@ struct Context(NodeType) {
   void maybe_start(string where) {
 	if(!in_paragraph) {
 	  appendText("\n");
-	  next(detach(doc.createElement("p")));
+	  next(doc.createElement("p"));
 	  appendText("\n");
 	  in_paragraph = true;
 	}
@@ -54,7 +54,7 @@ struct Context(NodeType) {
 	  print("failed",e.lastChild.html);
 	}
 	if(this.e.isElementNode) {
-	  this.e.appendChild(detach(doc.createTextNode(text)));
+	  this.e.appendChild(doc.createTextNode(text));
 	} else {
 	  this.e.text(this.e.text ~ text);
 	}
@@ -84,22 +84,38 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
 	ctx.maybe_start("middle");
 	ctx.appendText(line);
   }
-  return true;  
+  return true;
 }
 
-void process_root(NodeType)(Document* dest, NodeType root) {
+void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
   import std.algorithm.searching: any;
   import std.algorithm.iteration: cache;
   import print: print;
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
-  foreach(e;cache(root.children)) {
+  auto derp = cache(root.children);
+  foreach(e;derp) {
 	if(e.isTextNode) {
 	  if(process_text(ctx,e.text)) {
 		e.detach();
-	  } 
+	  }
 	} else if(e.isElementNode) {
+	  bool head_element =
+		any!((a) => a == e.tag)
+		(["title","meta","link","style","script"]);
+	  if(head_element) {
+		print("head",e.tag);
+		e.detach();
+		if(e.tag == "title") {
+		  // no two titles!
+		  foreach(tit; head.children) {
+			if(tit.tag == "title")
+			  tit.detach();
+		  }
+		}
+		head.appendChild(e);
+	  }
 	  bool block_element =
 		any!((a) => a == e.tag)
 		(["ul","ol","p","div","table","blockquote"]);
@@ -107,7 +123,7 @@ void process_root(NodeType)(Document* dest, NodeType root) {
 		ctx.maybe_end("block");
 		if(e.attr("hish")) {
 		  e.removeAttr("hish");
-		  process_root(dest,e);
+		  process_root(dest,e, head);
 		}
 	  } else {
 		/* start a paragraph if this element is a wimp
@@ -122,28 +138,31 @@ void process_root(NodeType)(Document* dest, NodeType root) {
 		  ctx.ended_newline = false;
 		}
 	  }
-	  ctx.next(detach(e));
+	  ctx.next(e);
 	} else {
-	  ctx.next(detach(e));
+	  ctx.next(e);
 	}
+	print("bip",derp.front,derp.empty);
   }
 }
 
 import std.typecons: NullableRef;
 
 auto ref parse(string ident = "content",bool replace=false)
-	(HTMLString source, 
+	(HTMLString source,
 	 Document* templit = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
   import htmlderp: createDocument;
-  
+
   if(templit == null) {
 	templit = default_template;
   }
 
   auto dest = templit.clone();
   assert(dest.root.document_ == dest,to!string(dest));
+
+  auto head = dest.root.by_name!"head".front;
   
   // find where we're going to dump this htmlish
   auto derp = dest.root.by_name!(ident);
@@ -151,12 +170,12 @@ auto ref parse(string ident = "content",bool replace=false)
   if(derp.empty) {
 	auto dsux = chain(dest.root.by_id!(ident),
 					  dest.root.by_name!"body");
-	
+
 	if(dsux.empty) {
 	  import print: print;
 	  print("no content found!");
 	  content = dest.createElement("body");
-	  dest.root.appendChild(detach(content));
+	  dest.root.appendChild(content);
 	} else {
 	  content = dsux.front;
 	}
@@ -167,17 +186,15 @@ auto ref parse(string ident = "content",bool replace=false)
 	foreach(e;derrp.children) {
 	  content.appendChild(detach(e));
 	}
-	content.insertAfter(derrp);
-	derrp.detach();
+	content.insertAfter(detach(derrp));
   }
 
   content.html(source);
-  process_root(dest,content);
+  process_root(dest,content, head);
   if(replace) {
 	while(content.firstChild) {
 	  auto c = content.firstChild;
-	  c.detach();
-	  c.insertBefore(content);
+	  detach(c).insertBefore(content);
 	}
 	content.detach();
   }
