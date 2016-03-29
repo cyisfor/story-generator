@@ -15,6 +15,8 @@ import std.array: appender, Appender;
 import reindex: reindex, chapter_name;
 import std.file: exists;
 
+import html: createDocument;
+
 import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
@@ -25,7 +27,6 @@ db.Story[string] stories;
 void delegate(string,string) default_make_chapter;
 
 static this() {
-	import htmlderp: createDocument;
 	static import htmlish;
 		
 	default_make_chapter = htmlish.make
@@ -43,7 +44,7 @@ struct Update {
 	auto transaction = db.transaction();
 	scope(success) transaction.commit();
 	import std.file: setTimes;
-	import htmlderp: querySelector, createDocument;
+	import htmlderp: querySelector;
 	import makers;
 	static import nada = makers.birthverse;
 	static import nada2 = makers.littlepip;

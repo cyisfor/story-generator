@@ -1,8 +1,8 @@
 import print: print;
 import std.conv: to;
 import std.algorithm.mutation: move;
-import htmlderp: createDocument, detach;
-import html: Document, HTMLString;
+import htmlderp: detach;
+import html: Document, HTMLString, createDocument;
 
 Document* default_template;
 static this() {
@@ -54,7 +54,9 @@ struct Context(NodeType) {
 	  print("failed",e.lastChild.html);
 	}
 	if(this.e.isElementNode) {
-	  this.e.appendChild(doc.createTextNode(text));
+	  print("uhm",text);
+	  this.e.html(this.e.html ~ text);
+	  print(e.html);
 	} else {
 	  this.e.text(this.e.text ~ text);
 	}
@@ -91,6 +93,7 @@ auto cacheForward(int n = 2, Range)(Range r) {
   import std.range: ElementType;
   struct CacheForward {
 	@disable this(this);
+	Range r;
 	ElementType!Range[n] cache;
 	int put = 0;
 	int get = 0;
@@ -107,8 +110,10 @@ auto cacheForward(int n = 2, Range)(Range r) {
 		  break;
 		}
 	  }
+	  print("mteee",r.empty);
 	}
 	bool empty() {
+	  print("mt?",!full && put == get);
 	  return !full && put == get;
 	}
 	typeof(r.front()) front() {
@@ -125,10 +130,15 @@ auto cacheForward(int n = 2, Range)(Range r) {
 		cache[put] = r.front;
 		r.popFront();
 		put = (put + 1) % n;
+		print("pop?",r.empty);
+		if(!r.empty) print(r.front);
 	  }
+	  print("put/get after pop",put,get,n,!full,put==get);
 	}
   }
-  CacheForward ret;
+  CacheForward ret = {
+	r = r
+  };
   ret.initialize();
   return ret;
 }
@@ -136,14 +146,12 @@ auto cacheForward(int n = 2, Range)(Range r) {
 
 void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
   import std.algorithm.searching: any;
-  import std.algorithm.iteration: cache;
+  import std.array: array;  
   import print: print;
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
-  auto derp = cacheForward!2(root.children);
-  print("uhm derp",derp.get,derp.put, derp.empty);
-  foreach(e;derp) {
+  foreach(e;array(root.children)) {
 	if(e.isTextNode) {
 	  if(process_text(ctx,e.text)) {
 		e.detach();
@@ -190,7 +198,6 @@ void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
 	} else {
 	  ctx.next(e);
 	}
-	print("bip",derp.front,derp.empty);
   }
 }
 
@@ -201,7 +208,6 @@ auto ref parse(string ident = "content",bool replace=false)
 	 Document* templit = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
-  import htmlderp: createDocument;
 
   if(templit == null) {
 	templit = default_template;

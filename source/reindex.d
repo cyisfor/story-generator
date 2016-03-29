@@ -1,12 +1,12 @@
 import print : print;
-import htmlderp : querySelector, createDocument;
+import htmlderp : querySelector;
 import feed : Feed;
 import db : Story, Chapter;
 
 static import db;
 import makers;
 
-import html: Document;
+import html: Document, createDocument;
 
 import std.file : setTimes;
 import std.path : buildPath;
