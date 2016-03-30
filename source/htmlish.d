@@ -1,7 +1,7 @@
 import print: print;
 import std.conv: to;
 import std.algorithm.mutation: move;
-import htmlderp: detach;
+import htmlderp: detach, print_with_cycles;
 import html: Document, HTMLString, createDocument;
 
 Document* default_template;
@@ -266,11 +266,36 @@ auto ref parse(string ident = "content",bool replace=false)
   return move(dest);
 }
 
+int derp = 0;
+
 void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;
+  import htmlderp: querySelector;
   string source = readText(src);
   print("make",dest);
-  (dest~".temp").write(parse(readText(src),templit).root.html);
+  auto root = parse(readText(src),templit).root;
+  // debug
+  if(dest == "tmp/base/result/chapter2.html") {
+      root = root.firstChild.nextSibling.nextSibling;
+  }
+  print_with_cycles(root);
+  
+  import std.stdio;
+  struct Derpender {
+      File ou;
+      void put(T)(T s) {
+          ou.write(to!string(s));
+          ou.flush();
+      }
+  }
+  auto app = Derpender(stdout);
+  root.innerHTML(app);
+  print("nooooo");
+  return;
+  File destf = File(dest~".temp","wt");
+  scope(exit) destf.close();
+  app = Derpender(destf);
+  root.innerHTML(app);
   rename(dest~".temp",dest);
 }
 

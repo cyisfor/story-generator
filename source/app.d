@@ -107,6 +107,7 @@ struct Update {
         }
 
         auto base = buildPath(basedir,name ~ ".html");
+        print("make",markup);
         make(markup,base);
         auto doc = createDocument
             (readText(buildPath(basedir,

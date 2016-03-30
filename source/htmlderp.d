@@ -1,6 +1,9 @@
 static import html;
 
 void print_with_cycles(NodeType)(NodeType root) {
+    import std.stdio;
+    import std.array: replicate;
+    import std.string: strip;
     bool[NodeType] seen;
     uint[NodeType] repeated;
     uint ident = 0;
@@ -8,31 +11,45 @@ void print_with_cycles(NodeType)(NodeType root) {
     void pass1(NodeType cur) {
         if(cur == null)
             return;
+        if(!cur.isElementNode) return;
         if(cur in seen) {
-            repeated[consider] = ++ident;
+            writeln("Cycle in ",cur.tag,"!");
+            repeated[cur] = ++ident;
             return;            
         }
         seen[cur] = true;
         cur = cur.firstChild;
         while(cur) {
+            if(cur in seen) return;
             pass1(cur);
             cur = cur.nextSibling;
-            if(cur in seen) return;
         }
     }
     pass1(root);
+    writeln(repeated.length," repeated");
     seen.clear();
-    void pass2(NodeType cur, uint depth) {
+    void pass2(NodeType cur, size_t depth) {
         if(cur == null)
             return;
+        if(!cur.isElementNode) return;
         if(cur in seen) 
             return;
         seen[cur] = true;
-        write(replicate(' ',depth));
+        write(replicate(" ",depth));
         if(auto num = cur in repeated) {
             write('(',*num,')');
         }
-        write(cur.tag);
+        if(cur.previousSibling) {
+            write(cur.previousSibling.tag);
+        } else {
+            write("(null)");            
+        }
+        write("->" ~ cur.tag ~ "->");
+        if(cur.nextSibling) {
+            writeln(cur.nextSibling.tag);
+        } else {
+            writeln("(null)");
+        }
         cur = cur.firstChild;
         while(cur) {
             if(cur in seen) return;
