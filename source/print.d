@@ -47,7 +47,7 @@ string formatString(A...)(int line, string moduleName, lazy A args) {
 	rest.put(to!string(arg).strip());
   }
 
-  return prefix.data ~ wrap(rest.data,80,null,space(margin),4);
+  return prefix.data ~ wrap(rest.data,80-margin,null,space(margin),4);
 }
 
 

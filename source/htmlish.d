@@ -54,9 +54,7 @@ struct Context(NodeType) {
 	  print("failed",e.lastChild.html);
 	}
 	if(this.e.isElementNode) {
-	  print("uhm",text);
 	  this.e.html(this.e.html ~ text);
-	  print(e.html);
 	} else {
 	  this.e.text(this.e.text ~ text);
 	}
@@ -66,16 +64,24 @@ struct Context(NodeType) {
 bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   import std.string: strip;
   import std.algorithm.iteration: splitter, map, filter;
+  import std.ascii: isWhite;
   if(text.length == 0) return false;
+  bool start_space, end_space;
   if(text[0] == '\n') {
 	ctx.maybe_end("start");
+	start_space = true;
   } else {
-	ctx.ended_newline = text[$-1] == '\n';
+	start_space = isWhite(text[0]);
   }
+  ctx.ended_newline = text[$-1] == '\n';
+  
+  end_space = ctx.ended_newline || isWhite(text[$-1]);
+  
   auto lines = text.strip()
 	.splitter('\n')
 	.map!"a.strip()"
 	.filter!"a.length > 0";
+  if(start_space) ctx.appendText(" ");  
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
@@ -85,6 +91,9 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
 	ctx.maybe_end("middle");
 	ctx.maybe_start("middle");
 	ctx.appendText(line);
+  }
+  if(end_space) {
+	ctx.appendText(" ");
   }
   return true;
 }

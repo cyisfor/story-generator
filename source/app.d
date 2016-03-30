@@ -139,6 +139,7 @@ struct Update {
 	if( chapter.which + 1 < story.chapters ) {
 		dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
 	}
+    dolink("contents.html","first","Up");
 
 	if(auto box = location in makers.chapter) {
 		(*box)(doc);
