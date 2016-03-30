@@ -1,6 +1,7 @@
 static import html;
     import std.conv: to;
 
+static if(false) {
 void print_with_cycles(NodeType)(NodeType root) {
   import std.stdio;
   import std.array: replicate;
@@ -73,7 +74,7 @@ void print_with_cycles(NodeType)(NodeType root) {
   }
   pass2(root,0);
 }
-
+}
 
 auto ref querySelector(html.Document* doc, html.HTMLString s) {
   import print: print;

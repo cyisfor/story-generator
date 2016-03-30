@@ -267,15 +267,12 @@ void main(string[] args)
 
 	pending_updates = appender!(Update[]);
 	if(getenv("story")) {
-	only_location = to!string(getenv("story"));
-	if(getenv("regenerate")) {
-		assert(only_location,"specify a story please!");
-		check_chapters_for(only_location);
-		perform_updates();
-		return;
+	  only_location = to!string(getenv("story"));
+	  assert(only_location,"specify a story please!");
+	  check_chapters_for(only_location);
+	} else {
+	  check_git_log(args);
 	}
-	}
-	check_git_log(args);
 	perform_updates();
 	reindex("html",stories);
 	print("dunZ");

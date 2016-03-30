@@ -1,7 +1,7 @@
 import print: print;
 import std.conv: to;
 import std.algorithm.mutation: move;
-import htmlderp: detach, print_with_cycles;
+import htmlderp: detach;
 import html: Document, HTMLString, createDocument;
 
 Document* default_template;
@@ -54,7 +54,7 @@ struct Context(NodeType) {
 	  print("failed",e.lastChild.html);
 	}
 	if(this.e.isElementNode) {
-	  this.e.html(this.e.html ~ text);
+	  this.e.appendText(text);
 	} else {
 	  this.e.text(this.e.text ~ text);
 	}
@@ -162,6 +162,13 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 
   foreach(e;array(root.children)) {
 	if(e.isTextNode) {
+	  import std.algorithm.searching: find;
+	  if(e.text.find(" want that name!").length > 0) {
+		import print: print;
+		print(root.html);
+		print("debug me!");
+	  }
+
 	  if(process_text(ctx,e.text)) {
 		e.detach();
 	  }
@@ -204,9 +211,7 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 			ctx.ended_newline = false;
 		  }
 		}
-        print_with_cycles(root);
 		ctx.next(e);
-		print_with_cycles(root);
       }
 	} else {
 	  ctx.next(e);
@@ -276,14 +281,9 @@ void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;
   import htmlderp: querySelector;
   string source = readText(src);
-  print("make",dest);
   auto root = parse(readText(src),templit).root;
-  // debug
-  if(dest == "tmp/base/result/chapter2.html") {
-      root = root.firstChild.nextSibling.nextSibling;
-  }
-  print_with_cycles(root);
-  
+
+  // append to the file in place
   import std.stdio;
   struct Derpender {
       File ou;
@@ -292,13 +292,9 @@ void make(string src, string dest, Document* templit = null) {
           ou.flush();
       }
   }
-  auto app = Derpender(stdout);
-  root.innerHTML(app);
-  print("nooooo");
-  return;
   File destf = File(dest~".temp","wt");
   scope(exit) destf.close();
-  app = Derpender(destf);
+  auto app = Derpender(destf);
   root.innerHTML(app);
   rename(dest~".temp",dest);
 }
