@@ -41,123 +41,132 @@ struct Update {
 	string location;
 	bool is_hish;
 	void perform() {
-	auto transaction = db.transaction();
-	scope(success) transaction.commit();
-	import std.file: setTimes;
-	import htmlderp: querySelector;
-	import makers;
-	static import nada = makers.birthverse;
-	static import nada2 = makers.littlepip;
-	import std.file: write, mkdir, timeLastModified, readText;
-	import std.path: buildPath;
+        auto transaction = db.transaction();
+        scope(success) transaction.commit();
+        import std.file: setTimes;
+        import htmlderp: querySelector;
+        import makers;
+        static import nada = makers.birthverse;
+        static import nada2 = makers.littlepip;
+        import std.file: write, mkdir, timeLastModified, readText;
+        import std.path: buildPath;
 
-	void smackdir(string p) {
-		try {
-		mkdir(p);
-		} catch {}
-	}
+        void smackdir(string p) {
+            try {
+                mkdir(p);
+            } catch {}
+        }
 
-	string ext;
-	if( is_hish ) {
-		ext = ".hish";
-	} else {
-		ext = ".txt";
-	}
+        string ext;
+        if( is_hish ) {
+            ext = ".hish";
+        } else {
+            ext = ".txt";
+        }
 
-	auto name = chapter_name(which);
-	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
-	if(!exists(markup)) {
-		story.remove(which);
-		return;
-	}
+        auto name = chapter_name(which);
+        auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
+        if(!exists(markup)) {
+            story.remove(which);
+            return;
+        }
 
-	// find a better place to put stuff so it doesn't scram the source directory
-	string basedir = "tmp";
-	smackdir(basedir);
-	basedir = buildPath(basedir,"base");
-	smackdir(basedir);
-	basedir = buildPath(basedir,location);
-	smackdir(basedir);
-	auto herpaderp() {
-	  if(auto box = location in makers.make) {
-		print("found maker at ",location);
-		return *box;
-	  } else {
-		return default_make_chapter;
-	  }
-	}
-	auto make = herpaderp();
+        // find a better place to put stuff so it doesn't scram the source directory
+        string basedir = "tmp";
+        smackdir(basedir);
+        basedir = buildPath(basedir,"base");
+        smackdir(basedir);
+        basedir = buildPath(basedir,location);
+        smackdir(basedir);
+        auto herpaderp() {
+            if(auto box = location in makers.make) {
+                print("found maker at ",location);
+                return *box;
+            } else {
+                return default_make_chapter;
+            }
+        }
+        auto make = herpaderp();
 
-	print("creating cahpter",which,markup,story);
-	auto chapter = story.get_chapter(which);
-	string outdir = buildPath("html",location);
-	auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
+        print("creating cahpter",which,markup,story);
+        auto chapter = story.get_chapter(which);
+        string outdir = buildPath("html",location);
+        auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
 
-	SysTime new_modified = timeLastModified(markup);
-	if(new_modified > chapter.modified) {
-		modified = new_modified;
-	}
-	if(modified <= chapter.modified) {
-		if(exists(dest)) {
-		print("unmodified",story.title,chapter.which);
-		//setTimes(dest,modified,modified);
-		return;
-		}
-		// always update if dest is gone
-	}
+        SysTime new_modified = timeLastModified(markup);
+        if(new_modified > chapter.modified) {
+            modified = new_modified;
+        }
+        if(modified <= chapter.modified) {
+            if(exists(dest)) {
+                print("unmodified",story.title,chapter.which);
+                //setTimes(dest,modified,modified);
+                return;
+            }
+            // always update if dest is gone
+        }
 
-	auto base = buildPath(basedir,name ~ ".html");
-	make(markup,base);
-	auto doc = createDocument
-		(readText(buildPath(basedir,
-							chapter_name(chapter.which) ~
-							".html")));
+        auto base = buildPath(basedir,name ~ ".html");
+        make(markup,base);
+        auto doc = createDocument
+            (readText(buildPath(basedir,
+                                chapter_name(chapter.which) ~
+                                ".html")));
 
-	auto head = querySelector(doc,"head");
-	auto links = doc.querySelector("#links");
-	if(links is null) {
-		links = doc.createElement("div", querySelector(doc,"body"));
-		links.attr("class","links");
-	}
-	bool didlinks = false;
-	void dolink(string href, string rel, string title) {
-		auto link = doc.createElement("link",head);
-		link.attr("rel",rel);
-		link.attr("href",href);
-		if( didlinks ) {
-		links.appendText(" ");
-		} else {
-		didlinks = true;
-		}
-		link = doc.createElement("a",links);
-		link.attr("href",href);
-		link.appendText(title);
-	}
-	if( chapter.which > 0 ) {
-		dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
-	}
-	if( chapter.which + 1 < story.chapters ) {
-		dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
-	}
-    dolink("contents.html","first","Up");
+        auto head = querySelector(doc,"head");
+        auto links = doc.querySelector("#links");
+        if(links is null) {
+            links = doc.createElement("div", querySelector(doc,"body"));
+            links.attr("class","links");
+        }
+        bool didlinks = false;
+        void dolink(string href, string rel, string title) {
+            auto link = doc.createElement("link",head);
+            link.attr("rel",rel);
+            link.attr("href",href);
+            if( didlinks ) {
+                links.appendText(" ");
+            } else {
+                didlinks = true;
+            }
+            link = doc.createElement("a",links);
+            link.attr("href",href);
+            link.appendText(title);
+        }
+        if( chapter.which > 0 ) {
+            dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
+        }
+        if( chapter.which + 1 < story.chapters ) {
+            dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
+        }
+        dolink("contents.html","first","Up");
 
-	if(auto box = location in makers.chapter) {
-		(*box)(doc);
-	}
-	chapter.update(modified,
-					chapter.which,
-					to!string(querySelector(doc,"title").html));
+        if(auto box = location in makers.chapter) {
+            (*box)(doc);
+        }
 
-	smackdir("html");
-	smackdir(outdir);
-	print("writing to ",outdir,"/",chapter_name(chapter.which));
-	print(doc);
-	print(doc.root.document_);
-	write(dest,doc.root.html);
+        string title = null;
+        {
+            // does this chapter have a title?
+            auto res = doc.querySelectorAll("title");
+            if(!res.empty) {
+                title = to!string(res.front.html);
+            }
+        }
+        
+    
+        chapter.update(modified,
+                       chapter.which,
+                       title);
 
-	setTimes(dest,modified,modified);
-	string chapterTitle = to!string(querySelector(doc,"title").text);
-	(*story)[which].update(modified, which, chapterTitle);
+        smackdir("html");
+        smackdir(outdir);
+        print("writing to ",outdir,"/",chapter_name(chapter.which));
+        print(doc);
+        print(doc.root.document_);
+        write(dest,doc.root.html);
+
+        setTimes(dest,modified,modified);
 	}
 }
 
