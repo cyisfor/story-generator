@@ -153,7 +153,7 @@ auto cacheForward(int n = 2, Range)(Range r) {
 }
 	  
 
-void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
+void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
   import std.algorithm.searching: any;
   import std.array: array;  
   import print: print;
@@ -179,31 +179,35 @@ void process_root(NodeType)(Document* dest, NodeType root, NodeType head) {
 			  tit.detach();
 		  }
 		}
+        print_with_cycles(head);
 		head.appendChild(e);
-	  }
-	  bool block_element =
-		any!((a) => a == e.tag)
-		(["ul","ol","p","div","table","blockquote"]);
-	  if(block_element) {
-		ctx.maybe_end("block");
-		if(e.attr("hish")) {
-		  e.removeAttr("hish");
-		  process_root(dest,e, head);
-		}
+        print_with_cycles(head);
+        // NOT ctx.next(e);
 	  } else {
-		/* start a paragraph if this element is a wimp
-		   but only if the last text node ended on a newline.
-		   otherwise the last text node and this should be in the same
-		   paragraph */
-		if(ctx.ended_newline) {
-		  import std.format: format;
-		  auto buf = format("wimp tag {{%s}}",e.tag);
-		  ctx.maybe_end(buf);
-		  ctx.maybe_start(buf);
-		  ctx.ended_newline = false;
+		bool block_element =
+		  any!((a) => a == e.tag)
+		  (["ul","ol","p","div","table","blockquote"]);
+		if(block_element) {
+		  ctx.maybe_end("block");
+		  if(e.attr("hish")) {
+			e.removeAttr("hish");
+			process_root(dest,e, head);
+		  }
+		} else {
+		  /* start a paragraph if this element is a wimp
+			 but only if the last text node ended on a newline.
+			 otherwise the last text node and this should be in the same
+			 paragraph */
+		  if(ctx.ended_newline) {
+			import std.format: format;
+			auto buf = format("wimp tag {{%s}}",e.tag);
+			ctx.maybe_end(buf);
+			ctx.maybe_start(buf);
+			ctx.ended_newline = false;
+		  }
 		}
-	  }
-	  ctx.next(e);
+		ctx.next(e);
+      }
 	} else {
 	  ctx.next(e);
 	}
