@@ -16,12 +16,16 @@ void print_with_cycles(NodeType)(NodeType root) {
 	if(cur.toHash in seen) {
 	  writeln("Cycle in ",cur.tag,"!");
 	  repeated[cur.toHash] = ++ident;
-	  return;            
+	  return;
 	}
 	seen[cur.toHash] = true;
 	cur = cur.firstChild;
 	while(cur) {
-	  if(cur.toHash in seen) return;
+	  if(cur.toHash in seen) {
+		writeln("Cycle in ",cur.tag,"!");
+		repeated[cur.toHash] = ++ident;
+		return;
+	  }
 	  pass1(cur);
 	  cur = cur.nextSibling;
 	}
@@ -29,34 +33,37 @@ void print_with_cycles(NodeType)(NodeType root) {
   pass1(root);
   writeln(repeated.length," repeated");
   seen.clear();
+  void writeathing(NodeType cur) {
+	if(cur == null) {
+	  write("(null)");
+	  return;
+	}
+	if(auto num = cur.toHash in repeated) {
+	  write('[',*num,']');
+	}
+	if(cur.isElementNode) {
+	  writef("(%s:%x)",cur.tag,cur.toHash % 0x10000);
+	} else {
+		writef("(text %d:%x)",cur.text.length,
+			   cur.toHash  % 0x10000);
+	}
+  }
+
   void pass2(NodeType cur, size_t depth) {
 	if(cur == null)
 	  return;
 	if(!cur.isElementNode) return;
-	if(cur.toHash in seen) 
+	if(cur.toHash in seen)
 	  return;
 	seen[cur.toHash] = true;
 	write(replicate(" ",depth));
-	if(auto num = cur.toHash in repeated) {
-	  write('(',*num,')');
-	}
-	if(cur.previousSibling) {
-	  if(cur.previousSibling.isTextNode)
-		writef("(text %d:%x)",to!string(cur.previousSibling).length,cur.previousSibling.toHash());
-	  else
-		writef("%s:%x",cur.previousSibling.tag,cur.previousSibling.toHash);
-	} else {
-	  write("(null)");            
-	}
-	writef("-> %s:%x ->",cur.tag,cur.toHash);
-	if(cur.nextSibling) {
-	  if(cur.nextSibling.isTextNode)
-		writefln("(text %d:%x)",to!string(cur.nextSibling).length,cur.nextSibling.toHash);
-	  else
-		writefln("%s:%x",cur.nextSibling.tag,cur.nextSibling.toHash);
-	} else {
-	  writeln("(null)");
-	}
+	writeathing(cur.previousSibling);
+	write(" -> ");
+	writeathing(cur);
+	write(" -> ");
+	writeathing(cur.nextSibling);
+	writeln("");
+
 	cur = cur.firstChild;
 	while(cur) {
 	  if(cur.toHash in seen) return;

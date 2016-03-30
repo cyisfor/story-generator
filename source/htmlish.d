@@ -179,9 +179,7 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 			  tit.detach();
 		  }
 		}
-        print_with_cycles(head);
 		head.appendChild(e);
-        print_with_cycles(head);
         // NOT ctx.next(e);
 	  } else {
 		bool block_element =
@@ -191,7 +189,7 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 		  ctx.maybe_end("block");
 		  if(e.attr("hish")) {
 			e.removeAttr("hish");
-			process_root(dest,e, head);
+			process_root(dest, e, head);
 		  }
 		} else {
 		  /* start a paragraph if this element is a wimp
@@ -206,7 +204,9 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 			ctx.ended_newline = false;
 		  }
 		}
+        print_with_cycles(root);
 		ctx.next(e);
+		print_with_cycles(root);
       }
 	} else {
 	  ctx.next(e);
