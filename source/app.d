@@ -134,7 +134,7 @@ struct Update {
                    chapter.which,
                    title);
 
-    print("writing",location, which);
+    print("writing",location, which,dest);
     write(dest,doc.root.html);
     setTimes(dest,modified,modified);
   }
@@ -197,6 +197,8 @@ void check_chapter(SysTime modified,
   if(only_location && (!location.endsWith(only_location))) return;
 
   void checked_chapter(int which, string markup) {
+    if(!exists(markup)) return;
+
     // only after we're sure we have a chapter that hasn't been queued
     // for updating.
     
@@ -247,7 +249,7 @@ void check_chapter(SysTime modified,
       checked_chapter(which,
                       buildPath(location,
                                 "markup",
-                                "chapter" ~ to!string(which) ~ ext));
+                                "chapter" ~ to!string(which+1) ~ ext));
     }
   }
   
@@ -261,10 +263,6 @@ void check_chapter(SysTime modified,
   if(which>0)
     checked_chapter_side(which-1);
   checked_chapter_side(which+1);
-}
-
-void perform_updates() {
-
 }
 
 void main(string[] args)

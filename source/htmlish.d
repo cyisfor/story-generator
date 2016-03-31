@@ -58,8 +58,8 @@ struct Context(NodeType) {
 	  }
 	}
 	if(this.e.isElementNode) {
-	  if(this.e.firstChild && this.e.firstChild.isTextNode) {
-		this.e.firstChild.text(this.e.firstChild.text ~ text);
+	  if(this.e.lastChild && this.e.lastChild.isTextNode) {
+		this.e.lastChild.text(this.e.lastChild.text ~ text);
 	  } else {
 		this.e.appendText(text);
 	  }
@@ -177,18 +177,25 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 		if(e.tag == "title") {
           auto title = e.html;
           if(title.length == 0) {
+            // bork
             e.destroy();
-            continue;
           }
-		  // no two titles!
 		  foreach(tit; head.children) {
-			if(tit.tag == "title")
-			  tit.detach();
-		  }
+			if(tit.tag == "title") {
+              if(title.length > 0) {
+                // no two titles!
+                tit.destroy();
+              } else {
+                title = tit.html;
+              }
+            }
+          }
+
           // get <intitle/>
           foreach(tit;dest.querySelectorAll("intitle")) {
-            dest.createTextNode(title).insertAfter(tit);
-            assert(tit.parent);
+            if(title.length > 0) {
+              dest.createTextNode(title).insertAfter(tit);
+            }
             tit.destroy();
           }
 		}
@@ -260,11 +267,13 @@ auto ref parse(string ident = "content",bool replace=false)
   } else {
 	// have to replace <content>
 	auto derrp = derp.front;
+    assert(derrp);
 	content = dest.createElement("div");
 	foreach(e;derrp.children) {
 	  content.appendChild(detach(e));
 	}
-	content.insertAfter(detach(derrp));
+	content.insertAfter(derrp);
+    derrp.destroy();
   }
 
   content.html(source);
@@ -323,5 +332,13 @@ unittest {
 there
 this
 is <i>a</i> test`);
+  writeln(p.root.html);
+}
+
+unittest {
+  import std.stdio;
+  auto p = parse(`herp
+Italics should <i>not</i> be shoved to the back.
+derp`);
   writeln(p.root.html);
 }
