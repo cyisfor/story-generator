@@ -1,0 +1,4 @@
+[submodule "htmld"]
+	path = htmld
+	url = https://github.com/cyisfor/htmld
+	branch = noescape
