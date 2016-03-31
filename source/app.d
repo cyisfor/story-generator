@@ -33,13 +33,23 @@ static this() {
 	  (createDocument(import("template/chapter.xhtml")));
 }
 
+void smackdir(string p) {
+  try {
+	mkdir(p);
+  } catch {}
+}
+
+
 struct Update {
 	@disable this(this);
 	db.Story* story;
 	SysTime modified;
 	int which;
 	string location;
-	bool is_hish;
+  string markup;
+  string dest;
+  string name;
+  
 	void perform() {
         auto transaction = db.transaction();
         scope(success) transaction.commit();
@@ -50,26 +60,6 @@ struct Update {
         static import nada2 = makers.littlepip;
         import std.file: write, mkdir, timeLastModified, readText;
         import std.path: buildPath;
-
-        void smackdir(string p) {
-            try {
-                mkdir(p);
-            } catch {}
-        }
-
-        string ext;
-        if( is_hish ) {
-            ext = ".hish";
-        } else {
-            ext = ".txt";
-        }
-
-        auto name = chapter_name(which);
-        auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
-        if(!exists(markup)) {
-            story.remove(which);
-            return;
-        }
 
         // find a better place to put stuff so it doesn't scram the source directory
         string basedir = "tmp";
@@ -90,29 +80,12 @@ struct Update {
 
         print("creating chapter",which,markup,story);
         auto chapter = story.get_chapter(which);
-        string outdir = buildPath("html",location);
-        auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");
-
-        SysTime new_modified = timeLastModified(markup);
-        if(new_modified > chapter.modified) {
-            modified = new_modified;
-        }
-        if(modified <= chapter.modified) {
-            if(exists(dest)) {
-                print("unmodified",story.title,chapter.which);
-                //setTimes(dest,modified,modified);
-                return;
-            }
-            // always update if dest is gone
-        }
 
         auto base = buildPath(basedir,name ~ ".html");
         print("make",markup);
         make(markup,base);
         auto doc = createDocument
-            (readText(buildPath(basedir,
-                                chapter_name(chapter.which) ~
-                                ".html")));
+            (readText(buildPath(basedir, name ~ ".html")));
 
         auto head = querySelector(doc,"head");
         auto links = doc.querySelector("#links");
@@ -160,12 +133,7 @@ struct Update {
                        chapter.which,
                        title);
 
-        smackdir("html");
-        smackdir(outdir);
-        print("writing to ",outdir,"/",chapter_name(chapter.which));
-        print(doc);
-        print(doc.root.document_);
-        write(dest,doc.root.html);
+        print("writing",location, which);
 
         setTimes(dest,modified,modified);
 	}
@@ -206,9 +174,6 @@ void check_chapter(SysTime modified,
 
   if(!name.startsWith("chapter")) return;
 
-	bool is_hish = ext == ".hish";
-	if(!(ext == ".txt" || is_hish)) return;
-
 	string derp = name["chapter".length..name.length];
 	if(!isNumeric(derp)) return;
 	int which = to!int(derp) - 1;
@@ -220,6 +185,46 @@ void check_chapter(SysTime modified,
 	string key = location ~ "/" ~ to!string(which);
 	if(key in updated) continue;
 	updated[key] = true;
+
+	/* get the markup file */
+	
+	bool is_hish = ext == ".hish";
+	if(!(ext == ".txt" || is_hish)) return;
+
+	string ext;
+	if( is_hish ) {
+	  ext = ".hish";
+	} else {
+	  ext = ".txt";
+	}
+	
+	auto markup = buildPath(location,"markup","chapter" ~ to!string(which+1) ~ ext);
+	if(!exists(markup)) {
+	  print("missing markup for chapter",location,which);
+	  continue;
+	}
+
+	string outdir = buildPath("html",location);
+
+	smackdir("html");
+	smackdir(outdir);
+
+	/* check the destination modified time */
+
+	name = chapter_name(which); // ugh, chapter1 -> index
+	
+	auto dest = buildPath(outdir, name ~ ".html");
+	
+	// technically this is not needed, since git records the commit time
+	modified = max(timeLastModified(markup),modified);
+
+	// always update if dest is gone
+	if(exists(dest) && modified <= timeLastModified(dest)) {
+	  print("unmodified",location,which);
+	  //setTimes(dest,modified,modified);
+	  continue;
+	}
+
 	print("checking",location,which,"for updates!");
 	db.Story* story;
 	if(location in stories) {
@@ -239,7 +244,8 @@ void check_chapter(SysTime modified,
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
 
-	pending_updates.emplacePut(story,modified,which,location,is_hish);
+	pending_updates.emplacePut(story,modified,which,location,
+							   markup,dest,name);
 	}
 }
 
