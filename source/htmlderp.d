@@ -76,16 +76,13 @@ void print_with_cycles(NodeType)(NodeType root) {
 }
 }
 
-auto ref querySelector(html.Document* doc, html.HTMLString s) {
-  import print: print;
-  print("document should be",doc.root.document_);
+auto ref querySelector(Document)(Document* doc, html.HTMLString s) {
   auto res = doc.querySelectorAll(s);
   if(res.empty) {
 	import print: print;
 	print("failed to find",s,doc.root.outerHTML);
     throw new Exception(to!string(s));
   }
-  print("result is",res.front.document_);
   assert(!res.empty);
   return res.front;
 }

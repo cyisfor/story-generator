@@ -88,7 +88,7 @@ struct Update {
         }
         auto make = herpaderp();
 
-        print("creating cahpter",which,markup,story);
+        print("creating chapter",which,markup,story);
         auto chapter = story.get_chapter(which);
         string outdir = buildPath("html",location);
         auto dest = buildPath(outdir,chapter_name(chapter.which) ~ ".html");

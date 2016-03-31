@@ -46,7 +46,8 @@ void parse_log(string since, void delegate(SysTime, string) handler) {
 
 unittest {
   void handle(SysTime modified, string path) {
-	print("hokay",modified,path);
+	print("hookay",modified,path);
   }
+
   parse_log("HEAD~2..HEAD",&handle);
 }

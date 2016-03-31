@@ -32,7 +32,6 @@ struct Chapter {
   void update(SysTime modified, int which, string title) {
 	this.which = which;
 	import std.stdio;
-	writeln("foop",modified.toISOExtString());
 	if(title is null) { title = "???"; }
 	db.update_chapter.inject(title,modified.toISOExtString(),which,story.id);
   }
@@ -104,23 +103,7 @@ Chapter to_chapter(backend.Row row,
 
 
 class Story {
-  static struct Params {
-	long id;
-	string title;
-	string description;
-	string modified;
-	string location;
-	int chapters;
-  };
-  this(Params p, Database db) {
-	id = p.id;
-	title = p.title;
-	description = p.description;
-	modified = parse_mytimestamp(p.modified);
-	chapters = p.chapters;
-	this.db = db;
-  }  
-
+  
   long id;
   string title;
   string description;
@@ -131,18 +114,41 @@ class Story {
   Chapter[int] cache;
   alias opIndex = get_chapter!false;
 
+  static struct Params {
+	long id;
+	string title;
+	string description;
+	string modified;
+	string location;
+	int chapters;
+  };
+  this(Database* db, string location) {
+	this.location = location;
+	this.db = db;
+	reify(); // hmph...
+  }
+  void reify() {
+	Params p = this.db.load_story(location);
+	id = p.id;
+	title = p.title;
+	description = p.description;
+	modified = parse_mytimestamp(p.modified);
+	chapters = p.chapters;
+	check_for_desc();
+  }
+
   Chapter* get_chapter(bool create = true)(int which) {
-	{//if(!(which in cache)) {
-	  db.find_chapter.bindAll(id, which);
-	  auto rset = db.find_chapter.execute();
-	  if(rset.empty) {
-		db.insert_chapter.inject(which, id);
-		db.find_chapter.reset();
-		rset = db.find_chapter.execute();
-	  }
-	  cache[which] = rset.front.to_chapter(db,this,which);
+	assert(id>=0);
+	db.find_chapter.bindAll(id, which);
+	auto rset = db.find_chapter.execute();
+	if(rset.empty) {
+	  db.insert_chapter.inject(which, id);
 	  db.find_chapter.reset();
+	  rset = db.find_chapter.execute();
 	}
+	cache[which] = rset.front.to_chapter(db,this,which);
+	db.find_chapter.reset();
+
 	return &cache[which];
   }
   
@@ -169,6 +175,21 @@ class Story {
 	sink(")");
   }
 
+  void check_for_desc() {
+	bool dirty = false;
+	if(exists(buildPath(story.location,"title"))) {
+	  title = readText(buildPath(story.location,"title"));
+	  dirty = true;
+	}
+	if(exists(buildPath(story.location,"description"))) {
+	  description = readText(buildPath(story.location,"description"));
+	  dirty = true;
+	}
+	if(dirty) {
+	  db.update_desc.inject(title, description, id);
+	}
+  }
+  
   void edit() {
 	import std.stdio: writeln;
 	writeln("Title: ",title);
@@ -179,12 +200,6 @@ class Story {
 	db.edit_story.reset();
   }
 };
-
-Story to_story(backend.Row row, Database db) {
-  import std.conv: to;
-
-  return new Story(row.as!(Story.Params),db);
-}
 
 string readToDot() {
   auto lines = appender!string();
@@ -239,6 +254,8 @@ WHERE id = ?`},
   {q{delete_chapter},
    "DELETE FROM chapters WHERE which = ? AND story = ?"},
 
+  {q{delete_chapter_the_hard_way},
+   "DELETE FROM chapters WHERE which = ? AND story = (select id from stories where location = ?)"},
   {q{update_chapter},
    "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
   
@@ -304,20 +321,6 @@ class Database {
 	rollback.stmt = db.prepare("ROLLBACK");
   }
 
-  void check_for_desc(ref Story story) {
-	string title = null;
-	string description = null;
-	if(exists(buildPath(story.location,"title"))) {
-	  title = readText(buildPath(story.location,"title"));
-	}
-	if(exists(buildPath(story.location,"description"))) {
-	  description = readText(buildPath(story.location,"description"));
-	}
-	if(title || description) {
-	  update_desc.inject(title, description, story.id);
-	}
-  }
-
   void get_info(ref backend.Statement stmt) {
 	write("Title: ");
 	stmt.bind(2,readln().strip());
@@ -326,22 +329,29 @@ class Database {
   }
 
   Story story(string location) {
+	return Story(&this,location);
+  }
+  
+  Story.Params load_story(string location) {
 	find_story.bind(1,location);
+	scope(exit) find_story.reset();
 	auto rows = find_story.execute();
 	if(rows.empty) {
 	  insert_story.bind(1,location);
-	  writeln(location);
 	  get_info(insert_story);
 	  insert_story.execute();
 	  insert_story.reset();
 	  rows = find_story.execute();
 	}
-	Story s = rows.front.to_story(this);
-	find_story.reset();
-	check_for_desc(s);
-	return s;
+	return row.as!(Story.Params);
   }
 
+  void remove_chapter_the_hard_way(int which, string location) {
+	// don't want to reify a story to remove a chapter that doesn't
+	// have a story...
+	db.delete_chapter_the_hard_way.inject(which,location);
+  }
+  
   auto latest() {
 	return map!((auto ref row) => to_story(row,this))
 	  (latest_stories.execute());

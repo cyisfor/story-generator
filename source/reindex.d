@@ -41,8 +41,6 @@ SysTime reindex(string outdir, Story story) {
 		  story.edit();
 		}
 		Document* doc = htmlish.parse!"description"(story.description,contents);
-		print("errr",doc,&contents);
-		print("errrdocument should be",doc.root.document_,contents.root.document_);
 	try {
 		auto toc = querySelector(doc, "#toc");
 
@@ -102,7 +100,7 @@ void reindex(string outdir, Story[string] stories) {
 		maxTime = max(modified, maxTime);
 	}
 
-	print(stories.length, "chapters at", maxTime);
+	print(stories.length, "stories at", maxTime);
 	//dfmt off
 	Feed.Params p = {
 		title: "Recently Updated",

@@ -51,10 +51,18 @@ struct Context(NodeType) {
   }
   void appendText(HTMLString text) {
 	scope(failure) {
-	  print("failed",e.lastChild.html);
+	  if(e.lastChild) {
+		print("failed",e.lastChild.html);
+	  } else {
+		print("uhh no last child");
+	  }
 	}
 	if(this.e.isElementNode) {
-	  this.e.appendText(text);
+	  if(this.e.firstChild && this.e.firstChild.isTextNode) {
+		this.e.firstChild.text(this.e.firstChild.text ~ text);
+	  } else {
+		this.e.appendText(text);
+	  }
 	} else {
 	  this.e.text(this.e.text ~ text);
 	}
@@ -109,7 +117,6 @@ auto cacheForward(int n = 2, Range)(Range r) {
 	bool full = false;
 	void initialize() {
 	  while(!r.empty) {
-		print("cache!");
 		cache[put] = r.front;
 		r.popFront();
 		++put;
@@ -119,10 +126,8 @@ auto cacheForward(int n = 2, Range)(Range r) {
 		  break;
 		}
 	  }
-	  print("mteee",r.empty);
 	}
 	bool empty() {
-	  print("mt?",!full && put == get);
 	  return !full && put == get;
 	}
 	typeof(r.front()) front() {
@@ -139,10 +144,7 @@ auto cacheForward(int n = 2, Range)(Range r) {
 		cache[put] = r.front;
 		r.popFront();
 		put = (put + 1) % n;
-		print("pop?",r.empty);
-		if(!r.empty) print(r.front);
 	  }
-	  print("put/get after pop",put,get,n,!full,put==get);
 	}
   }
   CacheForward ret = {
@@ -163,12 +165,6 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
   foreach(e;array(root.children)) {
 	if(e.isTextNode) {
 	  import std.algorithm.searching: find;
-	  if(e.text.find(" want that name!").length > 0) {
-		import print: print;
-		print(root.html);
-		print("debug me!");
-	  }
-
 	  if(process_text(ctx,e.text)) {
 		e.detach();
 	  }
@@ -177,7 +173,6 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 		any!((a) => a == e.tag)
 		(["title","meta","link","style","script"]);
 	  if(head_element) {
-		print("head",e.tag);
 		e.detach();
 		if(e.tag == "title") {
 		  // no two titles!
@@ -262,7 +257,7 @@ auto ref parse(string ident = "content",bool replace=false)
   }
 
   content.html(source);
-  print("okay, process");
+  print("processing htmlish");
   process_root(dest,content, head);
   if(replace) {
 	while(content.firstChild) {
@@ -280,7 +275,6 @@ int derp = 0;
 void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;
   import htmlderp: querySelector;
-  string source = readText(src);
   auto root = parse(readText(src),templit).root;
 
   // append to the file in place
