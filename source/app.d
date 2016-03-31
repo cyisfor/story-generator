@@ -176,10 +176,12 @@ void check_chapter(SysTime modified,
                    string ext) {
   import std.string : isNumeric;
   version(GNU) {
-    import std.algorithm: startsWith, endsWith;
+    import std.algorithm: startsWith, endsWith, max;
   } else {
     import std.algorithm.searching: startsWith, endsWith;
+    import std.algorithm.comparison: max;
   }
+  import std.path: buildPath;
 
 
   if(!name.startsWith("chapter")) return;
@@ -194,32 +196,10 @@ void check_chapter(SysTime modified,
   // don't update if we're filtering by location...?
   if(only_location && (!location.endsWith(only_location))) return;
 
-  // don't add updates to a chapter twice, if modified twice in the logs
-  // or 2, 3 in logs (adding side chapters 1,3, and 2,4)
-  auto key = Upd8(location,which);
-  if(!key in updated) {
-    updated[key] = true;
-    checked_chapter(which,markup);
-  }
-  checked_chapter_side(which-1);
-  checked_chapter_side(which+1);
-
-  void checked_chapter_side(int which) {
-    key = Upd8(location,which);
-    if(!key in updated) {
-      // since this isn't chapter 0, (markup provided by git)
-      // adjust stuff to aim at the new chapter
-      updated[key] = true;
-      checked_chapter(which,
-                      buildPath(location,
-                                "markup",
-                                "chapter" ~ to!string(which) ~ ext));
-    }
-  }
-
-  // now we're sure we have a chapter that hasn't been queued
-  // for updating.
   void checked_chapter(int which, string markup) {
+    // only after we're sure we have a chapter that hasn't been queued
+    // for updating.
+    
     /* check the destination modified time */
     name = chapter_name(which); // ugh, chapter1 -> index
 
@@ -257,6 +237,29 @@ void check_chapter(SysTime modified,
     pending_updates.emplacePut(story,modified,which,location,
                                markup,dest,name);
   }
+
+  void checked_chapter_side(int which) {
+    auto key = Upd8(location,which);
+    if(key !in updated) {
+      // since this isn't chapter 0, (markup provided by git)
+      // adjust stuff to aim at the new chapter
+      updated[key] = true;
+      checked_chapter(which,
+                      buildPath(location,
+                                "markup",
+                                "chapter" ~ to!string(which) ~ ext));
+    }
+  }
+  
+  // don't add updates to a chapter twice, if modified twice in the logs
+  // or 2, 3 in logs (adding side chapters 1,3, and 2,4)
+  auto key = Upd8(location,which);
+  if(key !in updated) {
+    updated[key] = true;
+    checked_chapter(which,markup);
+  }
+  checked_chapter_side(which-1);
+  checked_chapter_side(which+1);
 }
 
 void perform_updates() {
