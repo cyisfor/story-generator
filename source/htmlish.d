@@ -175,11 +175,22 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 	  if(head_element) {
 		e.detach();
 		if(e.tag == "title") {
+          auto title = e.html;
+          if(title.length == 0) {
+            e.destroy();
+            continue;
+          }
 		  // no two titles!
 		  foreach(tit; head.children) {
 			if(tit.tag == "title")
 			  tit.detach();
 		  }
+          // get <intitle/>
+          foreach(tit;dest.querySelectorAll("intitle")) {
+            dest.createTextNode(title).insertAfter(tit);
+            assert(tit.parent);
+            tit.destroy();
+          }
 		}
 		head.appendChild(e);
         // NOT ctx.next(e);

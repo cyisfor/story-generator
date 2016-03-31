@@ -78,7 +78,7 @@ SysTime parse_mytimestamp(string timestamp) {
 	throw(e);
   }
 }
-  
+
 Chapter to_chapter(backend.Row row,
 				   Database db, Story story, int which) {
   import std.conv: to;
@@ -103,7 +103,7 @@ Chapter to_chapter(backend.Row row,
 
 
 class Story {
-  
+
   long id;
   string title;
   string description;
@@ -122,13 +122,9 @@ class Story {
 	string location;
 	int chapters;
   };
-  this(Database* db, string location) {
-	this.location = location;
+  this(Params p, Database db) {
+	location = p.location;
 	this.db = db;
-	reify(); // hmph...
-  }
-  void reify() {
-	Params p = this.db.load_story(location);
 	id = p.id;
 	title = p.title;
 	description = p.description;
@@ -151,7 +147,7 @@ class Story {
 
 	return &cache[which];
   }
-  
+
   void remove(int which) {
 	db.delete_chapter.inject(which,id);
 	update();
@@ -160,7 +156,7 @@ class Story {
   void update() {
 	db.update_story.inject(id);
 	db.num_story_chapters.bindAll(id);
-	
+
 	chapters = db.num_story_chapters.execute().front.peek!int(0);
 	db.num_story_chapters.reset();
   }
@@ -177,19 +173,19 @@ class Story {
 
   void check_for_desc() {
 	bool dirty = false;
-	if(exists(buildPath(story.location,"title"))) {
-	  title = readText(buildPath(story.location,"title"));
+	if(exists(buildPath(this.location,"title"))) {
+	  title = readText(buildPath(this.location,"title"));
 	  dirty = true;
 	}
-	if(exists(buildPath(story.location,"description"))) {
-	  description = readText(buildPath(story.location,"description"));
+	if(exists(buildPath(this.location,"description"))) {
+	  description = readText(buildPath(this.location,"description"));
 	  dirty = true;
 	}
 	if(dirty) {
 	  db.update_desc.inject(title, description, id);
 	}
   }
-  
+
   void edit() {
 	import std.stdio: writeln;
 	writeln("Title: ",title);
@@ -225,7 +221,7 @@ immutable string story_fields = "id,title,description,"~modified_format~",locati
 immutable Derp[] statements = [
   {q{update_desc},
    "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
-  
+
   {q{num_story_chapters},
    "SELECT COUNT(1) FROM chapters WHERE story = ?"},
 
@@ -238,27 +234,25 @@ immutable Derp[] statements = [
 modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
 chapters = (select count(1) from chapters where story = stories.id)
 WHERE id = ?`},
-  
+
   {q{insert_story},
    "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
 
   {q{edit_story},
    "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
-  
+
   {q{find_chapter},
    "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
-  
+
   {q{insert_chapter},
    "INSERT INTO chapters (which, story) VALUES (?,?)"},
 
   {q{delete_chapter},
    "DELETE FROM chapters WHERE which = ? AND story = ?"},
 
-  {q{delete_chapter_the_hard_way},
-   "DELETE FROM chapters WHERE which = ? AND story = (select id from stories where location = ?)"},
   {q{update_chapter},
    "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
-  
+
   {q{latest_stories},
    "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
 ];
@@ -298,7 +292,7 @@ struct OneShot {
 	return ret;
   }
 }
-	  
+
 class Database {
   backend.Database db;
   mixin(declare_statements());
@@ -306,7 +300,7 @@ class Database {
   OneShot begin;
   OneShot commit;
   OneShot rollback;
-  
+
   void close() {
 	mixin(finalize_statements());
 	db.close();
@@ -329,10 +323,6 @@ class Database {
   }
 
   Story story(string location) {
-	return Story(&this,location);
-  }
-  
-  Story.Params load_story(string location) {
 	find_story.bind(1,location);
 	scope(exit) find_story.reset();
 	auto rows = find_story.execute();
@@ -343,17 +333,11 @@ class Database {
 	  insert_story.reset();
 	  rows = find_story.execute();
 	}
-	return row.as!(Story.Params);
+	return new Story(rows.front.as!(Story.Params),this);
   }
 
-  void remove_chapter_the_hard_way(int which, string location) {
-	// don't want to reify a story to remove a chapter that doesn't
-	// have a story...
-	db.delete_chapter_the_hard_way.inject(which,location);
-  }
-  
   auto latest() {
-	return map!((auto ref row) => to_story(row,this))
+	return map!((auto ref row) => new Story(row.as!(Story.Params),this))
 	  (latest_stories.execute());
   }
 }
@@ -380,7 +364,7 @@ void close() {
 struct Transaction {
   bool committed;
   ~this() {
-	if(!committed) 
+	if(!committed)
 	  db.rollback();
   }
   void commit() {

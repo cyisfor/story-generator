@@ -59,7 +59,7 @@ struct Update {
     import makers;
     static import nada = makers.birthverse;
     static import nada2 = makers.littlepip;
-    import std.file: write, timeLastModified, readText;
+    import std.file: write, readText;
     import std.path: buildPath;
 
     // find a better place to put stuff so it doesn't scram the source directory
@@ -135,7 +135,7 @@ struct Update {
                    title);
 
     print("writing",location, which);
-
+    write(dest,doc.root.html);
     setTimes(dest,modified,modified);
   }
 }
@@ -182,7 +182,7 @@ void check_chapter(SysTime modified,
     import std.algorithm.comparison: max;
   }
   import std.path: buildPath;
-
+  import std.file: timeLastModified;
 
   if(!name.startsWith("chapter")) return;
 
@@ -212,7 +212,7 @@ void check_chapter(SysTime modified,
     if(exists(dest) && modified <= timeLastModified(dest)) {
       print("unmodified",location,which);
       //setTimes(dest,modified,modified);
-      continue;
+      return;
     }
 
     print("checking",location,which,"for updates!");
@@ -258,7 +258,8 @@ void check_chapter(SysTime modified,
     updated[key] = true;
     checked_chapter(which,markup);
   }
-  checked_chapter_side(which-1);
+  if(which>0)
+    checked_chapter_side(which-1);
   checked_chapter_side(which+1);
 }
 
@@ -269,6 +270,8 @@ void perform_updates() {
 void main(string[] args)
 {
   import core.stdc.stdlib: getenv;
+  import std.path: buildPath;
+
   while(!exists("code")) {
     import std.file: chdir;
     chdir("..");
