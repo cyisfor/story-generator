@@ -2,3 +2,5 @@
 	path = htmld
 	url = https://github.com/cyisfor/htmld
 	branch = noescape
+    fetchRecurseSubmodules = true
+    ignore = untracked
