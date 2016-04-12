@@ -35,10 +35,8 @@ static this() {
 }
 
 SysTime reindex(string outdir, Story story) {
-  print("um");
 		static import htmlish;
 		import std.algorithm.mutation: move;
-        import std.algorithm: max;
 		if(story.description == null) {
 		  story.edit();
 		}
@@ -54,8 +52,9 @@ SysTime reindex(string outdir, Story story) {
 			print("updoot");
 			story.update();
 		}
-		for (int which = 0; which < max(1,story.chapters - 1); ++which) {
-			auto chapter = story[which];
+        print(story.title,"has",story.chapters,"chapters");
+		for (int which = 0; which < story.chapters; ++which) {
+			auto chapter = story.get_chapter!true(which);
 			maxTime = max(maxTime, chapter.modified);
 			auto link = doc.createElement("a",
 					doc.createElement("li", toc));

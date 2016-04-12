@@ -158,7 +158,7 @@ auto cacheForward(int n = 2, Range)(Range r) {
 void process_root(NodeType)(Document* dest,
                             NodeType root,
                             ref NodeType head,
-                            ref HTMLString title) {
+                            ref string title) {
   import std.algorithm.searching: any;
   import std.array: array;  
   import print: print;
@@ -178,14 +178,12 @@ void process_root(NodeType)(Document* dest,
 	  if(head_element) {
 		e.detach();
 		if(e.tag == "title") {
-          got_title = true;
           auto maybetitle = e.html;
-          print("tootle pip",title,maybetitle);
           if(maybetitle.length == 0) {
             // bork
             e.html = title;
           } else {
-            title = maybetitle;
+            title = to!string(maybetitle);
           }
 		  foreach(tit; head.children) {
 			if(tit.tag == "title") {
@@ -193,7 +191,7 @@ void process_root(NodeType)(Document* dest,
                 // no two titles!
                 tit.destroy();
               } else {
-                title = tit.html;
+                title = to!string(tit.html);
               }
             }
           }
@@ -296,6 +294,11 @@ auto ref parse(string ident = "content",
   } else {
     auto tite = titles.front;
     tite.html = title;
+  }
+  foreach(intit; dest.querySelectorAll("intitle")) {
+    auto texttit = dest.createTextNode(title);
+    texttit.insertBefore(intit);
+    intit.detach();
   }
   if(replace) {
 	while(content.firstChild) {

@@ -83,7 +83,6 @@ struct Update {
     auto chapter = story.get_chapter(which);
 
     auto base = buildPath(basedir,name ~ ".html");
-    print("make",markup);
     make(markup,base);
     auto doc = createDocument
       (readText(buildPath(basedir, name ~ ".html")));
@@ -111,10 +110,10 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-    if( chapter.which + 1 < story.chapters - 1 ) {
+    if( chapter.which + 1 < story.chapters ) {
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
-    dolink("contents.html","first","Up");
+    dolink("contents.html","first","Contents");
 
     if(auto box = location in makers.chapter) {
       (*box)(doc);
@@ -210,8 +209,12 @@ void check_chapter(SysTime modified,
     // technically this is not needed, since git records the commit time
     modified = max(timeLastModified(markup),modified);
 
+    // meh, rebuild this for every chapter?
+    auto contents = buildPath("html",location,"contents.html");
     // always update if dest is gone
-    if(exists(dest) && modified <= timeLastModified(dest)) {
+    if(exists(contents) &&
+       exists(dest) &&
+       modified <= timeLastModified(dest)) {
       print("unmodified",location,which);
       //setTimes(dest,modified,modified);
       return;
@@ -227,17 +230,18 @@ void check_chapter(SysTime modified,
       story.location = location;
       assert(story.location);
     }
-    print(story.chapters);
     // new chapters at the end, we need to increase the story's number of
     // chapters, before performing ANY updates.
+    // the database counts known chapters, so this is just a
+    // temp cached number
     if(story.chapters <= which) {
       story.chapters = which+1;
+      story.dirty = true;
     }
-        print(story.chapters);
+
     // note: do not try to shrink the story if fewer chapters are found.
     // unless the markup doesn't exist. We might not be processing the full
     // git log, and the highest chapter might not have updated this time.
-
     pending_updates.emplacePut(story,modified,which,location,
                                markup,dest,name);
   }
@@ -257,6 +261,7 @@ void check_chapter(SysTime modified,
   
   // don't add updates to a chapter twice, if modified twice in the logs
   // or 2, 3 in logs (adding side chapters 1,3, and 2,4)
+
   auto key = Upd8(location,which);
   if(key !in updated) {
     updated[key] = true;
@@ -301,6 +306,9 @@ void main(string[] args)
     }
     foreach(ref update; pending_updates.data) {
       update.perform();
+    }
+    foreach(story;stories.values) {
+      story.update();
     }
     reindex("html",stories);
     print("dunZ");

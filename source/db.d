@@ -112,6 +112,7 @@ class Story {
   Database db;
   string location;
   Chapter[int] cache;
+  bool dirty = false;
   alias opIndex = get_chapter!false;
 
   static struct Params {
@@ -138,9 +139,13 @@ class Story {
 	db.find_chapter.bindAll(id, which);
 	auto rset = db.find_chapter.execute();
 	if(rset.empty) {
-	  db.insert_chapter.inject(which, id);
-	  db.find_chapter.reset();
-	  rset = db.find_chapter.execute();
+      static if(!create) {
+        throw new Exception("no creating chapters");
+      } else {
+        db.insert_chapter.inject(which, id);
+        db.find_chapter.reset();
+        rset = db.find_chapter.execute();
+      }
 	}
 	cache[which] = rset.front.to_chapter(db,this,which);
 	db.find_chapter.reset();
@@ -159,6 +164,7 @@ class Story {
 
 	chapters = db.num_story_chapters.execute().front.peek!int(0);
 	db.num_story_chapters.reset();
+    dirty = false;
   }
 
   // SIGH
