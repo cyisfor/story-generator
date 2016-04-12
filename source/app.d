@@ -169,7 +169,7 @@ struct Upd8 {
 bool[Upd8] updated;
 string only_location = null;
 
-void place_story(string location, int which) {
+db.Story* place_story(string location, int which) {
   db.Story* story;
   if(location in stories) {
     story = &stories[location];
@@ -187,9 +187,11 @@ void place_story(string location, int which) {
     story.chapters = which+1;
     story.dirty = true;
   }
+  return story;
 }
 
 bool contents_exist_derp(string location) {
+  import std.path: buildPath;
   auto contents = buildPath("html",location,"contents.html");
   return exists(contents);
 }
@@ -240,11 +242,12 @@ void check_chapter(SysTime modified,
        exists(dest) &&
        // can skip update if older than dest
        modified <= timeLastModified(dest)) {
+      
       if(!contents_exist(location)) {
         // update contents anyway
         place_story(location,which);
       }
-       // always update if dest is gone
+
       print("unmodified",location,which);
       //setTimes(dest,modified,modified);
       return;
@@ -252,7 +255,7 @@ void check_chapter(SysTime modified,
 
     print("checking",location,which,"for updates!");
 
-    place_story(location,which);
+    auto story = place_story(location,which);
 
     // note: do not try to shrink the story if fewer chapters are found.
     // unless the markup doesn't exist. We might not be processing the full

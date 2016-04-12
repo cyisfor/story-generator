@@ -72,8 +72,10 @@ SysTime reindex(string outdir, Story story) {
 			story.update();
 		}
 		import std.file: write;
-		buildPath(outdir,story.location,"contents.html")
-		  .write(doc.root.html);
+		auto dest = buildPath(outdir,story.location,"contents.html");        
+        dest.write(doc.root.html);
+        dest.setTimes(maxTime,maxTime);
+        buildPath(outdir,story.location).setTimes(maxTime,maxTime);
 		return maxTime;
 	}
 	catch (AssertError e) {
