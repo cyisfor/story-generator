@@ -35,12 +35,17 @@ static this() {
 }
 
 SysTime reindex(string outdir, Story story) {
+  print("um");
 		static import htmlish;
 		import std.algorithm.mutation: move;
+        import std.algorithm: max;
 		if(story.description == null) {
 		  story.edit();
 		}
-		Document* doc = htmlish.parse!"description"(story.description,contents);
+        print("doing index",story.title);
+		auto doc = htmlish.parse!"description"(story.description,
+                                               contents,
+                                               story.title);
 	try {
 		auto toc = querySelector(doc, "#toc");
 
@@ -49,7 +54,7 @@ SysTime reindex(string outdir, Story story) {
 			print("updoot");
 			story.update();
 		}
-		for (int which = 0; which < story.chapters; ++which) {
+		for (int which = 0; which < max(1,story.chapters - 1); ++which) {
 			auto chapter = story[which];
 			maxTime = max(maxTime, chapter.modified);
 			auto link = doc.createElement("a",

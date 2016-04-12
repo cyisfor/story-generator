@@ -192,8 +192,6 @@ class Story {
 	writeln(description);
 	db.edit_story.bind(1,id);
 	db.get_info(db.edit_story);
-	db.edit_story.execute();
-	db.edit_story.reset();
   }
 };
 
@@ -320,6 +318,8 @@ class Database {
 	stmt.bind(2,readln().strip());
 	writeln("Description: (end with a dot)");
 	stmt.bind(3,readToDot());
+    stmt.execute();
+	stmt.reset();
   }
 
   Story story(string location) {
@@ -329,8 +329,6 @@ class Database {
 	if(rows.empty) {
 	  insert_story.bind(1,location);
 	  get_info(insert_story);
-	  insert_story.execute();
-	  insert_story.reset();
 	  rows = find_story.execute();
 	}
 	return new Story(rows.front.as!(Story.Params),this);

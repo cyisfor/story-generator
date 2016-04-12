@@ -155,7 +155,10 @@ auto cacheForward(int n = 2, Range)(Range r) {
 }
 	  
 
-void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
+void process_root(NodeType)(Document* dest,
+                            NodeType root,
+                            ref NodeType head,
+                            ref HTMLString title) {
   import std.algorithm.searching: any;
   import std.array: array;  
   import print: print;
@@ -175,10 +178,14 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 	  if(head_element) {
 		e.detach();
 		if(e.tag == "title") {
-          auto title = e.html;
-          if(title.length == 0) {
+          got_title = true;
+          auto maybetitle = e.html;
+          print("tootle pip",title,maybetitle);
+          if(maybetitle.length == 0) {
             // bork
-            e.destroy();
+            e.html = title;
+          } else {
+            title = maybetitle;
           }
 		  foreach(tit; head.children) {
 			if(tit.tag == "title") {
@@ -193,7 +200,7 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 
           // get <intitle/>
           foreach(tit;dest.querySelectorAll("intitle")) {
-            if(title.length > 0) {
+            if(title !is null && title.length > 0) {
               dest.createTextNode(title).insertAfter(tit);
             }
             tit.destroy();
@@ -209,7 +216,7 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 		  ctx.maybe_end("block");
 		  if(e.attr("hish")) {
 			e.removeAttr("hish");
-			process_root(dest, e, head);
+			process_root(dest, e, head, title);
 		  }
 		} else {
 		  /* start a paragraph if this element is a wimp
@@ -234,9 +241,11 @@ void process_root(NodeType)(Document* dest, NodeType root, ref NodeType head) {
 
 import std.typecons: NullableRef;
 
-auto ref parse(string ident = "content",bool replace=false)
+auto ref parse(string ident = "content",
+               bool replace=false)
 	(HTMLString source,
-	 Document* templit = null) {
+	 Document* templit = null,
+     string title = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
 
@@ -277,8 +286,17 @@ auto ref parse(string ident = "content",bool replace=false)
   }
 
   content.html(source);
-  print("processing htmlish");
-  process_root(dest,content, head);
+  print("processing htmlish for",title);
+  process_root(dest,content, head, title);
+  auto titles = dest.querySelectorAll("title");
+  if(titles.empty) {
+    auto tite = dest.createElement("title");
+    tite.html = title;
+    head.appendChild(tite);
+  } else {
+    auto tite = titles.front;
+    tite.html = title;
+  }
   if(replace) {
 	while(content.firstChild) {
 	  auto c = content.firstChild;

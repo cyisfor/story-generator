@@ -111,7 +111,7 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-    if( chapter.which + 1 < story.chapters ) {
+    if( chapter.which + 1 < story.chapters - 1 ) {
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
     dolink("contents.html","first","Up");
@@ -227,11 +227,13 @@ void check_chapter(SysTime modified,
       story.location = location;
       assert(story.location);
     }
+    print(story.chapters);
     // new chapters at the end, we need to increase the story's number of
     // chapters, before performing ANY updates.
     if(story.chapters <= which) {
       story.chapters = which+1;
     }
+        print(story.chapters);
     // note: do not try to shrink the story if fewer chapters are found.
     // unless the markup doesn't exist. We might not be processing the full
     // git log, and the highest chapter might not have updated this time.
