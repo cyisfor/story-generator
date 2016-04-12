@@ -21,6 +21,7 @@ import print: print;
 import std.conv: to;
 import std.datetime : SysTime;
 import std.algorithm: move;
+import std.functional: memoize;
 
 db.Story[string] stories;
 
@@ -168,6 +169,32 @@ struct Upd8 {
 bool[Upd8] updated;
 string only_location = null;
 
+void place_story(string location, int which) {
+  db.Story* story;
+  if(location in stories) {
+    story = &stories[location];
+  } else {
+    stories[location] = db.story(location);
+    story = &stories[location];
+    story.location = location;
+    assert(story.location);
+  }
+  // new chapters at the end, we need to increase the story's number of
+  // chapters, before performing ANY updates.
+  // the database counts known chapters, so this is just a
+  // temp cached number
+  if(story.chapters <= which) {
+    story.chapters = which+1;
+    story.dirty = true;
+  }
+}
+
+bool contents_exist_derp(string location) {
+  auto contents = buildPath("html",location,"contents.html");
+  return exists(contents);
+}
+alias contents_exist = memoize!contents_exist_derp;
+
 void check_chapter(SysTime modified,
                    string location,
                    string markup,
@@ -209,35 +236,23 @@ void check_chapter(SysTime modified,
     // technically this is not needed, since git records the commit time
     modified = max(timeLastModified(markup),modified);
 
-    // meh, rebuild this for every chapter?
-    auto contents = buildPath("html",location,"contents.html");
-    // always update if dest is gone
-    if(exists(contents) &&
+    if(// always update if dest is gone
        exists(dest) &&
+       // can skip update if older than dest
        modified <= timeLastModified(dest)) {
+      if(!contents_exist(location)) {
+        // update contents anyway
+        place_story(location,which);
+      }
+       // always update if dest is gone
       print("unmodified",location,which);
       //setTimes(dest,modified,modified);
       return;
     }
 
     print("checking",location,which,"for updates!");
-    db.Story* story;
-    if(location in stories) {
-      story = &stories[location];
-    } else {
-      stories[location] = db.story(location);
-      story = &stories[location];
-      story.location = location;
-      assert(story.location);
-    }
-    // new chapters at the end, we need to increase the story's number of
-    // chapters, before performing ANY updates.
-    // the database counts known chapters, so this is just a
-    // temp cached number
-    if(story.chapters <= which) {
-      story.chapters = which+1;
-      story.dirty = true;
-    }
+
+    place_story(location,which);
 
     // note: do not try to shrink the story if fewer chapters are found.
     // unless the markup doesn't exist. We might not be processing the full
