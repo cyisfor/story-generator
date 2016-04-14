@@ -75,13 +75,24 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   import std.ascii: isWhite;
   if(text.length == 0) return false;
   bool start_space, end_space;
-  if(text[0] == '\n') {
-	ctx.maybe_end("start");
-	start_space = true;
-  } else {
-	start_space = isWhite(text[0]);
+  size_t i;
+  // mehhhhhh ignore tabs and spaces, but keep newlines?
+  for(i=0;i<text.length;++i) {
+    if(text[i] == '\n') {
+      ctx.maybe_end("start");
+      start_space = true;
+      break;
+    }
+    if(!isWhite(text[i])) break;
+    start_space = true;
   }
-  ctx.ended_newline = text[$-1] == '\n';
+  for(i=text.length-1;i>=0;--i) {
+    if(!isWhite(text[i])) break;
+    if(text[i] == '\n') {
+      ctx.ended_newline = true;
+      break;
+    }
+  }
   
   end_space = ctx.ended_newline || isWhite(text[$-1]);
   
@@ -361,5 +372,15 @@ unittest {
   auto p = parse(`herp
 Italics should <i>not</i> be shoved to the back.
 derp`);
+  writeln(p.root.html);
+}
+
+unittest {
+  import std.stdio;
+  auto p = parse(`after <div hish="1"> a <u>tag</u>
+With newlines, it should be a new paragraph.</div>
+
+With only space at the <u>end</u>    
+It should still be a new paragraph.`);
   writeln(p.root.html);
 }
