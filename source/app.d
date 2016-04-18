@@ -53,6 +53,15 @@ struct Update {
   string name;
 
   void perform() {
+
+    // don't do anything on the last chapter, if multiple chapters
+    // and there's more than 1 chapter.
+
+    if(story.chapters > 1 && (which == story.chapters - 1)) {
+      print("Not updating last chapter",which);
+      return;
+    }
+    
     auto transaction = db.transaction();
     scope(success) transaction.commit();
     import std.file: setTimes;
@@ -111,7 +120,8 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-    if( chapter.which + 1 < story.chapters ) {
+    if( chapter.which + 2 < story.chapters ) {
+      print("urgh",chapter.which,story.chapters);
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
     dolink("contents.html","first","Contents");
