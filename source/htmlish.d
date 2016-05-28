@@ -37,6 +37,7 @@ struct Context(NodeType) {
 	}
   }
   void maybe_start(string where) {
+	print("start",where);
 	if(!in_paragraph) {
 	  appendText("\n");
 	  next(doc.createElement("p"));
@@ -45,6 +46,7 @@ struct Context(NodeType) {
 	}
   }
   void maybe_end(string where) {
+	print("end",where);
 	if(in_paragraph) {
 	  in_paragraph = false; // defer to next maybe_start
 	}
@@ -86,9 +88,10 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
     if(!isWhite(text[i])) break;
     start_space = true;
   }
-  for(i=text.length-1;i>=0;--i) {
-    if(!isWhite(text[i])) break;
-    if(text[i] == '\n') {
+  for(i=0;i<text.length;++i) {
+    long j = text.length - i - 1;
+    if(!isWhite(text[j])) break;
+    if(text[j] == '\n') {
       ctx.ended_newline = true;
       break;
     }
@@ -172,7 +175,6 @@ void process_root(NodeType)(Document* dest,
                             ref string title) {
   import std.algorithm.searching: any;
   import std.array: array;  
-  import print: print;
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
@@ -182,6 +184,8 @@ void process_root(NodeType)(Document* dest,
 	  if(process_text(ctx,e.text)) {
 		e.detach();
 	  }
+	  if(ctx.ended_newline)
+		print("ENDED NEWLINE",e.text);	  
 	} else if(e.isElementNode) {
 	  bool head_element =
 		any!((a) => a == e.tag)
@@ -222,12 +226,15 @@ void process_root(NodeType)(Document* dest,
 		  any!((a) => a == e.tag)
 		  (["ul","ol","p","div","table","blockquote"]);
 		if(block_element) {
+		  ctx.ended_newline = false;
+		  print("block element ",e.tag);
 		  ctx.maybe_end("block");
 		  if(e.attr("hish")) {
 			e.removeAttr("hish");
 			process_root(dest, e, head, title);
 		  }
 		} else {
+		  print("not block ",e.tag,ctx.ended_newline);
 		  /* start a paragraph if this element is a wimp
 			 but only if the last text node ended on a newline.
 			 otherwise the last text node and this should be in the same

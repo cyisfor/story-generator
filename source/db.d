@@ -9,7 +9,7 @@ version(GNU) {
 import std.datetime: SysTime, Clock;
 import std.file: exists, readText;
 import std.path: buildPath;
-import std.stdio: writeln,readln,write;
+import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
 
@@ -109,6 +109,8 @@ class Story {
   string description;
   int chapters;
   SysTime modified;
+  bool finished;
+  
   Database db;
   string location;
   Chapter[int] cache;
@@ -122,6 +124,7 @@ class Story {
 	string modified;
 	string location;
 	int chapters;
+	bool finished;
   };
   this(Params p, Database db) {
 	location = p.location;
@@ -129,6 +132,7 @@ class Story {
 	id = p.id;
 	title = p.title;
 	description = p.description;
+	finished = p.finished;
 	modified = parse_mytimestamp(p.modified);
 	chapters = p.chapters;
 	check_for_desc();
@@ -159,7 +163,12 @@ class Story {
   }
 
   void update() {
-	db.update_story.inject(id);
+	try {
+	  db.update_story.inject(id);
+	} catch(Exception e) {
+	  writefln("Story %d(%s) wouldn't update: %s",id,title,e);
+	  return;
+	}
 	db.num_story_chapters.bindAll(id);
 
 	chapters = db.num_story_chapters.execute().front.peek!int(0);
@@ -203,8 +212,11 @@ class Story {
 
 string readToDot() {
   auto lines = appender!string();
-  for(;;) {
-	string line = readln().strip();
+  while(!stdin.eof) {
+	string line = readln();
+
+	line = line.strip();
+	
 	if(line == ".") break;
 	lines.put(line);
 	lines.put("\n");
@@ -219,7 +231,7 @@ struct Derp {
 
 immutable string modified_format =
   "strftime('%Y/%m%d%H%M%f',modified)";
-immutable string story_fields = "id,title,description,"~modified_format~",location,chapters";
+immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished";
 
 
 immutable Derp[] statements = [
@@ -245,6 +257,9 @@ WHERE id = ?`},
   {q{edit_story},
    "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
 
+  {q{finish_story},
+   "UPDATE stories SET finished = ?2 WHERE id = ?1"},
+  
   {q{find_chapter},
    "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
 
@@ -297,6 +312,8 @@ struct OneShot {
   }
 }
 
+extern (C) int isatty(int fd);
+
 class Database {
   backend.Database db;
   mixin(declare_statements());
@@ -320,8 +337,12 @@ class Database {
   }
 
   void get_info(ref backend.Statement stmt) {
+	import std.exception: enforce;
+	enforce(isatty(stdin.fileno), "stdin isn't a tty");
 	write("Title: ");
+	enforce(!stdin.eof,"stdin ended unexpectedly!");
 	stmt.bind(2,readln().strip());
+	enforce(!stdin.eof,"stdin ended unexpectedly!");
 	writeln("Description: (end with a dot)");
 	stmt.bind(3,readToDot());
     stmt.execute();

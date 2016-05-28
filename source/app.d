@@ -41,6 +41,7 @@ void smackdir(string p) {
   } catch {}
 }
 
+bool update_last = false;
 
 struct Update {
   @disable this(this);
@@ -57,7 +58,11 @@ struct Update {
     // don't do anything on the last chapter, if multiple chapters
     // and there's more than 1 chapter.
 
-    if(story.chapters > 1 && (which == story.chapters - 1)) {
+	if(story.finished) {
+	  print("story set as finished",story.name);
+	} else if(update_last) {
+	  print("all stories set to include last chapter");
+	} else if(story.chapters > 1 && (which == story.chapters - 1)) {
       print("Not updating last chapter",which);
       return;
     }
@@ -120,7 +125,8 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-    if( chapter.which + 2 < story.chapters ) {
+	int derp = update_last ? 1 : (story.finished ? 1 : 2);
+    if( chapter.which + derp < story.chapters ) {
       print("urgh",chapter.which,story.chapters);
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
@@ -187,6 +193,7 @@ db.Story* place_story(string location, int which) {
     stories[location] = db.story(location);
     story = &stories[location];
     story.location = location;
+
     assert(story.location);
   }
   // new chapters at the end, we need to increase the story's number of
@@ -317,6 +324,9 @@ void main(string[] args)
     print("Edited");
     return;
   }
+  if(auto val = getenv("update_last")) {
+	update_last = true;
+  } 
 
   pending_updates = appender!(Update[]);
   if(getenv("story")) {
