@@ -1,5 +1,5 @@
 static import backend = d2sqlite3;
-import print: print;
+
 version(GNU) {
   import std.algorithm: map, findSplit, findSplitBefore;
 } else {
@@ -103,7 +103,6 @@ Chapter to_chapter(backend.Row row,
 
 
 class Story {
-
   long id;
   string title;
   string description;
@@ -208,6 +207,10 @@ class Story {
 	db.edit_story.bind(1,id);
 	db.get_info(db.edit_story);
   }
+
+  void finish(bool finished = true) {
+	db.finish_story.inject(id,finished);
+  }
 };
 
 string readToDot() {
@@ -227,6 +230,7 @@ string readToDot() {
 struct Derp {
   string name;
   string stmt;
+  string alter = null;
 }
 
 immutable string modified_format =
@@ -329,6 +333,9 @@ class Database {
   this() {
 	db = backend.Database("generate.sqlite");
 	db.run(import("schema.sql"));
+	try {
+	  db.execute("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
+	} catch(backend.SqliteException e) {}
 	import print: print;
 	mixin(initialize_statements());
 	begin.stmt = db.prepare("BEGIN");

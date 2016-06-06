@@ -37,7 +37,7 @@ struct Context(NodeType) {
 	}
   }
   void maybe_start(string where) {
-	print("start",where);
+	//print("start",where);
 	if(!in_paragraph) {
 	  appendText("\n");
 	  next(doc.createElement("p"));
@@ -46,7 +46,7 @@ struct Context(NodeType) {
 	}
   }
   void maybe_end(string where) {
-	print("end",where);
+	//print("end",where);
 	if(in_paragraph) {
 	  in_paragraph = false; // defer to next maybe_start
 	}
@@ -184,8 +184,8 @@ void process_root(NodeType)(Document* dest,
 	  if(process_text(ctx,e.text)) {
 		e.detach();
 	  }
-	  if(ctx.ended_newline)
-		print("ENDED NEWLINE",e.text);	  
+	  /*if(ctx.ended_newline)
+		print("ENDED NEWLINE",e.text);	  */
 	} else if(e.isElementNode) {
 	  bool head_element =
 		any!((a) => a == e.tag)
@@ -227,14 +227,14 @@ void process_root(NodeType)(Document* dest,
 		  (["ul","ol","p","div","table","blockquote"]);
 		if(block_element) {
 		  ctx.ended_newline = false;
-		  print("block element ",e.tag);
+		  //print("block element ",e.tag);
 		  ctx.maybe_end("block");
 		  if(e.attr("hish")) {
 			e.removeAttr("hish");
 			process_root(dest, e, head, title);
 		  }
 		} else {
-		  print("not block ",e.tag,ctx.ended_newline);
+		  //print("not block ",e.tag,ctx.ended_newline);
 		  /* start a paragraph if this element is a wimp
 			 but only if the last text node ended on a newline.
 			 otherwise the last text node and this should be in the same
@@ -302,7 +302,7 @@ auto ref parse(string ident = "content",
   }
 
   content.html(source);
-  print("processing htmlish for",title);
+  //print("processing htmlish for",title);
   process_root(dest,content, head, title);
   auto titles = dest.querySelectorAll("title");
   if(titles.empty) {

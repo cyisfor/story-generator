@@ -59,7 +59,7 @@ struct Update {
     // and there's more than 1 chapter.
 
 	if(story.finished) {
-	  print("story set as finished",story.name);
+	  print("story set as finished",story.title);
 	} else if(update_last) {
 	  print("all stories set to include last chapter");
 	} else if(story.chapters > 1 && (which == story.chapters - 1)) {
@@ -333,6 +333,12 @@ void main(string[] args)
     only_location = to!string(getenv("story"));
     assert(only_location,"specify a story please!");
     check_chapters_for(only_location);
+  } else if(auto location = getenv("finish")) {
+	db.story(to!string(location)).finish();
+	return;
+  } else if(auto location = getenv("continue")) {
+	db.story(to!string(location)).finish(false);
+	return;
   } else {
     check_git_log(args);
   }
