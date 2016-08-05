@@ -38,7 +38,7 @@ void smackdir(string p) {
   import std.file: mkdir;
   try {
     mkdir(p);
-  } catch {}
+  } catch (Exception e) {}
 }
 
 bool update_last = false;
@@ -230,7 +230,8 @@ void check_chapter(SysTime modified,
   import std.file: timeLastModified;
 
   if(!name.startsWith("chapter")) return;
-	writeln("uhhh",name,location)
+	import std.stdio;
+	writeln("uhhh",name,location);
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;
   int which = to!int(derp) - 1;
