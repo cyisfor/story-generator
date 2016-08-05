@@ -230,7 +230,7 @@ void check_chapter(SysTime modified,
   import std.file: timeLastModified;
 
   if(!name.startsWith("chapter")) return;
-
+	writeln("uhhh",name,location)
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;
   int which = to!int(derp) - 1;
