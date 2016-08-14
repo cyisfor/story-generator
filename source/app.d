@@ -125,9 +125,9 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-	int derp = update_last ? 1 : (story.finished ? 1 : 2);
-    if( chapter.which + derp < story.chapters ) {
-      print("urgh",chapter.which,story.chapters);
+		// only add 1 even with skipping the last chapter, because
+		// story.chapters is COUNT(chaps) from in the database.
+    if( chapter.which + 1 < story.chapters ) {
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
     dolink("contents.html","first","Contents");
@@ -200,8 +200,10 @@ db.Story* place_story(string location, int which) {
   // chapters, before performing ANY updates.
   // the database counts known chapters, so this is just a
   // temp cached number
+	print("place",location,which);
   if(story.chapters <= which) {
     story.chapters = which+1;
+		print("dirteh",story.chapters);
     story.dirty = true;
   }
   return story;
@@ -231,7 +233,6 @@ void check_chapter(SysTime modified,
 
   if(!name.startsWith("chapter")) return;
 	import std.stdio;
-	writeln("uhhh",name,location);
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;
   int which = to!int(derp) - 1;
@@ -352,7 +353,9 @@ void main(string[] args)
     foreach(ref update; pending_updates.data) {
       update.perform();
     }
+		print("stories",stories.values);
     foreach(story;stories.values) {
+			print("story",story.dirty);
       story.update();
     }
     reindex("html",stories);

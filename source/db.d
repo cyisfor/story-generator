@@ -1,4 +1,5 @@
 static import backend = d2sqlite3;
+import print: print;
 
 version(GNU) {
   import std.algorithm: map, findSplit, findSplitBefore;
@@ -61,15 +62,21 @@ SysTime parse_mytimestamp(string timestamp) {
 		// because long compile times are a good thing!
 		version(GNU) {
 			import core.time: FracSec;
-			const FracSec jeezus = (1000000000 * derp[1].to!float)
+			const FracSec jeezus = (10000000 * derp[1].to!float)
 				.to!long.FracSec.from!"hnsecs";
 		} else {
-			const Duration jeezus = (1000000000 * derp[1].to!float)
+			// because hecto-nanosecs = 100 nanosecs, so 1 billion / 100 per second
+			const Duration jeezus = (10000000 * derp[1].to!float)
 				.to!long.dur!"hnsecs";
 		}
-		return SysTime(DateTime(the_date,the_time),jeezus,UTC());
+		try {
+			return SysTime(DateTime(the_date,the_time),jeezus,UTC());
+		} catch(Exception e) {
+			print(derp[1],jeezus);
+			throw(e);
+		}
   } catch(TimeException e) {
-		writeln("uhhh",timestamp);
+		writeln("uhhh",derp);
 		throw(e);
   } catch(RangeError e) {
 		writeln("huhh?",timestamp);
@@ -134,7 +141,6 @@ class Story {
 			try {
 		modified = parse_mytimestamp(p.modified);
 			} catch(Exception e) {
-	import print: print;
 		print("uerrr",p.id);
 		throw(e);
 	}
