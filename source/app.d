@@ -94,7 +94,7 @@ struct Update {
     }
     auto make = herpaderp();
 
-    print("creating chapter",which,markup,story);
+    print("creating chapter",which,markup,story.id);
     auto chapter = story.get_chapter(which);
 
     auto base = buildPath(basedir,name ~ ".html");
@@ -125,8 +125,8 @@ struct Update {
     if( chapter.which > 0 ) {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
-		// only add 1 even with skipping the last chapter, because
-		// story.chapters is COUNT(chaps) from in the database.
+		int derp = update_last ? 1 : (story.finished ? 1 : 2);
+	print("urgh",derp,chapter.which,story.chapters);
     if( chapter.which + 1 < story.chapters ) {
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
@@ -192,6 +192,8 @@ db.Story* place_story(string location, int which) {
   } else {
     stories[location] = db.story(location);
     story = &stories[location];
+		print("found story at",location,story.id);
+
     story.location = location;
 
     assert(story.location);
@@ -200,12 +202,6 @@ db.Story* place_story(string location, int which) {
   // chapters, before performing ANY updates.
   // the database counts known chapters, so this is just a
   // temp cached number
-	print("place",location,which);
-  if(story.chapters <= which) {
-    story.chapters = which+1;
-		print("dirteh",story.chapters);
-    story.dirty = true;
-  }
   return story;
 }
 

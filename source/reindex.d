@@ -52,7 +52,7 @@ SysTime reindex(string outdir, Story story) {
 			print("updoot");
 			story.update();
 		}
-        print(story.title,"has",story.chapters,"chapters");
+		print(story.id,story.title,"has",story.chapters,"chapters");
 		for (int which = 0; which < story.chapters; ++which) {
 			auto chapter = story.get_chapter!true(which);
 			maxTime = max(maxTime, chapter.modified);
