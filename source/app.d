@@ -58,15 +58,17 @@ struct Update {
     // don't do anything on the last chapter, if multiple chapters
     // and there's more than 1 chapter.
 
-	if(story.finished) {
-	  print("story set as finished",story.title);
-	} else if(update_last) {
-	  print("all stories set to include last chapter");
-	} else if(story.chapters > 1 && (which == story.chapters - 1)) {
-      print("Not updating last chapter",which);
-      return;
-    }
-    
+		if(story.finished) {
+			print("story set as finished",story.title);
+		} else if(update_last) {
+			print("all stories set to include last chapter");
+		} else if(story.chapters > 1 &&
+							(!story.finished) &&
+							(which == story.chapters - 1)) {
+			print("Not updating last chapter",which);
+			return;
+		}
+
     auto transaction = db.transaction();
     scope(success) transaction.commit();
     import std.file: setTimes;
@@ -126,8 +128,8 @@ struct Update {
       dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
     }
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
-	print("urgh",derp,chapter.which,story.chapters);
-    if( chapter.which + 1 < story.chapters ) {
+		print("urgh",derp,chapter.which,story.chapters);
+    if( chapter.which + derp < story.chapters ) {
       dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
     }
     dolink("contents.html","first","Contents");
@@ -202,6 +204,9 @@ db.Story* place_story(string location, int which) {
   // chapters, before performing ANY updates.
   // the database counts known chapters, so this is just a
   // temp cached number
+  if(story.chapters <= which) {
+    story.dirty = true;
+  }
   return story;
 }
 
@@ -244,7 +249,7 @@ void check_chapter(SysTime modified,
 
     // only after we're sure we have a chapter that hasn't been queued
     // for updating.
-    
+
     /* check the destination modified time */
     name = chapter_name(which); // ugh, chapter1 -> index
 
@@ -257,7 +262,7 @@ void check_chapter(SysTime modified,
        exists(dest) &&
        // can skip update if older than dest
        modified <= timeLastModified(dest)) {
-      
+
       if(!contents_exist(location)) {
         // update contents anyway
         place_story(location,which);
@@ -291,7 +296,7 @@ void check_chapter(SysTime modified,
                                 "chapter" ~ to!string(which+1) ~ ext));
     }
   }
-  
+
   // don't add updates to a chapter twice, if modified twice in the logs
   // or 2, 3 in logs (adding side chapters 1,3, and 2,4)
 
@@ -323,8 +328,8 @@ void main(string[] args)
     return;
   }
   if(auto val = getenv("update_last")) {
-	update_last = true;
-  } 
+		update_last = true;
+  }
 
   pending_updates = appender!(Update[]);
   if(getenv("story")) {
@@ -332,11 +337,11 @@ void main(string[] args)
     assert(only_location,"specify a story please!");
     check_chapters_for(only_location);
   } else if(auto location = getenv("finish")) {
-	db.story(to!string(location)).finish();
-	return;
+		db.story(to!string(location)).finish();
+		return;
   } else if(auto location = getenv("continue")) {
-	db.story(to!string(location)).finish(false);
-	return;
+		db.story(to!string(location)).finish(false);
+		return;
   } else {
     check_git_log(args);
   }
@@ -346,13 +351,14 @@ void main(string[] args)
     foreach(outdir; stories.keys) {
       smackdir(buildPath("html",outdir));
     }
-    foreach(ref update; pending_updates.data) {
-      update.perform();
-    }
 		print("stories",stories.values);
     foreach(story;stories.values) {
-			print("story",story.dirty);
-      story.update();
+			print("dirty?",story.dirty);
+			story.update();
+    }
+
+    foreach(ref update; pending_updates.data) {
+      update.perform();
     }
     reindex("html",stories);
     print("dunZ");

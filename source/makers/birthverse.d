@@ -10,7 +10,7 @@ import std.conv: to;
 import std.string: strip;
 
 void make(string src, string dest) {
-  auto doc = createDocument(readText("template/birthverse.xhtml"));
+  auto doc = createDocument(import("template/birthverse.xhtml"));
   auto bod = querySelector(doc, "div.greentext");
   assert(bod);
 
