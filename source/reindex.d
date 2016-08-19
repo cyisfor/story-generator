@@ -34,9 +34,17 @@ static this() {
 	contents = createDocument(import("template/contents.xhtml"));
 }
 
+immutable string[] title_images =
+	["title.jpg",
+	 "title.png",
+	 "title.gif",
+	 "cover.jpg",
+	 "cover.png"];
+
 SysTime reindex(string outdir, Story story) {
 		static import htmlish;
 		import std.algorithm.mutation: move;
+		import std.file: exists;
 		if(story.description == null) {
 		  story.edit();
 		}
@@ -44,6 +52,21 @@ SysTime reindex(string outdir, Story story) {
 		auto doc = htmlish.parse!"description"(story.description,
                                                contents,
                                                story.title);
+		bool foundit = false;
+		auto title_image = querySelector(contents,"img#title");
+		foreach(img; title_images) {
+			auto path = buildPath(story.location,img);
+			if(exists(path)) {
+				title_image.attr("src",buildPath("..",path));
+				print("found title image",path,title_image);
+				title_image.parent.replaceChild(title_image,title_image);
+				foundit = true;
+				break;
+			}
+		}
+		if(!foundit) {
+			title_image.parent.removeChild(title_image);
+		}
 	try {
 		auto toc = querySelector(doc, "#toc");
 
