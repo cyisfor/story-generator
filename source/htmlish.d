@@ -19,55 +19,55 @@ struct Context(NodeType) {
   NodeType e;
   Document* doc;
   this(Document* doc, NodeType root) {
-	this.doc = doc;
-	this.e = root;
+		this.doc = doc;
+		this.e = root;
   }
   void next(NodeType e) {
-	if(!started) {
-	  this.e.appendChild(detach(e));
-	  this.e = e;
-	  started = true;
-	} else {
-	  if(in_paragraph) {
-		this.e.appendChild(detach(e));
-	  } else {
-		e.insertAfter(this.e);
-		this.e = e;
-	  }
-	}
+		if(!started) {
+			this.e.appendChild(detach(e));
+			this.e = e;
+			started = true;
+		} else {
+			if(in_paragraph) {
+				this.e.appendChild(detach(e));
+			} else {
+				e.insertAfter(this.e);
+				this.e = e;
+			}
+		}
   }
   void maybe_start(string where) {
-	//print("start",where);
-	if(!in_paragraph) {
-	  appendText("\n");
-	  next(doc.createElement("p"));
-	  appendText("\n");
-	  in_paragraph = true;
-	}
+		//print("start",where);
+		if(!in_paragraph) {
+			appendText("\n");
+			next(doc.createElement("p"));
+			appendText("\n");
+			in_paragraph = true;
+		}
   }
   void maybe_end(string where) {
-	//print("end",where);
-	if(in_paragraph) {
-	  in_paragraph = false; // defer to next maybe_start
-	}
+		//print("end",where);
+		if(in_paragraph) {
+			in_paragraph = false; // defer to next maybe_start
+		}
   }
   void appendText(HTMLString text) {
-	scope(failure) {
-	  if(e.lastChild) {
-		print("failed",e.lastChild.html);
-	  } else {
-		print("uhh no last child");
-	  }
-	}
-	if(this.e.isElementNode) {
-	  if(this.e.lastChild && this.e.lastChild.isTextNode) {
-		this.e.lastChild.text(this.e.lastChild.text ~ text);
-	  } else {
-		this.e.appendText(text);
-	  }
-	} else {
-	  this.e.text(this.e.text ~ text);
-	}
+		scope(failure) {
+			if(e.lastChild) {
+				print("failed",e.lastChild.html);
+			} else {
+				print("uhh no last child");
+			}
+		}
+		if(this.e.isElementNode) {
+			if(this.e.lastChild && this.e.lastChild.isTextNode) {
+				this.e.lastChild.text(this.e.lastChild.text ~ text);
+			} else {
+				this.e.appendText(text);
+			}
+		} else {
+			this.e.text(this.e.text ~ text);
+		}
   }
 }
 
@@ -100,22 +100,22 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
   end_space = ctx.ended_newline || isWhite(text[$-1]);
   
   auto lines = text.strip()
-	.splitter('\n')
-	.map!"a.strip()"
-	.filter!"a.length > 0";
+		.splitter('\n')
+		.map!"a.strip()"
+		.filter!"a.length > 0";
   if(start_space) ctx.appendText(" ");  
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
   lines.popFront();
   foreach(line; lines) {
-	// end before start, to leave the last one dangling out there.
-	ctx.maybe_end("middle");
-	ctx.maybe_start("middle");
-	ctx.appendText(line);
+		// end before start, to leave the last one dangling out there.
+		ctx.maybe_end("middle");
+		ctx.maybe_start("middle");
+		ctx.appendText(line);
   }
   if(end_space) {
-	ctx.appendText(" ");
+		ctx.appendText(" ");
   }
   return true;
 }
@@ -123,46 +123,46 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
 auto cacheForward(int n = 2, Range)(Range r) {
   import std.range: ElementType;
   struct CacheForward {
-	@disable this(this);
-	Range r;
-	ElementType!Range[n] cache;
-	int put = 0;
-	int get = 0;
-	bool full = false;
-	void initialize() {
-	  while(!r.empty) {
-		cache[put] = r.front;
-		r.popFront();
-		++put;
-		if(put == n) {
-		  put = 0;
-		  full = true;
-		  break;
+		@disable this(this);
+		Range r;
+		ElementType!Range[n] cache;
+		int put = 0;
+		int get = 0;
+		bool full = false;
+		void initialize() {
+			while(!r.empty) {
+				cache[put] = r.front;
+				r.popFront();
+				++put;
+				if(put == n) {
+					put = 0;
+					full = true;
+					break;
+				}
+			}
 		}
-	  }
-	}
-	bool empty() {
-	  return !full && put == get;
-	}
-	typeof(r.front()) front() {
-	  return cache[get];
-	}
-	void popFront() {
-	  assert(full || put != get);
-	  get = (get + 1) % n;
-	  if(r.empty) {
-		full = false;
-	  } else {
-		// never not full since we put for every get
-		// until the underlying range is empty
-		cache[put] = r.front;
-		r.popFront();
-		put = (put + 1) % n;
-	  }
-	}
+		bool empty() {
+			return !full && put == get;
+		}
+		typeof(r.front()) front() {
+			return cache[get];
+		}
+		void popFront() {
+			assert(full || put != get);
+			get = (get + 1) % n;
+			if(r.empty) {
+				full = false;
+			} else {
+				// never not full since we put for every get
+				// until the underlying range is empty
+				cache[put] = r.front;
+				r.popFront();
+				put = (put + 1) % n;
+			}
+		}
   }
   CacheForward ret = {
-	r = r
+		r = r
   };
   ret.initialize();
   return ret;
@@ -179,20 +179,20 @@ void process_root(NodeType)(Document* dest,
   bool in_paragraph = false;
 
   foreach(e;array(root.children)) {
-	if(e.isTextNode) {
-	  import std.algorithm.searching: find;
-	  if(process_text(ctx,e.text)) {
-		e.detach();
-	  }
-	  /*if(ctx.ended_newline)
-		print("ENDED NEWLINE",e.text);	  */
-	} else if(e.isElementNode) {
-	  bool head_element =
-		any!((a) => a == e.tag)
-		(["title","meta","link","style","script"]);
-	  if(head_element) {
-		e.detach();
-		if(e.tag == "title") {
+		if(e.isTextNode) {
+			import std.algorithm.searching: find;
+			if(process_text(ctx,e.text)) {
+				e.detach();
+			}
+			/*if(ctx.ended_newline)
+				print("ENDED NEWLINE",e.text);	  */
+		} else if(e.isElementNode) {
+			bool head_element =
+				any!((a) => a == e.tag)
+				(["title","meta","link","style","script"]);
+			if(head_element) {
+				e.detach();
+				if(e.tag == "title") {
           auto maybetitle = e.html;
           if(maybetitle.length == 0) {
             // bork
@@ -200,8 +200,8 @@ void process_root(NodeType)(Document* dest,
           } else {
             title = to!string(maybetitle);
           }
-		  foreach(tit; head.children) {
-			if(tit.tag == "title") {
+					foreach(tit; head.children) {
+						if(tit.tag == "title") {
               if(title.length > 0) {
                 // no two titles!
                 tit.destroy();
@@ -218,40 +218,40 @@ void process_root(NodeType)(Document* dest,
             }
             tit.destroy();
           }
-		}
-		head.appendChild(e);
+				}
+				head.appendChild(e);
         // NOT ctx.next(e);
-	  } else {
-		bool block_element =
-		  any!((a) => a == e.tag)
-		  (["ul","ol","p","div","table","blockquote"]);
-		if(block_element) {
-		  ctx.ended_newline = false;
-		  //print("block element ",e.tag);
-		  ctx.maybe_end("block");
-		  if(e.attr("hish")) {
-			e.removeAttr("hish");
-			process_root(dest, e, head, title);
-		  }
-		} else {
-		  //print("not block ",e.tag,ctx.ended_newline);
-		  /* start a paragraph if this element is a wimp
-			 but only if the last text node ended on a newline.
-			 otherwise the last text node and this should be in the same
-			 paragraph */
-		  if(ctx.ended_newline) {
-			import std.format: format;
-			auto buf = format("wimp tag {{%s}}",e.tag);
-			ctx.maybe_end(buf);
-			ctx.maybe_start(buf);
-			ctx.ended_newline = false;
-		  }
-		}
-		ctx.next(e);
+			} else {
+				bool block_element =
+					any!((a) => a == e.tag)
+					(["ul","ol","p","div","table","blockquote"]);
+				if(block_element) {
+					ctx.ended_newline = false;
+					//print("block element ",e.tag);
+					ctx.maybe_end("block");
+					if(e.attr("hish")) {
+						e.removeAttr("hish");
+						process_root(dest, e, head, title);
+					}
+				} else {
+					//print("not block ",e.tag,ctx.ended_newline);
+					/* start a paragraph if this element is a wimp
+						 but only if the last text node ended on a newline.
+						 otherwise the last text node and this should be in the same
+						 paragraph */
+					if(ctx.ended_newline) {
+						import std.format: format;
+						auto buf = format("wimp tag {{%s}}",e.tag);
+						ctx.maybe_end(buf);
+						ctx.maybe_start(buf);
+						ctx.ended_newline = false;
+					}
+				}
+				ctx.next(e);
       }
-	} else {
-	  ctx.next(e);
-	}
+		} else {
+			ctx.next(e);
+		}
   }
 }
 
@@ -261,12 +261,12 @@ auto ref parse(string ident = "content",
                bool replace=false)
 	(HTMLString source,
 	 Document* templit = null,
-     string title = null) {
+	 string title = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
 
   if(templit == null) {
-	templit = default_template;
+		templit = default_template;
   }
 
   auto dest = templit.clone();
@@ -278,26 +278,28 @@ auto ref parse(string ident = "content",
   auto derp = dest.root.by_name!(ident);
   typeof(derp.front) content;
   if(derp.empty) {
-	auto dsux = chain(dest.root.by_id!(ident),
-					  dest.root.by_name!"body");
+		auto dsux = chain(dest.root.by_id!(ident),
+											dest.root.by_name!"body");
 
-	if(dsux.empty) {
-	  import print: print;
-	  print("no content found!");
-	  content = dest.createElement("body");
-	  dest.root.appendChild(content);
-	} else {
-	  content = dsux.front;
-	}
+		if(dsux.empty) {
+			import print: print;
+			print("no content found!");
+			content = dest.createElement("body");
+			dest.root.appendChild(content);
+		} else {
+			print("content derp",content);
+				
+			content = dsux.front;
+		}
   } else {
-	// have to replace <content>
-	auto derrp = derp.front;
+		// have to replace <content>
+		auto derrp = derp.front;
     assert(derrp);
-	content = dest.createElement("div");
-	foreach(e;derrp.children) {
-	  content.appendChild(detach(e));
-	}
-	content.insertAfter(derrp);
+		content = dest.createElement("div");
+		foreach(e;derrp.children) {
+			content.appendChild(detach(e));
+		}
+		content.insertAfter(derrp);
     derrp.destroy();
   }
 
@@ -319,11 +321,11 @@ auto ref parse(string ident = "content",
     intit.detach();
   }
   if(replace) {
-	while(content.firstChild) {
-	  auto c = content.firstChild;
-	  detach(c).insertBefore(content);
-	}
-	content.detach();
+		while(content.firstChild) {
+			auto c = content.firstChild;
+			detach(c).insertBefore(content);
+		}
+		content.detach();
   }
   assert(dest.root.document_ == dest,to!string(dest));
   return move(dest);
@@ -339,11 +341,11 @@ void make(string src, string dest, Document* templit = null) {
   // append to the file in place
   import std.stdio;
   struct Derpender {
-      File ou;
-      void put(T)(T s) {
-          ou.write(to!string(s));
-          ou.flush();
-      }
+		File ou;
+		void put(T)(T s) {
+			ou.write(to!string(s));
+			ou.flush();
+		}
   }
   File destf = File(dest~".temp","wt");
   scope(exit) destf.close();

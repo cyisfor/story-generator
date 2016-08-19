@@ -53,13 +53,12 @@ SysTime reindex(string outdir, Story story) {
                                                contents,
                                                story.title);
 		bool foundit = false;
-		auto title_image = querySelector(contents,"img#title");
+		auto title_image = querySelector(doc,"img#title");
 		foreach(img; title_images) {
 			auto path = buildPath(story.location,img);
 			if(exists(path)) {
-				title_image.attr("src",buildPath("..",path));
+				title_image.attr("src","../../" ~ path);
 				print("found title image",path,title_image);
-				title_image.parent.replaceChild(title_image,title_image);
 				foundit = true;
 				break;
 			}
