@@ -64,7 +64,7 @@ struct Update {
 			print("all stories set to include last chapter");
 		} else if(story.chapters > 1 &&
 							(!story.finished) &&
-							(which == story.chapters - 1)) {
+							(which >= story.chapters - 1)) {
 			print("Not updating last chapter",which);
 			return;
 		}
@@ -205,7 +205,8 @@ db.Story* place_story(string location, int which) {
   // the database counts known chapters, so this is just a
   // temp cached number
   if(story.chapters <= which) {
-    story.dirty = true;
+    story.chapters = which + 1;
+		story.dirty = true;
   }
   return story;
 }

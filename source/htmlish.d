@@ -96,14 +96,14 @@ bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
       break;
     }
   }
-  
+
   end_space = ctx.ended_newline || isWhite(text[$-1]);
-  
+
   auto lines = text.strip()
 		.splitter('\n')
 		.map!"a.strip()"
 		.filter!"a.length > 0";
-  if(start_space) ctx.appendText(" ");  
+  if(start_space) ctx.appendText(" ");
   if(lines.empty) return false;
   ctx.maybe_start("beginning");
   ctx.appendText(lines.front);
@@ -167,14 +167,14 @@ auto cacheForward(int n = 2, Range)(Range r) {
   ret.initialize();
   return ret;
 }
-	  
+
 
 void process_root(NodeType)(Document* dest,
                             NodeType root,
                             ref NodeType head,
                             ref string title) {
   import std.algorithm.searching: any;
-  import std.array: array;  
+  import std.array: array;
   auto ctx = Context!NodeType(dest,root);
   bool in_paragraph = false;
 
@@ -273,7 +273,7 @@ auto ref parse(string ident = "content",
   assert(dest.root.document_ == dest,to!string(dest));
 
   auto head = dest.root.by_name!"head".front;
-  
+
   // find where we're going to dump this htmlish
   auto derp = dest.root.by_name!(ident);
   typeof(derp.front) content;
@@ -287,9 +287,9 @@ auto ref parse(string ident = "content",
 			content = dest.createElement("body");
 			dest.root.appendChild(content);
 		} else {
-			print("content derp",content);
-				
 			content = dsux.front;
+			print("content derp",content.outerHTML);
+
 		}
   } else {
 		// have to replace <content>
@@ -302,8 +302,16 @@ auto ref parse(string ident = "content",
 		content.insertAfter(derrp);
     derrp.destroy();
   }
+	auto temp = dest.createElement("div");
+	temp.html(source);
+	process_root(dest, temp, head, title);
+	import std.array: array;
+	foreach(child;temp.children.array) {
+		child.detach();
+		content.appendChild(child);
+	}
 
-  content.html(source);
+	destroy(temp);
   //print("processing htmlish for",title);
   process_root(dest,content, head, title);
   auto titles = dest.querySelectorAll("title");
@@ -389,7 +397,7 @@ unittest {
   auto p = parse(`after <div hish="1"> a <u>tag</u>
 With newlines, it should be a new paragraph.</div>
 
-With only space at the <u>end</u>    
+With only space at the <u>end</u>
 It should still be a new paragraph.`);
   writeln(p.root.html);
 }
