@@ -205,7 +205,7 @@ db.Story* place_story(string location, int which) {
   // the database counts known chapters, so this is just a
   // temp cached number
   if(story.chapters <= which) {
-	  print("UPDATE STORY CHAPTERS",location)
+	  print("UPDATE STORY CHAPTERS",location);
     story.chapters = which + 1;
 		story.dirty = true;
   }

@@ -182,7 +182,8 @@ class Story {
 		}
 		db.num_story_chapters.bindAll(id);
 
-		chapters = db.num_story_chapters.execute().front.peek!int(0);
+		import std.algorithm.comparison: max;
+		chapters = max(chapters,db.num_story_chapters.execute().front.peek!int(0));
 		db.num_story_chapters.reset();
     dirty = false;
   }
