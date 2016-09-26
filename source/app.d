@@ -205,6 +205,7 @@ db.Story* place_story(string location, int which) {
   // the database counts known chapters, so this is just a
   // temp cached number
   if(story.chapters <= which) {
+	  print("UPDATE STORY CHAPTERS",location)
     story.chapters = which + 1;
 		story.dirty = true;
   }
@@ -241,12 +242,15 @@ void check_chapter(SysTime modified,
   if(!exists(location)) return;
 
   // now we're sure it's a chapter.
+  print("found",location,name);
 
   // don't update if we're filtering by location...?
   if(only_location && (!location.endsWith(only_location))) return;
 
-  void checked_chapter(int which, string markup) {
-    if(!exists(markup)) return;
+  bool checked_chapter(int which, string markup, bool side_chapter) {
+	  print("checking",which,side_chapter);
+	  // return true if updated
+    if(!exists(markup)) return false;
 
     // only after we're sure we have a chapter that hasn't been queued
     // for updating.
@@ -262,6 +266,8 @@ void check_chapter(SysTime modified,
     if(// always update if dest is gone
        exists(dest) &&
        // can skip update if older than dest
+	   // EXCEPT if a side chapter
+	   side_chapter == false &&
        modified <= timeLastModified(dest)) {
 
       if(!contents_exist(location)) {
@@ -271,7 +277,7 @@ void check_chapter(SysTime modified,
 
       print("unmodified",location,which);
       //setTimes(dest,modified,modified);
-      return;
+      return false;
     }
 
     print("checking",location,which,"for updates!");
@@ -283,6 +289,7 @@ void check_chapter(SysTime modified,
     // git log, and the highest chapter might not have updated this time.
     pending_updates.emplacePut(story,modified,which,location,
                                markup,dest,name);
+	return true;
   }
 
   void checked_chapter_side(int which) {
@@ -292,9 +299,10 @@ void check_chapter(SysTime modified,
       // adjust stuff to aim at the new chapter
       updated[key] = true;
       checked_chapter(which,
-                      buildPath(location,
-                                "markup",
-                                "chapter" ~ to!string(which+1) ~ ext));
+					  buildPath(location,
+								"markup",
+								"chapter" ~ to!string(which+1) ~ ext),
+		  true);
     }
   }
 
@@ -303,9 +311,12 @@ void check_chapter(SysTime modified,
 
   auto key = Upd8(location,which);
   if(key !in updated) {
-    updated[key] = true;
-    checked_chapter(which,markup);
+	  updated[key] = true;
+	  if(checked_chapter(which,markup,false)) return;
   }
+  // the sides might not have been checked, even if updated[key] is true
+  // i.e. this chapter itself was a side
+
   if(which>0)
     checked_chapter_side(which-1);
   checked_chapter_side(which+1);
@@ -346,6 +357,7 @@ void main(string[] args)
   } else {
     check_git_log(args);
   }
+  print("NOW WE NEVER UPDATE STORY.CHAPTERS");
   if(stories.length) {
     smackdir("html");
     // now we can create all the outdirs
