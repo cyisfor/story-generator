@@ -68,7 +68,10 @@ struct Update {
 			print("Not updating last chapter",which);
 			return;
 		}
-
+		noseriously();
+	}
+	void noseriously() {
+		// unconditionally update
     auto transaction = db.transaction();
     scope(success) transaction.commit();
     import std.file: setTimes;
@@ -241,86 +244,56 @@ void check_chapter(SysTime modified,
   int which = to!int(derp) - 1;
   if(!exists(location)) return;
 
-  // now we're sure it's a chapter.
-  print("found",location,name);
-
   // don't update if we're filtering by location...?
   if(only_location && (!location.endsWith(only_location))) return;
 
-  bool checked_chapter(int which, string markup, bool side_chapter) {
-	  print("checking",which,side_chapter);
-	  // return true if updated
-    if(!exists(markup)) return false;
+	auto key = Upd8(location,which);
+  if(key in updated) return;
+	updated[key] = true;
+	print("checking",which,side_chapter);
+	// return true if updated
+	if(!exists(markup)) return false;
 
-    // only after we're sure we have a chapter that hasn't been queued
-    // for updating.
+	// only after we're sure we have a chapter that hasn't been queued
+	// for updating.
 
-    /* check the destination modified time */
-    name = chapter_name(which); // ugh, chapter1 -> index
+	/* check the destination modified time */
+	name = chapter_name(which); // ugh, chapter1 -> index
 
-    auto dest = buildPath("html",location, name ~ ".html");
+	auto dest = buildPath("html",location, name ~ ".html");
 
-    // technically this is not needed, since git records the commit time
-    modified = max(timeLastModified(markup),modified);
+	// technically this is not needed, since git records the commit time
+	modified = max(timeLastModified(markup),modified);
 
-    if(// always update if dest is gone
-       exists(dest) &&
-       // can skip update if older than dest
-	   // EXCEPT if a side chapter
-	   side_chapter == false &&
-       modified <= timeLastModified(dest)) {
+	if(// always update if dest is gone
+		exists(dest) &&
+		// can skip update if older than dest
+		// EXCEPT if a side chapter
+		side_chapter == false &&
+		modified <= timeLastModified(dest)) {
 
-      if(!contents_exist(location)) {
-        // update contents anyway
-        place_story(location,which);
-      }
+		if(!contents_exist(location)) {
+			// update contents anyway
+			place_story(location,which);
+		}
 
-      print("unmodified",location,which);
-      //setTimes(dest,modified,modified);
-      return false;
-    }
+		print("unmodified",location,which);
+		//setTimes(dest,modified,modified);
+		return false;
+	}
 
-    print("checking",location,which,"for updates!");
+	print("checking",location,which,"for updates!");
 
-    auto story = place_story(location,which);
+	auto story = place_story(location,which);
 
-    // note: do not try to shrink the story if fewer chapters are found.
-    // unless the markup doesn't exist. We might not be processing the full
-    // git log, and the highest chapter might not have updated this time.
-    pending_updates.emplacePut(story,modified,which,location,
-                               markup,dest,name);
-	return true;
-  }
-
-  void checked_chapter_side(int which) {
-    auto key = Upd8(location,which);
-    if(key !in updated) {
-      // since this isn't chapter 0, (markup provided by git)
-      // adjust stuff to aim at the new chapter
-      updated[key] = true;
-      checked_chapter(which,
-					  buildPath(location,
-								"markup",
-								"chapter" ~ to!string(which+1) ~ ext),
-		  true);
-    }
-  }
-
-  // don't add updates to a chapter twice, if modified twice in the logs
-  // or 2, 3 in logs (adding side chapters 1,3, and 2,4)
-
-  auto key = Upd8(location,which);
-  if(key !in updated) {
-	  updated[key] = true;
-	  if(checked_chapter(which,markup,false)) return;
-  }
-  // the sides might not have been checked, even if updated[key] is true
-  // i.e. this chapter itself was a side
-
-  if(which>0)
-    checked_chapter_side(which-1);
-  checked_chapter_side(which+1);
+	// note: do not try to shrink the story if fewer chapters are found.
+	// unless the markup doesn't exist. We might not be processing the full
+	// git log, and the highest chapter might not have updated this time.
+	pending_updates.emplacePut(story,modified,which,location,
+														 markup,dest,name);
 }
+
+void story_nextderpthing(
 
 void main(string[] args)
 {

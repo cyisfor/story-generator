@@ -13,6 +13,7 @@ modified TIMESTAMP DEFAULT (julianday(0)) NOT NULL,
 which INTEGER NOT NULL,
 title TEXT,
 first_words TEXT,
+has_next BOOLEAN DEFAULT 0 NOT NULL,
 UNIQUE(story,which));
 
 CREATE INDEX IF NOT EXISTS bystory ON chapters(story);

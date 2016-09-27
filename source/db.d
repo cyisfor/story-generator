@@ -251,47 +251,52 @@ immutable string modified_format =
 immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished";
 
 
-immutable Derp[] statements = [
-															 {q{update_desc},
-																"UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
+immutable Derp[] statements =
+	[
+		{q{update_desc},
+		 "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
 
-															 {q{num_story_chapters},
-																"SELECT COUNT(1) FROM chapters WHERE story = ?"},
+		{q{num_story_chapters},
+		 "SELECT COUNT(1) FROM chapters WHERE story = ?"},
 
-															 {q{find_story},
-																"SELECT "~story_fields~" from stories where location = ?"},
+		{q{find_story},
+		 "SELECT "~story_fields~" from stories where location = ?"},
 
-															 // just some shortcut bookkeeping
-															 {q{update_story},
-																`UPDATE stories SET
+		// just some shortcut bookkeeping
+		{q{update_story},
+		 `UPDATE stories SET
 modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
 chapters = (select count(1) from chapters where story = stories.id)
 WHERE id = ?`},
 
-															 {q{insert_story},
-																"INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
+		{q{insert_story},
+		 "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
 
-															 {q{edit_story},
-																"UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
+		{q{edit_story},
+		 "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
 
-															 {q{finish_story},
-																"UPDATE stories SET finished = ?2 WHERE id = ?1"},
+		{q{finish_story},
+		 "UPDATE stories SET finished = ?2 WHERE id = ?1"},
 
-															 {q{find_chapter},
-																"SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
+		{q{find_chapter},
+		 "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
 
-															 {q{insert_chapter},
-																"INSERT INTO chapters (which, story) VALUES (?,?)"},
+		{q{insert_chapter},
+		 "INSERT INTO chapters (which, story) VALUES (?,?)"},
 
-															 {q{delete_chapter},
-																"DELETE FROM chapters WHERE which = ? AND story = ?"},
+		{q{delete_chapter},
+		 "DELETE FROM chapters WHERE which = ? AND story = ?"},
 
-															 {q{update_chapter},
-																"UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
+		{q{update_chapter},
+		 "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
 
-															 {q{latest_stories},
-																"SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
-															 ];
+		{q{latest_stories},
+		 "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
+		{q{need_have_next},
+		 "SELECT chapters.id,chapters.which,story.id,story.finished FROM chapters WHERE story = ? AND NOT has_next AND which != (SELECT MAX(which) FROM chapters WHERE story = ?) - 1"},
+		{q{given_next},
+		 "UPDATE chapters SET has_next = 1 WHERE id = ?"},
+		];
 
 string declare_statements() {
   string ret;
