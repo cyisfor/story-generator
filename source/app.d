@@ -26,6 +26,8 @@ import std.functional: memoize;
 
 db.Story[string] stories;
 
+bool[string] need_reindex;
+
 void delegate(string,string) default_make_chapter;
 
 static this() {
@@ -70,6 +72,7 @@ struct Update {
 			// undo possible side chapter
 			auto sidekey = Upd8(location, which-1);
 			if(sidekey in side_chapters) {
+				print("not updating previous (side) chapter",which-1);
 				no_update[sidekey] = true;
 			}
 			return;
@@ -77,9 +80,11 @@ struct Update {
 			auto key = Upd8(location, which);
 			if(key in no_update) return;
 		}
+		print("updating ugh",which,story.chapters,which >= story.chapters-1);
 		noseriously();
 	}
 	void noseriously() {
+		need_reindex[location] = true;
 		// unconditionally update
     auto transaction = db.transaction();
     scope(success) transaction.commit();
@@ -228,7 +233,7 @@ db.Story* place_story(string location, int which) {
   // the database counts known chapters, so this is just a
   // temp cached number
   if(story.chapters <= which) {
-	  print("UPDATE STORY CHAPTERS",location);
+	  print("UPDATE STORY CHAPTERS",location,which);
     story.chapters = which + 1;
 		story.dirty = true;
   }
@@ -271,7 +276,7 @@ void check_chapter(SysTime modified,
 	auto key = Upd8(location,which);
   if(key in updated) return;
 	updated[key] = true;
-	print("checking",which);
+
 	// return true if updated
 	if(!exists(markup)) return;
 
@@ -287,7 +292,6 @@ void check_chapter(SysTime modified,
 	modified = max(timeLastModified(markup),modified);
 
 	auto side_chapter = key in side_chapters;
-	print("dest",dest,modified <= timeLastModified(dest));
 	if(// always update if dest is gone
 		exists(dest) &&
 		// can skip update if older than dest
@@ -304,7 +308,7 @@ void check_chapter(SysTime modified,
 		return;
 	}
 
-	print("checking",location,which,"for updates!");
+	print("checking",location,which,"for updates!",modified,dest,exists(dest));
 
 	auto story = place_story(location,which);
 
@@ -336,7 +340,7 @@ void check_chapter(SysTime modified,
 		auto name = chapter_name(which);
 		auto dest = buildPath("html",location, name ~ ".html");
 		updated[key] = true;
-		place_story(location,which);
+		//place_story(location,which); this will increase chapters beyond the last!
 		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
 	}
 	if(which > 0) {
@@ -380,12 +384,16 @@ void main(string[] args)
   } else {
     check_git_log(args);
   }
-  print("NOW WE NEVER UPDATE STORY.CHAPTERS");
   if(stories.length) {
     smackdir("html");
     // now we can create all the outdirs
     foreach(outdir; stories.keys) {
-      smackdir(buildPath("html",outdir));
+			if(outdir !in need_reindex) {
+				print("didn't need to update",outdir);
+				stories.remove(outdir);
+			} else {
+				smackdir(buildPath("html",outdir));
+			}
     }
 		print("stories",stories.values);
     foreach(story;stories.values) {
