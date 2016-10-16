@@ -161,7 +161,7 @@ struct Update {
   }
 }
 
-void check_chapter(SysTime modified, string markup) {
+void check_chapter(SysTime modified, string markup, string top) {
   import std.array : array;
   version(GNU) {
     import std.algorithm: findSplitBefore;
@@ -178,7 +178,7 @@ void check_chapter(SysTime modified, string markup) {
   //    location / "markup" / chapterxx.ext
 
   check_chapter(modified, to!string(path[0]),
-                markup,
+                markup, top, 
                 findSplitBefore(to!string(path[path.length-1]),".").expand);
 }
 
@@ -225,6 +225,7 @@ alias contents_exist = memoize!contents_exist_derp;
 void check_chapter(SysTime modified,
                    string location,
                    string markup,
+									 string markuploc,
                    string name,
                    string ext) {
   import std.string : isNumeric;
@@ -265,11 +266,17 @@ void check_chapter(SysTime modified,
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
 
+	auto side_chapter = key in side_chapters;
+	if(side_chapter is null) {
+		side_chapters[key] = true;
+		side_chapter = key in side_chapters;
+	}
+	
 	if(// always update if dest is gone
 		exists(dest) &&
 		// can skip update if older than dest
 		// EXCEPT if a side chapter
-		side_chapter == false &&
+		side_chapter == null &&
 		modified <= timeLastModified(dest)) {
 
 		if(!contents_exist(location)) {
@@ -291,9 +298,26 @@ void check_chapter(SysTime modified,
 	// git log, and the highest chapter might not have updated this time.
 	pending_updates.emplacePut(story,modified,which,location,
 														 markup,dest,name);
-}
 
-void story_nextderpthing(
+	// also check side chapters for updates
+	void check_side(int which) {
+		auto key = Upd8(location,which);
+		auto side = sidekey in side_chapters;
+		if(!(side is null)) return;
+		auto markup = buildPath(markuploc,"chapter%d.hish".format(which));
+		Systime modified;
+		try {
+			modified = timeLastModified(markup);
+		} catch(e) {
+			markup = buildPath(markuploc,"chapter%d.txt".format(which));
+			modified = timeLastModified(markup);
+		} catch(e) {
+			return;
+		}
+		auto name = chapter_name(which);
+		auto dest = buildPath("html",location, name ~ ".html");
+		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
+}
 
 void main(string[] args)
 {
@@ -360,7 +384,7 @@ void check_chapters_for(string location) {
 
   string top = buildPath(location,"markup");
   foreach(string markup; dirEntries(top,SpanMode.shallow)) {
-    check_chapter(timeLastModified(markup),markup);
+    check_chapter(timeLastModified(markup),markup,top);
   }
 }
 
