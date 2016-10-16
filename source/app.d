@@ -14,6 +14,7 @@ import std.array: appender, Appender;
 
 import reindex: reindex, chapter_name;
 import std.file: exists;
+import std.path: dirName;
 
 import html: createDocument;
 
@@ -161,8 +162,12 @@ struct Update {
   }
 }
 
+void check_chapter(SysTime modified, string markup) {
+	check_chapter(modified, markup, dirName(markup));
+}
+
 void check_chapter(SysTime modified, string markup, string top) {
-  import std.array : array;
+	import std.array : array;
   version(GNU) {
     import std.algorithm: findSplitBefore;
   } else {
@@ -179,7 +184,7 @@ void check_chapter(SysTime modified, string markup, string top) {
 
   check_chapter(modified, to!string(path[0]),
                 markup, top, 
-                findSplitBefore(to!string(path[path.length-1]),".").expand);
+                findSplitBefore(to!string(path[$-1]),".").expand);
 }
 
 Appender!(Update[]) pending_updates;
@@ -306,10 +311,12 @@ void check_chapter(SysTime modified,
 		try {
 			modified = timeLastModified(markup);
 		} catch(Exception e) {
-			markup = buildPath(markuploc,"chapter%d.txt".format(which));
-			modified = timeLastModified(markup);
-		} catch(Exception e) {
-			return;
+			try {
+				markup = buildPath(markuploc,"chapter%d.txt".format(which));
+				modified = timeLastModified(markup);
+			} catch(Exception e) {
+				return;
+			}
 		}
 		auto name = chapter_name(which);
 		auto dest = buildPath("html",location, name ~ ".html");

@@ -292,10 +292,6 @@ WHERE id = ?`},
 
 		{q{latest_stories},
 		 "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
-		{q{need_have_next},
-		 "SELECT chapters.id,chapters.which,story.id,story.finished FROM chapters WHERE story = ? AND NOT has_next AND which != (SELECT MAX(which) FROM chapters WHERE story = ?) - 1"},
-		{q{given_next},
-		 "UPDATE chapters SET has_next = 1 WHERE id = ?"},
 		];
 
 string declare_statements() {
