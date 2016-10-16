@@ -67,7 +67,15 @@ struct Update {
 							(!story.finished) &&
 							(which >= story.chapters - 1)) {
 			print("Not updating last chapter",which);
+			// undo possible side chapter
+			auto sidekey = Upd8(location, which-1);
+			if(sidekey in side_chapters) {
+				no_update[sidekey] = true;
+			}
 			return;
+		} else {
+			auto key = Upd8(location, which);
+			if(key in no_update) return;
 		}
 		noseriously();
 	}
@@ -194,6 +202,12 @@ struct Upd8 {
 }
 bool[Upd8] updated;
 bool[Upd8] side_chapters;
+bool[Upd8] no_update;
+// if A is the last chapter, and B is in side_chapters, add B to no_update
+// if A is in no_update, don't update.
+// that keeps us from constantly regenerating the chapter-before-last
+// only do it if in side_chapters, because if not in side_chapters it actually needs updating
+
 string only_location = null;
 
 db.Story* place_story(string location, int which) {
@@ -273,7 +287,7 @@ void check_chapter(SysTime modified,
 	modified = max(timeLastModified(markup),modified);
 
 	auto side_chapter = key in side_chapters;
-	
+	print("dest",dest,modified <= timeLastModified(dest));
 	if(// always update if dest is gone
 		exists(dest) &&
 		// can skip update if older than dest
@@ -304,6 +318,7 @@ void check_chapter(SysTime modified,
 	void check_side(int which) {
 		import std.format: format;
 		auto key = Upd8(location,which);
+		if(key in updated) return; // don't add a side chapter if we're updating normally.
 		auto side = key in side_chapters;
 		if(!(side is null)) return;
 		auto markup = buildPath(markuploc,"chapter%d.hish".format(which));
