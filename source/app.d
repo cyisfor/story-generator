@@ -188,6 +188,7 @@ struct Upd8 {
   int which;
 }
 bool[Upd8] updated;
+bool[Upd8] side_chapters;
 string only_location = null;
 
 db.Story* place_story(string location, int which) {
@@ -251,9 +252,9 @@ void check_chapter(SysTime modified,
 	auto key = Upd8(location,which);
   if(key in updated) return;
 	updated[key] = true;
-	print("checking",which,side_chapter);
+	print("checking",which);
 	// return true if updated
-	if(!exists(markup)) return false;
+	if(!exists(markup)) return;
 
 	// only after we're sure we have a chapter that hasn't been queued
 	// for updating.
@@ -267,16 +268,11 @@ void check_chapter(SysTime modified,
 	modified = max(timeLastModified(markup),modified);
 
 	auto side_chapter = key in side_chapters;
-	if(side_chapter is null) {
-		side_chapters[key] = true;
-		side_chapter = key in side_chapters;
-	}
 	
 	if(// always update if dest is gone
 		exists(dest) &&
 		// can skip update if older than dest
 		// EXCEPT if a side chapter
-		side_chapter == null &&
 		modified <= timeLastModified(dest)) {
 
 		if(!contents_exist(location)) {
@@ -286,7 +282,7 @@ void check_chapter(SysTime modified,
 
 		print("unmodified",location,which);
 		//setTimes(dest,modified,modified);
-		return false;
+		return;
 	}
 
 	print("checking",location,which,"for updates!");
@@ -301,22 +297,30 @@ void check_chapter(SysTime modified,
 
 	// also check side chapters for updates
 	void check_side(int which) {
+		import std.format: format;
 		auto key = Upd8(location,which);
-		auto side = sidekey in side_chapters;
+		auto side = key in side_chapters;
 		if(!(side is null)) return;
 		auto markup = buildPath(markuploc,"chapter%d.hish".format(which));
-		Systime modified;
+		SysTime modified;
 		try {
 			modified = timeLastModified(markup);
-		} catch(e) {
+		} catch(Exception e) {
 			markup = buildPath(markuploc,"chapter%d.txt".format(which));
 			modified = timeLastModified(markup);
-		} catch(e) {
+		} catch(Exception e) {
 			return;
 		}
 		auto name = chapter_name(which);
 		auto dest = buildPath("html",location, name ~ ".html");
+		updated[key] = true;
+		place_story(location,which);
 		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
+	}
+	if(which > 0) {
+		check_side(which-1);
+	} 
+	check_side(which+1);
 }
 
 void main(string[] args)

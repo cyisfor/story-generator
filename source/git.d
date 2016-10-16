@@ -16,9 +16,9 @@ void parse_log(string since, void function(SysTime, string) handler) {
 void parse_log(string since, void delegate(SysTime, string) handler) {
   string[] args;
   if(since == null) {
-	args = ["git","log","--numstat",
+		args = ["git","log","--numstat","--pretty=format:%cI"];
   } else {
-	args = ["git","log",since,"--numstat","--pretty=format:%cI"];
+		args = ["git","log",since,"--numstat","--pretty=format:%cI"];
   }
   auto git = pipeProcess(args,Redirect.stdout);
   // why not an iterator? this:
