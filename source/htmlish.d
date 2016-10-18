@@ -12,7 +12,9 @@ static this() {
 
 import fuck_selectors: by_name, by_class, by_id;
 
-struct Context(NodeType) {
+alias NodeType = typeof(default_template.root)
+
+struct Context {
   bool ended_newline;
   bool in_paragraph;
   bool started;
@@ -71,7 +73,7 @@ struct Context(NodeType) {
   }
 }
 
-bool process_text(NodeType)(ref Context!NodeType ctx, HTMLString text) {
+bool process_text(ref Context ctx, HTMLString text) {
   import std.string: strip;
   import std.algorithm.iteration: splitter, map, filter;
   import std.ascii: isWhite;
@@ -169,27 +171,38 @@ auto cacheForward(int n = 2, Range)(Range r) {
 }
 
 
-NodeType process_chat(NodeType)(Document* dest, ref NodeType e) {
+NodeType process_chat(Document* dest, ref NodeType e) {
 	import std.string: split;
-	import std.algorithm.searching: find;
-	auto dl = dest.createElement("dl");
-	e.attr("class","chat");
-	foreach(line;e.firstChild.text.split("\n")) {
-		auto colon = line.find(":");
-		void append(string what, const char[] derp) {
+	import std.algorithm.searching: findSplit;
+	auto dl = dest.createElement("table");
+	dl.insertBefore(e);
+	e.detach();
+	dl.attr("class","chat");
+	foreach(line;e.html.split("\n")) {
+		print("UHM",line);
+		auto colon = line.findSplit(":");
+		if(!colon) {
+			continue;
+		}
+		auto tr = dest.createElement("tr");
+		dl.appendChild(tr);
+		auto append(string what, const char[] derp) {
 			auto term = dest.createElement(what);
 			term.appendChild(dest.createTextNode(derp));
+			tr.appendChild(term);
+			return term;
 		}
-		append("dt",line[0..colon.length]);
-		append("dd",colon[1..$]);
+		append("td",colon[0]);
+		append("td",colon[1]);
+		append("td",colon[2]);
 	}
 	return dl;
 }
 
-void process_root(NodeType)(Document* dest,
-                            NodeType root,
-                            ref NodeType head,
-                            ref string title) {
+void process_root(Document* dest,
+									NodeType root,
+									ref NodeType head,
+									ref string title) {
   import std.algorithm.searching: any;
   import std.array: array;
   auto ctx = Context!NodeType(dest,root);

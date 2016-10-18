@@ -326,13 +326,13 @@ void check_chapter(SysTime modified,
 		if(key in updated) return; // don't add a side chapter if we're updating normally.
 		auto side = key in side_chapters;
 		if(!(side is null)) return;
-		auto markup = buildPath(markuploc,"chapter%d.hish".format(which));
+		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
 		SysTime modified;
 		try {
 			modified = timeLastModified(markup);
 		} catch(Exception e) {
 			try {
-				markup = buildPath(markuploc,"chapter%d.txt".format(which));
+				markup = buildPath(markuploc,"chapter%d.txt".format(which+1));
 				modified = timeLastModified(markup);
 			} catch(Exception e) {
 				return;
