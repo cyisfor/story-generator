@@ -170,18 +170,20 @@ auto cacheForward(int n = 2, Range)(Range r) {
 
 
 NodeType process_chat(NodeType)(Document* dest, ref NodeType e) {
-	e.tag = "dl";
-	e.setAttribute("class","chat");
-	for(line;e.firstChild.text.split("\n")) {
+	import std.string: split;
+	import std.algorithm.searching: find;
+	auto dl = dest.createElement("dl");
+	e.attr("class","chat");
+	foreach(line;e.firstChild.text.split("\n")) {
 		auto colon = line.find(":");
-		auto term = dest.createElement("dt");
-		term.append(dest.createTextNode(line[0..colon]));
-		e.append(term);
-		auto defn = dest.createElement("dd");
-		defn.append(dest.createTextNode(line[colon+1..$]));
-		e.append(defn);
+		void append(string what, const char[] derp) {
+			auto term = dest.createElement(what);
+			term.appendChild(dest.createTextNode(derp));
+		}
+		append("dt",line[0..colon.length]);
+		append("dd",colon[1..$]);
 	}
-	return e;
+	return dl;
 }
 
 void process_root(NodeType)(Document* dest,
@@ -204,7 +206,7 @@ void process_root(NodeType)(Document* dest,
 		} else if(e.isElementNode) {
 			switch(e.tag) {
 			case "chat":
-				ctx.next(process_chat(e));
+				ctx.next(process_chat(dest,e));
 				break;
 			case "title":
 				auto maybetitle = e.html;
@@ -255,6 +257,9 @@ void process_root(NodeType)(Document* dest,
 					process_root(dest, e, head, title);
 					//now the processed hish is inside e, and can be added just as if not hish
 				}
+				ctx.next(e);
+				break;
+			default:
 				ctx.next(e);
 				break;
 			}

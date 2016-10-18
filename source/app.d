@@ -68,7 +68,7 @@ struct Update {
 		} else if(story.chapters > 1 &&
 							(!story.finished) &&
 							(which >= story.chapters - 1)) {
-			print("Not updating last chapter",which);
+			print("Not updating last chapter",which,story.chapters);
 			// undo possible side chapter
 			auto sidekey = Upd8(location, which-1);
 			if(sidekey in side_chapters) {
@@ -113,7 +113,7 @@ struct Update {
     }
     auto make = herpaderp();
 
-    print("creating chapter",which,markup,story.id);
+    print("creating chapter",which,markup,story.id,name);
     auto chapter = story.get_chapter(which);
 
     auto base = buildPath(basedir,name ~ ".html");
@@ -233,7 +233,7 @@ db.Story* place_story(string location, int which) {
   // the database counts known chapters, so this is just a
   // temp cached number
   if(story.chapters <= which) {
-	  print("UPDATE STORY CHAPTERS",location,which);
+	  print("UPDATE STORY CHAPTERS",location,which,story.chapters);
     story.chapters = which + 1;
 		story.dirty = true;
   }
@@ -267,6 +267,7 @@ void check_chapter(SysTime modified,
 	import std.stdio;
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;
+	print(derp);
   int which = to!int(derp) - 1;
   if(!exists(location)) return;
 
