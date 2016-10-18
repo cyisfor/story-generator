@@ -12,7 +12,7 @@ static this() {
 
 import fuck_selectors: by_name, by_class, by_id;
 
-alias NodeType = typeof(default_template.root)
+alias NodeType = typeof(default_template.root);
 
 struct Context {
   bool ended_newline;
@@ -205,7 +205,7 @@ void process_root(Document* dest,
 									ref string title) {
   import std.algorithm.searching: any;
   import std.array: array;
-  auto ctx = Context!NodeType(dest,root);
+  auto ctx = Context(dest,root);
   bool in_paragraph = false;
 
   foreach(e;array(root.children)) {
