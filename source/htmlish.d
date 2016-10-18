@@ -169,6 +169,21 @@ auto cacheForward(int n = 2, Range)(Range r) {
 }
 
 
+NodeType process_chat(NodeType)(Document* dest, ref NodeType e) {
+	e.tag = "dl";
+	e.setAttribute("class","chat");
+	for(line;e.firstChild.text.split("\n")) {
+		auto colon = line.find(":");
+		auto term = dest.createElement("dt");
+		term.append(dest.createTextNode(line[0..colon]));
+		e.append(term);
+		auto defn = dest.createElement("dd");
+		defn.append(dest.createTextNode(line[colon+1..$]));
+		e.append(defn);
+	}
+	return e;
+}
+
 void process_root(NodeType)(Document* dest,
                             NodeType root,
                             ref NodeType head,
@@ -187,68 +202,62 @@ void process_root(NodeType)(Document* dest,
 			/*if(ctx.ended_newline)
 				print("ENDED NEWLINE",e.text);	  */
 		} else if(e.isElementNode) {
-			bool head_element =
-				any!((a) => a == e.tag)
-				(["title","meta","link","style","script"]);
-			if(head_element) {
-				e.detach();
-				if(e.tag == "title") {
-          auto maybetitle = e.html;
-          if(maybetitle.length == 0) {
-            // bork
-            e.html = title;
-          } else {
-            title = to!string(maybetitle);
-          }
-					foreach(tit; head.children) {
-						if(tit.tag == "title") {
-              if(title.length > 0) {
-                // no two titles!
-                tit.destroy();
-              } else {
-                title = to!string(tit.html);
-              }
-            }
-          }
-
-          // get <intitle/>
-          foreach(tit;dest.querySelectorAll("intitle")) {
-            if(title !is null && title.length > 0) {
-              dest.createTextNode(title).insertAfter(tit);
-            }
-            tit.destroy();
-          }
+			switch(e.tag) {
+			case "chat":
+				ctx.next(process_chat(e));
+				break;
+			case "title":
+				auto maybetitle = e.html;
+				if(maybetitle.length == 0) {
+					// bork
+					e.html = title;
+				} else {
+					title = to!string(maybetitle);
 				}
+				foreach(tit; head.children) {
+					if(tit.tag == "title") {
+						if(title.length > 0) {
+							// no two titles!
+							tit.destroy();
+						} else {
+							title = to!string(tit.html);
+						}
+					}
+				}
+
+				// get <intitle/>
+				foreach(tit;dest.querySelectorAll("intitle")) {
+					if(title !is null && title.length > 0) {
+						dest.createTextNode(title).insertAfter(tit);
+					}
+					tit.destroy();
+				}
+				goto case;				
+			case "meta":
+			case "link":
+			case "style":
+			case "script":
+				e.detach();
 				head.appendChild(e);
         // NOT ctx.next(e);
-			} else {
-				bool block_element =
-					any!((a) => a == e.tag)
-					(["ul","ol","p","div","table","blockquote"]);
-				if(block_element) {
-					ctx.ended_newline = false;
-					//print("block element ",e.tag);
-					ctx.maybe_end("block");
-					if(e.attr("hish")) {
-						e.removeAttr("hish");
-						process_root(dest, e, head, title);
-					}
-				} else {
-					//print("not block ",e.tag,ctx.ended_newline);
-					/* start a paragraph if this element is a wimp
-						 but only if the last text node ended on a newline.
-						 otherwise the last text node and this should be in the same
-						 paragraph */
-					if(ctx.ended_newline) {
-						import std.format: format;
-						auto buf = format("wimp tag {{%s}}",e.tag);
-						ctx.maybe_end(buf);
-						ctx.maybe_start(buf);
-						ctx.ended_newline = false;
-					}
+				break;
+			case "ul":
+			case "ol":
+			case "p":
+			case "div":
+			case "table":
+			case "blockquote":
+				ctx.ended_newline = false;
+				//print("block element ",e.tag);
+				ctx.maybe_end("block");
+				if(e.attr("hish")) {
+					e.removeAttr("hish");
+					process_root(dest, e, head, title);
+					//now the processed hish is inside e, and can be added just as if not hish
 				}
 				ctx.next(e);
-      }
+				break;
+			}
 		} else {
 			ctx.next(e);
 		}

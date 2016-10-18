@@ -388,12 +388,7 @@ void main(string[] args)
     smackdir("html");
     // now we can create all the outdirs
     foreach(outdir; stories.keys) {
-			if(outdir !in need_reindex) {
-				print("didn't need to update",outdir);
-				stories.remove(outdir);
-			} else {
-				smackdir(buildPath("html",outdir));
-			}
+			smackdir(buildPath("html",outdir));
     }
 		print("stories",stories.values);
     foreach(story;stories.values) {
@@ -404,6 +399,14 @@ void main(string[] args)
     foreach(ref update; pending_updates.data) {
       update.perform();
     }
+
+		foreach(outdir; stories.keys) {
+			if(outdir !in need_reindex) {
+				print("didn't need to update",outdir);
+				stories.remove(outdir);
+			}
+		}
+
     reindex("html",stories);
     print("dunZ");
   } else {
