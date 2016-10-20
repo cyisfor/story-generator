@@ -70,7 +70,7 @@ struct Context {
 		} else {
 			this.e.text(this.e.text ~ text);
 		}
-  }
+   }
 }
 
 bool process_text(ref Context ctx, HTMLString text) {
