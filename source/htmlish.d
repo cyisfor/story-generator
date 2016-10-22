@@ -361,6 +361,12 @@ auto ref parse(string ident = "content",
 		}
 		content.detach();
   }
+	auto date = dest.createElement("div");
+	date.attr("class","ddate");
+	static import ddate;
+	date.appendChild(dest.createTextNode(ddate.current()));
+	dest.root.by_name!"body"
+		.front.appendChild(date);
   assert(dest.root.document_ == dest,to!string(dest));
   return move(dest);
 }

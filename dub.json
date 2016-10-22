@@ -9,10 +9,11 @@
 		"backtrace-d": "~>0.1.0",
 	},
 	"sourceFiles": [
+		"ddate-stub.o",
 		"ddate/ddate.o",
 	],
 	"preBuildCommands": [
-		"make -C ddate ddate.o",
+		"make",
 	],
 	"description": "Generate HTML versions of story markup",
 	"copyright": "meh",
