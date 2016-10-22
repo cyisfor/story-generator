@@ -8,6 +8,12 @@
 		"d2sqlite3": "~>0.9.7",
 		"backtrace-d": "~>0.1.0",
 	},
+	"sourceFiles": [
+		"ddate/ddate.o",
+	],
+	"preBuildCommands": [
+		"make -C ddate ddate.o",
+	],
 	"description": "Generate HTML versions of story markup",
 	"copyright": "meh",
 	"license": "whatever",

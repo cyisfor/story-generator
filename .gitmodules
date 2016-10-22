@@ -4,3 +4,6 @@
 	branch = noescape
     fetchRecurseSubmodules = true
     ignore = untracked
+[submodule "ddate"]
+	path = ddate
+	url = https://github.com/cyisfor/ddate

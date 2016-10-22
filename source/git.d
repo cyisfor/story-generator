@@ -32,7 +32,6 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
 
 	import std.algorithm.searching: findSplit;
   foreach (line; git.stdout.byLine) {
-		print(line);
 		auto res = matchFirst(line,adp);
 		if( res.empty ) {
 			auto res2 = line.findSplit("\1");
@@ -45,10 +44,7 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
 			if(last_hash == null) {
 				import std.conv: to;
 				last_hash = to!string(res2[2]);
-				print("got hash",last_hash);
-			} else {
-				print("have hash",last_hash);
-			}
+			} 
 			continue;
 		}
 		// res[1], res[2]
@@ -62,7 +58,7 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
 
 unittest {
   void handle(SysTime modified, string path) {
-	print("hookay",modified,path);
+		print("hookay",modified,path);
   }
 
   parse_log("HEAD~2..HEAD",&handle);

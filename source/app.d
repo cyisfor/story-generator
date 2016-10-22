@@ -222,7 +222,6 @@ db.Story* place_story(string location, int which) {
   } else {
     stories[location] = db.story(location);
     story = &stories[location];
-		print("found story at",location,story.id);
 
     story.location = location;
 
@@ -267,7 +266,6 @@ void check_chapter(SysTime modified,
 	import std.stdio;
   string derp = name["chapter".length..name.length];
   if(!isNumeric(derp)) return;
-	print(derp);
   int which = to!int(derp) - 1;
   if(!exists(location)) return;
 
@@ -394,8 +392,9 @@ void main(string[] args)
     }
 		print("stories",stories.values);
     foreach(story;stories.values) {
-			print("dirty?",story.dirty);
-			story.update();
+			if(story.dirty) {
+				story.update();
+			}
     }
 
     foreach(ref update; pending_updates.data) {
@@ -410,7 +409,6 @@ void main(string[] args)
 		}
 
     reindex("html",stories);
-    print("dunZ");
   } else {
     print("no stories updated");
   }
