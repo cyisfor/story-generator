@@ -326,6 +326,7 @@ void check_chapter(SysTime modified,
 		if(key in updated) return; // don't add a side chapter if we're updating normally.
 		auto side = key in side_chapters;
 		if(!(side is null)) return;
+		side_chapters[key] = true;
 		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
 		SysTime modified;
 		try {

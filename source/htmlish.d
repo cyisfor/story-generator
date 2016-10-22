@@ -179,7 +179,6 @@ NodeType process_chat(Document* dest, ref NodeType e) {
 	e.detach();
 	dl.attr("class","chat");
 	foreach(line;e.html.split("\n")) {
-		print("UHM",line);
 		auto colon = line.findSplit(":");
 		if(!colon) {
 			continue;
