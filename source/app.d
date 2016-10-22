@@ -273,6 +273,13 @@ void check_chapter(SysTime modified,
   if(only_location && (!location.endsWith(only_location))) return;
 
 	auto key = Upd8(location,which);
+
+	// if in updated, don't redo it, but if in side_chapters, promote to a normal chapter
+	
+	if(key in side_chapters) {
+		side_chapters.remove(key);
+	}
+	
   if(key in updated) return;
 	updated[key] = true;
 
@@ -290,7 +297,6 @@ void check_chapter(SysTime modified,
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
 
-	auto side_chapter = key in side_chapters;
 	if(// always update if dest is gone
 		exists(dest) &&
 		// can skip update if older than dest
@@ -325,6 +331,7 @@ void check_chapter(SysTime modified,
 		auto side = key in side_chapters;
 		if(!(side is null)) return;
 		side_chapters[key] = true;
+		print("SIDE CHAP",key);
 		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
 		SysTime modified;
 		try {
@@ -392,6 +399,7 @@ void main(string[] args)
     }
 		print("stories",stories.values);
     foreach(story;stories.values) {
+			print("DIRTY STORY",story,story.dirty);
 			if(story.dirty) {
 				story.update();
 			}
@@ -421,6 +429,7 @@ void check_chapters_for(string location) {
 
   string top = buildPath(location,"markup");
   foreach(string markup; dirEntries(top,SpanMode.shallow)) {
+		print("checko",markup);
     check_chapter(timeLastModified(markup),markup,top);
   }
 }
