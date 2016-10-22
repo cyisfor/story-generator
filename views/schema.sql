@@ -19,3 +19,7 @@ UNIQUE(story,which));
 CREATE INDEX IF NOT EXISTS bystory ON chapters(story);
 CREATE INDEX IF NOT EXISTS storymodified ON stories(modified);
 CREATE INDEX IF NOT EXISTS chapmodified ON chapters(modified);
+
+CREATE TABLE IF NOT EXISTS git (
+id INTEGER PRIMARY KEY,
+version TEXT UNIQUE);

@@ -429,12 +429,18 @@ void check_chapters_for(string location) {
 void check_git_log(string[] args) {
   // by default we just check the last commit
   // (run this in a post-commit hook)
-  string since = "HEAD~1..HEAD";
-  if(args.length > 1) {
-    since = args[1];
-    if(since=="") since = null;
-  }
-  print("since "~since);
-  static import git;
-  git.parse_log(since,&check_chapter);
+	db.since_git((string last_version) {
+			string since;
+			if(args.length > 1) {
+				since = args[1];
+				if(since=="") since = null;
+			} else if(last_version is null) {
+				since = "HEAD";
+			} else {
+				since = last_version ~ "..HEAD";
+			}
+			print("since "~since);
+			static import git;
+			return git.parse_log(since,&check_chapter,last_version);
+		});
 }

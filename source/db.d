@@ -292,6 +292,10 @@ WHERE id = ?`},
 
 		{q{latest_stories},
 		 "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
+		{q{last_git},
+				"SELECT version FROM git where id = (SELECT MAX(id) FROM git)"},
+		{q{record_git},
+				"INSERT INTO git (version) VALUES (?)"},
 		];
 
 string declare_statements() {
@@ -386,6 +390,22 @@ class Database {
 		return map!((auto ref row) => new Story(row.as!(Story.Params),this))
 			(latest_stories.execute());
   }
+
+	void since_git(string delegate(string) action) {
+		auto res = last_git.execute();
+		string next_version = null;
+		try {
+			if(res.empty) {
+				next_version = action(null);
+			} else {
+				next_version = action(res.front.peek!string(0));
+			}
+		} finally {
+			if(next_version != null) {
+				record_git.inject(next_version);
+			}
+		}
+	}
 }
 
 Database db;

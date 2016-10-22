@@ -13,12 +13,12 @@ void parse_log(string since, void function(SysTime, string) handler) {
  return parse_log(since,toDelegate(handler));
 }
 
-void parse_log(string since, void delegate(SysTime, string) handler) {
+string parse_log(string since, void delegate(SysTime, string) handler) {
   string[] args;
   if(since == null) {
-		args = ["git","log","--numstat","--pretty=format:%cI"];
+		args = ["git","log","--numstat","--pretty=format:%cI\1%H"];
   } else {
-		args = ["git","log",since,"--numstat","--pretty=format:%cI"];
+		args = ["git","log",since,"--numstat","--pretty=format:%cI\1%H"];
   }
   auto git = pipeProcess(args,Redirect.stdout);
   // why not an iterator? this:
@@ -28,20 +28,27 @@ void parse_log(string since, void delegate(SysTime, string) handler) {
   }
 
   SysTime modified = 0;
+	string last_hash = null;
 
   foreach (line; git.stdout.byLine) {
-	auto res = matchFirst(line,adp);
-	if( res.empty ) {
-	  try {
-		modified = SysTime.fromISOExtString(line);
-	  } catch(TimeException e) {}
-	  continue;
-	}
-	// res[1], res[2]
-	// can probably ignore whether it's adding or deleting
-	// regenerate anyway
-	handler(modified, to!string(res[3]));
+		auto res = matchFirst(line,adp);
+		if( res.empty ) {
+			res = line.findSplit("\1");
+			if( res.empty ) { continue; }
+			try {
+				modified = SysTime.fromISOExtString(res[0]);
+			} catch(TimeException e) {
+				continue;
+			}
+			last_hash = res[2];
+			continue;
+		}
+		// res[1], res[2]
+		// can probably ignore whether it's adding or deleting
+		// regenerate anyway
+		handler(modified, to!string(res[3]));
   }
+	return last_hash;
 }
 
 unittest {
