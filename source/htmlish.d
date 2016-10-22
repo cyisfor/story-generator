@@ -364,7 +364,8 @@ auto ref parse(string ident = "content",
 	auto date = dest.createElement("div");
 	date.attr("class","ddate");
 	static import ddate;
-	date.appendChild(dest.createTextNode(to!string(ddate.current())));
+	date.appendChild(dest.createTextNode("This page was created on "));
+	date.appendChild(dest.createTextNode(to!string(ddate.current(modified))));
 	dest.root.by_name!"body"
 		.front.appendChild(date);
   assert(dest.root.document_ == dest,to!string(dest));
@@ -372,6 +373,8 @@ auto ref parse(string ident = "content",
 }
 
 int derp = 0;
+
+long modified = -1;
 
 void make(string src, string dest, Document* templit = null) {
   import std.file: readText,write,rename;

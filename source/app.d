@@ -30,9 +30,8 @@ bool[string] need_reindex;
 
 void delegate(string,string) default_make_chapter;
 
+static import htmlish;
 static this() {
-  static import htmlish;
-
   default_make_chapter = htmlish.make
     (createDocument(import("template/chapter.xhtml")));
 }
@@ -108,6 +107,7 @@ struct Update {
         print("found maker at ",location);
         return *box;
       } else {
+				htmlish.modified = modified.toUnixTime();
         return default_make_chapter;
       }
     }
