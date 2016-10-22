@@ -9,7 +9,7 @@ import core.time: TimeException;
 
 auto adp = regex("([^\t]+)\t([^\t]+)\t(.*)");
 
-void parse_log(string since, void function(SysTime, string) handler) {
+string parse_log(string since, void function(SysTime, string) handler) {
  return parse_log(since,toDelegate(handler));
 }
 
@@ -23,24 +23,32 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
   auto git = pipeProcess(args,Redirect.stdout);
   // why not an iterator? this:
   scope(exit) {
-	git.stdout.close();
-	git.pid.wait();
+		git.stdout.close();
+		git.pid.wait();
   }
 
   SysTime modified = 0;
 	string last_hash = null;
 
+	import std.algorithm.searching: findSplit;
   foreach (line; git.stdout.byLine) {
+		print(line);
 		auto res = matchFirst(line,adp);
 		if( res.empty ) {
-			res = line.findSplit("\1");
-			if( res.empty ) { continue; }
+			auto res2 = line.findSplit("\1");
+			if( !res2 ) { continue; }
 			try {
-				modified = SysTime.fromISOExtString(res[0]);
+				modified = SysTime.fromISOExtString(res2[0]);
 			} catch(TimeException e) {
 				continue;
 			}
-			last_hash = res[2];
+			if(last_hash == null) {
+				import std.conv: to;
+				last_hash = to!string(res2[2]);
+				print("got hash",last_hash);
+			} else {
+				print("have hash",last_hash);
+			}
 			continue;
 		}
 		// res[1], res[2]
@@ -48,6 +56,7 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
 		// regenerate anyway
 		handler(modified, to!string(res[3]));
   }
+	print("hash is now",last_hash);
 	return last_hash;
 }
 

@@ -398,7 +398,10 @@ class Database {
 			if(res.empty) {
 				next_version = action(null);
 			} else {
-				next_version = action(res.front.peek!string(0));
+				string last_version = res.front.peek!string(0);
+				next_version = action(last_version);
+				if(last_version == next_version)
+					next_version = null;
 			}
 		} finally {
 			if(next_version != null) {
@@ -419,6 +422,10 @@ Story story(string location) {
 
 auto latest() {
   return db.latest();
+}
+
+auto since_git(string delegate(string) action) {
+	return db.since_git(action);
 }
 
 void close() {

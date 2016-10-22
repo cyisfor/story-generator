@@ -441,6 +441,6 @@ void check_git_log(string[] args) {
 			}
 			print("since "~since);
 			static import git;
-			return git.parse_log(since,&check_chapter,last_version);
+			return git.parse_log(since,&check_chapter);
 		});
 }
