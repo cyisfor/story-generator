@@ -7,3 +7,4 @@
 [submodule "ddate"]
 	path = ddate
 	url = https://github.com/cyisfor/ddate
+    ignore = untracked
