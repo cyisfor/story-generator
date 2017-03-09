@@ -185,13 +185,17 @@ NodeType process_chat(Document* dest, ref NodeType e) {
 		}
 		auto tr = dest.createElement("tr");
 		dl.appendChild(tr);
-		auto append(string what, const char[] derp) {
+		auto append(string what, const char[] derp, const char[] clas = null) {
 			auto term = dest.createElement(what);
+			if(clas) {
+				term.attr("class",clas);
+			}
 			term.appendChild(dest.createTextNode(derp));
 			tr.appendChild(term);
 			return term;
 		}
-		append("td",colon[0]);
+		auto name = colon[0];
+		append("td",name,name);
 		append("td",colon[1]);
 		append("td",colon[2]);
 	}

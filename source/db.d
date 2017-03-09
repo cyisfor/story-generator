@@ -14,6 +14,11 @@ import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
 
+struct Version {
+	int major;
+	int minor;
+}
+
 struct Chapter {
   @disable this(this);
   long id;
@@ -22,7 +27,7 @@ struct Chapter {
   string first_words;
   Database db;
   Story story;
-  int which;
+  Version which;
   void remove() {
 		story.remove(which);
 		this = Chapter.init;
@@ -30,7 +35,7 @@ struct Chapter {
   void update(SysTime modified) {
 		update(modified,which,title);
   }
-  void update(SysTime modified, int which, string title) {
+  void update(SysTime modified, Versino which, string title) {
 		this.which = which;
 		import std.stdio;
 		if(title is null) { title = "???"; }
@@ -85,7 +90,7 @@ SysTime parse_mytimestamp(string timestamp) {
 }
 
 Chapter to_chapter(backend.Row row,
-									 Database db, Story story, int which) {
+									 Database db, Story story, int which, int subwhich) {
   import std.conv: to;
   struct temp {
 		string id;
@@ -101,7 +106,8 @@ Chapter to_chapter(backend.Row row,
 									first_words: t.first_words,
 									db: db,
 									story: story,
-									which: which
+									which: which,
+									subwhich: subwhich
 	};
 	return ret;
 
@@ -118,9 +124,8 @@ class Story {
 
   Database db;
   string location;
-  Chapter[int] cache;
+  Chapter[Version] cache;
   bool dirty = false;
-  alias opIndex = get_chapter!false;
 
   static struct Params {
 		long id;
@@ -149,20 +154,20 @@ class Story {
 		check_for_desc();
   }
 
-  Chapter* get_chapter(bool create = true)(int which) {
+  Chapter* get(bool create = true)(int which, int subwhich = 0) {
 		assert(id>=0);
-		db.find_chapter.bindAll(id, which);
+		db.find_chapter.bindAll(id, which, subwhich);
 		auto rset = db.find_chapter.execute();
 		if(rset.empty) {
       static if(!create) {
         throw new Exception("no creating chapters");
       } else {
-        db.insert_chapter.inject(which, id);
+        db.insert_chapter.inject(which, subwhich, id);
         db.find_chapter.reset();
         rset = db.find_chapter.execute();
       }
 		}
-		cache[which] = rset.front.to_chapter(db,this,which);
+		cache[which] = rset.front.to_chapter(db,this,which,subwhich);
 		db.find_chapter.reset();
 
 		return &cache[which];
