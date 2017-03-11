@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"./htmld": "0.2.16",
 		"backtrace-d": "0.1.2",
 		"d2sqlite3": "0.12.1+commit.3.g62894ae",
 		"htmld": "0.2.16",

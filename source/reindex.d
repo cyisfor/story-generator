@@ -29,7 +29,7 @@ string chapter_name(int which) {
 	return "chapter" ~ to!string(which + 1);
 }
 
-Document* contents;
+Document contents;
 static this() {
 	contents = createDocument(import("template/contents.xhtml"));
 }
@@ -81,7 +81,7 @@ SysTime reindex(string outdir, Story story) {
 		else
 			last = story.chapters - 1;
 		for (int which = 0; which < last; ++which) {
-			auto chapter = story.get_chapter!true(which);
+			auto chapter = story.get!true(which);
 			maxTime = max(maxTime, chapter.modified);
 			auto link = doc.createElement("a",
 					doc.createElement("li", toc));

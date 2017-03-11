@@ -14,11 +14,6 @@ import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
 
-struct Version {
-	int major;
-	int minor;
-}
-
 struct Chapter {
   @disable this(this);
   long id;
@@ -27,7 +22,7 @@ struct Chapter {
   string first_words;
   Database db;
   Story story;
-  Version which;
+  int which;
   void remove() {
 		story.remove(which);
 		this = Chapter.init;
@@ -35,7 +30,7 @@ struct Chapter {
   void update(SysTime modified) {
 		update(modified,which,title);
   }
-  void update(SysTime modified, Version which, string title) {
+  void update(SysTime modified, int which, string title) {
 		this.which = which;
 		import std.stdio;
 		if(title is null) { title = "???"; }
@@ -123,7 +118,7 @@ class Story {
 
   Database db;
   string location;
-  Chapter[Version] cache;
+  Chapter[int] cache;
   bool dirty = false;
 
   static struct Params {

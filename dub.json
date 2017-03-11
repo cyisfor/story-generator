@@ -4,7 +4,7 @@
 		"ferret"
 	],
 	"dependencies": {
-		"htmld": "~>0.2.16",		
+		"./htmld": "*",		
 		"d2sqlite3": "~>0.12.1",
 		"backtrace-d": "~>0.1.2",
 	},

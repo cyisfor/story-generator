@@ -76,7 +76,7 @@ void print_with_cycles(NodeType)(NodeType root) {
 }
 }
 
-auto ref querySelector(Document)(Document* doc, html.HTMLString s) {
+auto ref querySelector(Document)(Document doc, html.HTMLString s) {
   auto res = doc.querySelectorAll(s);
   if(res.empty) {
 	import print: print;
