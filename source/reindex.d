@@ -29,7 +29,7 @@ string chapter_name(int which) {
 	return "chapter" ~ to!string(which + 1);
 }
 
-Document contents;
+Document* contents;
 static this() {
 	contents = createDocument(import("template/contents.xhtml"));
 }

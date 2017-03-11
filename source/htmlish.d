@@ -4,7 +4,7 @@ import std.algorithm.mutation: move;
 import htmlderp: detach;
 import html: Document, HTMLString, createDocument;
 
-Document default_template;
+Document* default_template;
 static this() {
   // one to be there at compile time j/i/c
   default_template = createDocument(import("template/default.html"));
@@ -19,8 +19,8 @@ struct Context {
   bool in_paragraph;
   bool started;
   NodeType e;
-  Document doc;
-  this(Document doc, NodeType root) {
+  Document* doc;
+  this(Document* doc, NodeType root) {
 		this.doc = doc;
 		this.e = root;
   }
@@ -171,7 +171,7 @@ auto cacheForward(int n = 2, Range)(Range r) {
 }
 
 
-NodeType process_chat(Document dest, ref NodeType e) {
+NodeType process_chat(Document* dest, ref NodeType e) {
 	import std.string: split;
 	import std.algorithm.searching: findSplit;
 	auto dl = dest.createElement("table");
@@ -202,7 +202,7 @@ NodeType process_chat(Document dest, ref NodeType e) {
 	return dl;
 }
 
-void process_root(Document dest,
+void process_root(Document* dest,
 									NodeType root,
 									ref NodeType head,
 									ref string title) {
@@ -290,7 +290,7 @@ import std.typecons: NullableRef;
 auto ref parse(string ident = "content",
                bool replace=false)
 	(HTMLString source,
-	 Document templit = default_template,
+	 Document* templit = default_template,
 	 string title = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
@@ -376,7 +376,7 @@ int derp = 0;
 
 long modified = -1;
 
-void make(string src, string dest, Document templit = default_template) {
+void make(string src, string dest, Document* templit = default_template) {
   import std.file: readText,write,rename;
   import htmlderp: querySelector;
   auto root = parse(readText(src),templit).root;
@@ -397,7 +397,7 @@ void make(string src, string dest, Document templit = default_template) {
   rename(dest~".temp",dest);
 }
 
-auto make(Document templit) {
+auto make(Document* templit) {
 	void derp(string src, string dest) {
 		make(src,dest,templit);
 	}

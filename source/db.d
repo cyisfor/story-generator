@@ -1,4 +1,4 @@
-static import backend = d2sqlite3;
+static import backend = d2sqlite3.sqlite3;
 import print: print;
 
 version(GNU) {
@@ -13,6 +13,9 @@ import std.path: buildPath;
 import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
+
+alias Statement = backend.sqlite3_stmt*;
+alias Database = backend.sqlite3*;
 
 struct Chapter {
   @disable this(this);
@@ -303,7 +306,7 @@ WHERE id = ?`},
 string declare_statements() {
   string ret;
   foreach(stmt; statements) {
-		ret ~= q{backend.Statement }~stmt.name~";\n";
+		ret ~= q{Statement }~stmt.name~";\n";
   }
   return ret;
 }
@@ -321,7 +324,7 @@ string initialize_statements() {
   string ret;
   foreach(stmt; statements) {
 		ret ~= format(q{
-				%s = db.prepare("%s");
+				%s = this.prepare("%s");
 			},stmt.name,stmt.stmt);
   }
   return ret;
@@ -358,10 +361,20 @@ class Database {
 		} catch(backend.SqliteException e) {}
 		import print: print;
 		mixin(initialize_statements());
-		begin.stmt = db.prepare("BEGIN");
-		commit.stmt = db.prepare("COMMIT");
-		rollback.stmt = db.prepare("ROLLBACK");
+		begin.stmt = this.prepare("BEGIN");
+		commit.stmt = this.prepare("COMMIT");
+		rollback.stmt = this.prepare("ROLLBACK");
   }
+
+	Statement prepare(string sql) {
+		Statement result = null;
+		enforce(SQLITE_OK == sqlite3_prepare_v2(&db,
+																						sql,
+																						sql.length,
+																						&result,
+																						null));
+		return result;
+	}
 
   void get_info(ref backend.Statement stmt) {
 		import std.exception: enforce;
