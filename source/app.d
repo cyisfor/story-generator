@@ -68,10 +68,12 @@ struct Update {
 							(!story.finished) &&
 							(which >= story.chapters - 1)) {
 			print("Not updating last chapter",which,story.chapters);
-			// undo possible side chapter
+			// undo possible side chapter before
 			auto sidekey = Upd8(location, which-1);
-			if(sidekey in side_chapters) {
+			if(sidekey in one_before) {
 				print("not updating previous (side) chapter",which-1);
+				// note, since side chapters are queued AFTER regular ones, if the
+				// regular one is the last, then no_update will capture the side chapter
 				no_update[sidekey] = true;
 			}
 			return;
@@ -206,12 +208,12 @@ struct Upd8 {
   int which;
 }
 bool[Upd8] updated;
-bool[Upd8] side_chapters;
+bool[Upd8] one_before;
 bool[Upd8] no_update;
-// if A is the last chapter, and B is in side_chapters, add B to no_update
+// if A is the last chapter, and B is in one_before, add B to no_update
 // if A is in no_update, don't update.
 // that keeps us from constantly regenerating the chapter-before-last
-// only do it if in side_chapters, because if not in side_chapters it actually needs updating
+// only do it if in one_before, because if not in one_before it actually needs updating
 
 string only_location = null;
 
@@ -274,10 +276,10 @@ void check_chapter(SysTime modified,
 
 	auto key = Upd8(location,which);
 
-	// if in updated, don't redo it, but if in side_chapters, promote to a normal chapter
+	// if in updated, don't redo it, but if in one_before, promote to a normal chapter
 	
-	if(key in side_chapters) {
-		side_chapters.remove(key);
+	if(key in one_before) {
+		one_before.remove(key);
 	}
 	
   if(key in updated) return;
@@ -324,13 +326,17 @@ void check_chapter(SysTime modified,
 														 markup,dest,name);
 
 	// also check side chapters for updates
-	void check_side(int which) {
+	void check_side(int which, bool prev) {
 		import std.format: format;
 		auto key = Upd8(location,which);
 		if(key in updated) return; // don't add a side chapter if we're updating normally.
-		auto side = key in side_chapters;
-		if(!(side is null)) return;
-		side_chapters[key] = true;
+		if(prev) {
+			// if this chapter is the next one, always update
+			// only the previous chapter being a side chapter should skip updates
+			auto side = key in one_before;
+			if(!(side is null)) return;
+			one_before[key] = true;
+		}
 		print("SIDE CHAP",key);
 		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
 		SysTime modified;
@@ -351,9 +357,9 @@ void check_chapter(SysTime modified,
 		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
 	}
 	if(which > 0) {
-		check_side(which-1);
+		check_side(which-1,true);
 	} 
-	check_side(which+1);
+	check_side(which+1,false);
 }
 
 void main(string[] args)

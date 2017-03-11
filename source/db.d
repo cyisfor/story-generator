@@ -35,7 +35,7 @@ struct Chapter {
   void update(SysTime modified) {
 		update(modified,which,title);
   }
-  void update(SysTime modified, Versino which, string title) {
+  void update(SysTime modified, Version which, string title) {
 		this.which = which;
 		import std.stdio;
 		if(title is null) { title = "???"; }
@@ -156,6 +156,7 @@ class Story {
 
   Chapter* get(bool create = true)(int which, int subwhich = 0) {
 		assert(id>=0);
+		scope(exit) db.find_chapter.reset();
 		db.find_chapter.bindAll(id, which, subwhich);
 		auto rset = db.find_chapter.execute();
 		if(rset.empty) {
@@ -168,7 +169,6 @@ class Story {
       }
 		}
 		cache[which] = rset.front.to_chapter(db,this,which,subwhich);
-		db.find_chapter.reset();
 
 		return &cache[which];
   }
@@ -185,11 +185,14 @@ class Story {
 			writefln("Story %d(%s) wouldn't update: %s",id,title,e);
 			return;
 		}
-		db.num_story_chapters.bindAll(id);
+		try {
+			db.num_story_chapters.bindAll(id);
 
-		import std.algorithm.comparison: max;
-		chapters = max(chapters,db.num_story_chapters.execute().front.peek!int(0));
-		db.num_story_chapters.reset();
+			import std.algorithm.comparison: max;
+			chapters = max(chapters,db.num_story_chapters.execute().front.peek!int(0));
+		} finally {
+			db.num_story_chapters.reset();
+		}
     dirty = false;
   }
 
