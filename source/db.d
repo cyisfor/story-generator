@@ -90,7 +90,7 @@ SysTime parse_mytimestamp(string timestamp) {
 }
 
 Chapter to_chapter(backend.Row row,
-									 Database db, Story story, int which, int subwhich) {
+									 Database db, Story story, int which) {
   import std.conv: to;
   struct temp {
 		string id;
@@ -106,8 +106,7 @@ Chapter to_chapter(backend.Row row,
 									first_words: t.first_words,
 									db: db,
 									story: story,
-									which: which,
-									subwhich: subwhich
+									which: which
 	};
 	return ret;
 
@@ -154,21 +153,21 @@ class Story {
 		check_for_desc();
   }
 
-  Chapter* get(bool create = true)(int which, int subwhich = 0) {
+  Chapter* get(bool create = true)(int which) {
 		assert(id>=0);
 		scope(exit) db.find_chapter.reset();
-		db.find_chapter.bindAll(id, which, subwhich);
+		db.find_chapter.bindAll(id, which);
 		auto rset = db.find_chapter.execute();
 		if(rset.empty) {
       static if(!create) {
         throw new Exception("no creating chapters");
       } else {
-        db.insert_chapter.inject(which, subwhich, id);
+        db.insert_chapter.inject(which, id);
         db.find_chapter.reset();
         rset = db.find_chapter.execute();
       }
 		}
-		cache[which] = rset.front.to_chapter(db,this,which,subwhich);
+		cache[which] = rset.front.to_chapter(db,this,which);
 
 		return &cache[which];
   }

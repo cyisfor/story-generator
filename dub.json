@@ -4,9 +4,9 @@
 		"ferret"
 	],
 	"dependencies": {
-		"htmld": "~>0.2.13",		
-		"d2sqlite3": "~>0.9.7",
-		"backtrace-d": "~>0.1.0",
+		"htmld": "~>0.2.16",		
+		"d2sqlite3": "~>0.12.1",
+		"backtrace-d": "~>0.1.2",
 	},
 	"sourceFiles": [
 		"ddate-stub.o",

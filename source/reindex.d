@@ -46,12 +46,12 @@ SysTime reindex(string outdir, Story story) {
 		import std.algorithm.mutation: move;
 		import std.file: exists;
 		if(story.description == null) {
-		  story.edit();
+			story.edit();
 		}
-        print("doing index",story.title);
+				print("doing index",story.title);
 		auto doc = htmlish.parse!"description"(story.description,
-                                               contents,
-                                               story.title);
+																							 contents,
+																							 story.title);
 		bool foundit = false;
 		auto title_image = querySelector(doc,"img#title");
 		foreach(img; title_images) {
@@ -87,9 +87,9 @@ SysTime reindex(string outdir, Story story) {
 					doc.createElement("li", toc));
 			link.attr("href", chapter_name(which)~".html");
 			if(chapter.title.length==0) {
-			  link.appendText("(untitled)");
+				link.appendText("(untitled)");
 			} else {
-			  link.appendText(chapter.title);
+				link.appendText(chapter.title);
 			}
 		}
 		if (auto box = story.location in makers.contents) {
@@ -99,10 +99,10 @@ SysTime reindex(string outdir, Story story) {
 			story.update();
 		}
 		import std.file: write;
-		auto dest = buildPath(outdir,story.location,"contents.html");        
-        dest.write(doc.root.html);
-        dest.setTimes(maxTime,maxTime);
-        buildPath(outdir,story.location).setTimes(maxTime,maxTime);
+		auto dest = buildPath(outdir,story.location,"contents.html");				
+				dest.write(doc.root.html);
+				dest.setTimes(maxTime,maxTime);
+				buildPath(outdir,story.location).setTimes(maxTime,maxTime);
 		return maxTime;
 	}
 	catch (AssertError e) {
@@ -122,9 +122,8 @@ void reindex(string outdir, Story[string] stories) {
 	import std.algorithm.iteration: map;
 
 	auto sorted = make!
-	  (RedBlackTree!(Story,
-					 "a.modified < b.modified", true))
-	  (stories.byValue);
+		(RedBlackTree!(Story,"a.modified < b.modified", true))
+		(stories.byValue);
 	foreach (Story story; sorted) {
 		print("story", story.location, story.modified);
 		assert(story.location);

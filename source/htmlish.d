@@ -4,7 +4,7 @@ import std.algorithm.mutation: move;
 import htmlderp: detach;
 import html: Document, HTMLString, createDocument;
 
-Document* default_template;
+Document default_template;
 static this() {
   // one to be there at compile time j/i/c
   default_template = createDocument(import("template/default.html"));
@@ -290,14 +290,10 @@ import std.typecons: NullableRef;
 auto ref parse(string ident = "content",
                bool replace=false)
 	(HTMLString source,
-	 Document* templit = null,
+	 Document templit = default_template,
 	 string title = null) {
   import std.algorithm.searching: until;
   import std.range: chain, InputRange;
-
-  if(templit == null) {
-		templit = default_template;
-  }
 
   auto dest = templit.clone();
   assert(dest.root.document_ == dest,to!string(dest));
@@ -380,7 +376,7 @@ int derp = 0;
 
 long modified = -1;
 
-void make(string src, string dest, Document* templit = null) {
+void make(string src, string dest, Document templit = default_template) {
   import std.file: readText,write,rename;
   import htmlderp: querySelector;
   auto root = parse(readText(src),templit).root;
@@ -401,7 +397,7 @@ void make(string src, string dest, Document* templit = null) {
   rename(dest~".temp",dest);
 }
 
-auto make(Document* templit) {
+auto make(Document templit) {
 	void derp(string src, string dest) {
 		make(src,dest,templit);
 	}

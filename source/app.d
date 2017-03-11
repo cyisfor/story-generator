@@ -1,11 +1,11 @@
 static this() {
-  static import backtrace;
-  import std.stdio: stdout;
-  backtrace.PrintOptions options = {
-  colored: true,
-  detailedForN: 5,
-  };
-  backtrace.install(stdout,options);
+	static import backtrace;
+	import std.stdio: stdout;
+	backtrace.PrintOptions options = {
+	colored: true,
+	detailedForN: 5,
+	};
+	backtrace.install(stdout,options);
 }
 
 static import db;
@@ -32,33 +32,33 @@ void delegate(string,string) default_make_chapter;
 
 static import htmlish;
 static this() {
-  default_make_chapter = htmlish.make
-    (createDocument(import("template/chapter.xhtml")));
+	default_make_chapter = htmlish.make
+		(createDocument(import("template/chapter.xhtml")));
 }
 
 void smackdir(string p) {
-  import std.file: mkdir;
-  try {
-    mkdir(p);
-  } catch (Exception e) {}
+	import std.file: mkdir;
+	try {
+		mkdir(p);
+	} catch (Exception e) {}
 }
 
 bool update_last = false;
 
 struct Update {
-  @disable this(this);
-  db.Story* story;
-  SysTime modified;
-  int which;
-  string location;
-  string markup;
-  string dest;
-  string name;
+	@disable this(this);
+	db.Story* story;
+	SysTime modified;
+	int which;
+	string location;
+	string markup;
+	string dest;
+	string name;
 
-  void perform() {
+	void perform() {
 
-    // don't do anything on the last chapter, if multiple chapters
-    // and there's more than 1 chapter.
+		// don't do anything on the last chapter, if multiple chapters
+		// and there's more than 1 chapter.
 
 		if(story.finished) {
 			print("story set as finished",story.title);
@@ -87,94 +87,94 @@ struct Update {
 	void noseriously() {
 		need_reindex[location] = true;
 		// unconditionally update
-    auto transaction = db.transaction();
-    scope(success) transaction.commit();
-    import std.file: setTimes;
-    import htmlderp: querySelector;
-    import makers;
-    static import nada = makers.birthverse;
-    static import nada2 = makers.littlepip;
-    import std.file: write, readText;
-    import std.path: buildPath;
+		auto transaction = db.transaction();
+		scope(success) transaction.commit();
+		import std.file: setTimes;
+		import htmlderp: querySelector;
+		import makers;
+		static import nada = makers.birthverse;
+		static import nada2 = makers.littlepip;
+		import std.file: write, readText;
+		import std.path: buildPath;
 
-    // find a better place to put stuff so it doesn't scram the source directory
-    string basedir = "tmp";
-    smackdir(basedir);
-    basedir = buildPath(basedir,"base");
-    smackdir(basedir);
-    basedir = buildPath(basedir,location);
-    smackdir(basedir);
-    auto herpaderp() {
-      if(auto box = location in makers.make) {
-        print("found maker at ",location);
-        return *box;
-      } else {
+		// find a better place to put stuff so it doesn't scram the source directory
+		string basedir = "tmp";
+		smackdir(basedir);
+		basedir = buildPath(basedir,"base");
+		smackdir(basedir);
+		basedir = buildPath(basedir,location);
+		smackdir(basedir);
+		auto herpaderp() {
+			if(auto box = location in makers.make) {
+				print("found maker at ",location);
+				return *box;
+			} else {
 				htmlish.modified = modified.toUnixTime();
-        return default_make_chapter;
-      }
-    }
-    auto make = herpaderp();
+				return default_make_chapter;
+			}
+		}
+		auto make = herpaderp();
 
-    print("creating chapter",which,markup,story.id,name);
-    auto chapter = story.get_chapter(which);
+		print("creating chapter",which,markup,story.id,name);
+		auto chapter = story.get(which);
 
-    auto base = buildPath(basedir,name ~ ".html");
-    make(markup,base);
-    auto doc = createDocument
-      (readText(buildPath(basedir, name ~ ".html")));
+		auto base = buildPath(basedir,name ~ ".html");
+		make(markup,base);
+		auto doc = createDocument
+			(readText(buildPath(basedir, name ~ ".html")));
 
-    auto head = querySelector(doc,"head");
-    auto links = doc.querySelector("#links");
-    if(links is null) {
-      links = doc.createElement("div", querySelector(doc,"body"));
-      links.attr("class","links");
-    }
-    bool didlinks = false;
-    void dolink(string href, string rel, string title) {
-      auto link = doc.createElement("link",head);
-      link.attr("rel",rel);
-      link.attr("href",href);
-      if( didlinks ) {
-        links.appendText(" ");
-      } else {
-        didlinks = true;
-      }
-      link = doc.createElement("a",links);
-      link.attr("href",href);
-      link.appendText(title);
-    }
-    if( chapter.which > 0 ) {
-      dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
-    }
+		auto head = querySelector(doc,"head");
+		auto links = doc.querySelector("#links");
+		if(links is null) {
+			links = doc.createElement("div", querySelector(doc,"body"));
+			links.attr("class","links");
+		}
+		bool didlinks = false;
+		void dolink(string href, string rel, string title) {
+			auto link = doc.createElement("link",head);
+			link.attr("rel",rel);
+			link.attr("href",href);
+			if( didlinks ) {
+				links.appendText(" ");
+			} else {
+				didlinks = true;
+			}
+			link = doc.createElement("a",links);
+			link.attr("href",href);
+			link.appendText(title);
+		}
+		if( chapter.which > 0 ) {
+			dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
+		}
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
 		print("urgh",derp,chapter.which,story.chapters);
-    if( chapter.which + derp < story.chapters ) {
-      dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
-    }
-    dolink("contents.html","first","Contents");
+		if( chapter.which + derp < story.chapters ) {
+			dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
+		}
+		dolink("contents.html","first","Contents");
 
-    if(auto box = location in makers.chapter) {
-      (*box)(doc);
-    }
+		if(auto box = location in makers.chapter) {
+			(*box)(doc);
+		}
 
-    string title = null;
-    {
-      // does this chapter have a title?
-      auto res = doc.querySelectorAll("title");
-      if(!res.empty) {
-        title = to!string(res.front.html);
-      }
-    }
+		string title = null;
+		{
+			// does this chapter have a title?
+			auto res = doc.querySelectorAll("title");
+			if(!res.empty) {
+				title = to!string(res.front.html);
+			}
+		}
 
 
-    chapter.update(modified,
-                   chapter.which,
-                   title);
+		chapter.update(modified,
+									 chapter.which,
+									 title);
 
-    print("writing",location, which,dest);
-    write(dest,doc.root.html);
-    setTimes(dest,modified,modified);
-  }
+		print("writing",location, which,dest);
+		write(dest,doc.root.html);
+		setTimes(dest,modified,modified);
+	}
 }
 
 void check_chapter(SysTime modified, string markup) {
@@ -183,29 +183,29 @@ void check_chapter(SysTime modified, string markup) {
 
 void check_chapter(SysTime modified, string markup, string top) {
 	import std.array : array;
-  version(GNU) {
-    import std.algorithm: findSplitBefore;
-  } else {
-    import std.algorithm.searching: findSplitBefore;
-  }
-  import std.path: pathSplitter;
+	version(GNU) {
+		import std.algorithm: findSplitBefore;
+	} else {
+		import std.algorithm.searching: findSplitBefore;
+	}
+	import std.path: pathSplitter;
 
-  auto path = array(pathSplitter(markup));
-  if(path.length != 3) return;
-  if(path[1] != "markup") return;
+	auto path = array(pathSplitter(markup));
+	if(path.length != 3) return;
+	if(path[1] != "markup") return;
 
-  // pick stuff apart to analyze more closely
-  //    location / "markup" / chapterxx.ext
+	// pick stuff apart to analyze more closely
+	//		location / "markup" / chapterxx.ext
 
-  check_chapter(modified, to!string(path[0]),
-                markup, top, 
-                findSplitBefore(to!string(path[$-1]),".").expand);
+	check_chapter(modified, to!string(path[0]),
+								markup, top, 
+								findSplitBefore(to!string(path[$-1]),".").expand);
 }
 
 Appender!(Update[]) pending_updates;
 struct Upd8 {
-  string location;
-  int which;
+	string location;
+	int which;
 }
 bool[Upd8] updated;
 bool[Upd8] one_before;
@@ -218,61 +218,61 @@ bool[Upd8] no_update;
 string only_location = null;
 
 db.Story* place_story(string location, int which) {
-  db.Story* story;
-  if(location in stories) {
-    story = &stories[location];
-  } else {
-    stories[location] = db.story(location);
-    story = &stories[location];
+	db.Story* story;
+	if(location in stories) {
+		story = &stories[location];
+	} else {
+		stories[location] = db.story(location);
+		story = &stories[location];
 
-    story.location = location;
+		story.location = location;
 
-    assert(story.location);
-  }
-  // new chapters at the end, we need to increase the story's number of
-  // chapters, before performing ANY updates.
-  // the database counts known chapters, so this is just a
-  // temp cached number
-  if(story.chapters <= which) {
-	  print("UPDATE STORY CHAPTERS",location,which,story.chapters);
-    story.chapters = which + 1;
+		assert(story.location);
+	}
+	// new chapters at the end, we need to increase the story's number of
+	// chapters, before performing ANY updates.
+	// the database counts known chapters, so this is just a
+	// temp cached number
+	if(story.chapters <= which) {
+		print("UPDATE STORY CHAPTERS",location,which,story.chapters);
+		story.chapters = which + 1;
 		story.dirty = true;
-  }
-  return story;
+	}
+	return story;
 }
 
 bool contents_exist_derp(string location) {
-  import std.path: buildPath;
-  auto contents = buildPath("html",location,"contents.html");
-  return exists(contents);
+	import std.path: buildPath;
+	auto contents = buildPath("html",location,"contents.html");
+	return exists(contents);
 }
 alias contents_exist = memoize!contents_exist_derp;
 
 void check_chapter(SysTime modified,
-                   string location,
-                   string markup,
+									 string location,
+									 string markup,
 									 string markuploc,
-                   string name,
-                   string ext) {
-  import std.string : isNumeric;
-  version(GNU) {
-    import std.algorithm: startsWith, endsWith, max;
-  } else {
-    import std.algorithm.searching: startsWith, endsWith;
-    import std.algorithm.comparison: max;
-  }
-  import std.path: buildPath;
-  import std.file: timeLastModified;
+									 string name,
+									 string ext) {
+	import std.string : isNumeric;
+	version(GNU) {
+		import std.algorithm: startsWith, endsWith, max;
+	} else {
+		import std.algorithm.searching: startsWith, endsWith;
+		import std.algorithm.comparison: max;
+	}
+	import std.path: buildPath;
+	import std.file: timeLastModified;
 
-  if(!name.startsWith("chapter")) return;
+	if(!name.startsWith("chapter")) return;
 	import std.stdio;
-  string derp = name["chapter".length..name.length];
-  if(!isNumeric(derp)) return;
-  int which = to!int(derp) - 1;
-  if(!exists(location)) return;
+	string derp = name["chapter".length..name.length];
+	if(!isNumeric(derp)) return;
+	int which = to!int(derp) - 1;
+	if(!exists(location)) return;
 
-  // don't update if we're filtering by location...?
-  if(only_location && (!location.endsWith(only_location))) return;
+	// don't update if we're filtering by location...?
+	if(only_location && (!location.endsWith(only_location))) return;
 
 	auto key = Upd8(location,which);
 
@@ -282,7 +282,7 @@ void check_chapter(SysTime modified,
 		one_before.remove(key);
 	}
 	
-  if(key in updated) return;
+	if(key in updated) return;
 	updated[key] = true;
 
 	// return true if updated
@@ -364,56 +364,56 @@ void check_chapter(SysTime modified,
 
 void main(string[] args)
 {
-  import core.stdc.stdlib: getenv;
-  import std.path: buildPath;
+	import core.stdc.stdlib: getenv;
+	import std.path: buildPath;
 
-  while(!exists("code")) {
-    import std.file: chdir;
-    chdir("..");
-  }
-  db.open();
-  scope(exit) db.close();
+	while(!exists("code")) {
+		import std.file: chdir;
+		chdir("..");
+	}
+	db.open();
+	scope(exit) db.close();
 
-  if(auto location = getenv("edit")) {
-    db.story(to!string(location)).edit();
-    print("Edited");
-    return;
-  }
-  if(auto val = getenv("update_last")) {
+	if(auto location = getenv("edit")) {
+		db.story(to!string(location)).edit();
+		print("Edited");
+		return;
+	}
+	if(auto val = getenv("update_last")) {
 		update_last = true;
-  }
+	}
 
-  pending_updates = appender!(Update[]);
-  if(getenv("story")) {
-    only_location = to!string(getenv("story"));
-    assert(only_location,"specify a story please!");
-    check_chapters_for(only_location);
-  } else if(auto location = getenv("finish")) {
+	pending_updates = appender!(Update[]);
+	if(getenv("story")) {
+		only_location = to!string(getenv("story"));
+		assert(only_location,"specify a story please!");
+		check_chapters_for(only_location);
+	} else if(auto location = getenv("finish")) {
 		db.story(to!string(location)).finish();
 		return;
-  } else if(auto location = getenv("continue")) {
+	} else if(auto location = getenv("continue")) {
 		db.story(to!string(location)).finish(false);
 		return;
-  } else {
-    check_git_log(args);
-  }
-  if(stories.length) {
-    smackdir("html");
-    // now we can create all the outdirs
-    foreach(outdir; stories.keys) {
+	} else {
+		check_git_log(args);
+	}
+	if(stories.length) {
+		smackdir("html");
+		// now we can create all the outdirs
+		foreach(outdir; stories.keys) {
 			smackdir(buildPath("html",outdir));
-    }
+		}
 		print("stories",stories.values);
-    foreach(story;stories.values) {
+		foreach(story;stories.values) {
 			print("DIRTY STORY",story,story.dirty);
 			if(story.dirty) {
 				story.update();
 			}
-    }
+		}
 
-    foreach(ref update; pending_updates.data) {
-      update.perform();
-    }
+		foreach(ref update; pending_updates.data) {
+			update.perform();
+		}
 
 		foreach(outdir; stories.keys) {
 			if(outdir !in need_reindex) {
@@ -422,27 +422,27 @@ void main(string[] args)
 			}
 		}
 
-    reindex("html",stories);
-  } else {
-    print("no stories updated");
-  }
+		reindex("html",stories);
+	} else {
+		print("no stories updated");
+	}
 }
 
 void check_chapters_for(string location) {
-  import std.file: dirEntries,
-    FileException, SpanMode, timeLastModified;
-  import std.path: buildPath;
+	import std.file: dirEntries,
+		FileException, SpanMode, timeLastModified;
+	import std.path: buildPath;
 
-  string top = buildPath(location,"markup");
-  foreach(string markup; dirEntries(top,SpanMode.shallow)) {
+	string top = buildPath(location,"markup");
+	foreach(string markup; dirEntries(top,SpanMode.shallow)) {
 		print("checko",markup);
-    check_chapter(timeLastModified(markup),markup,top);
-  }
+		check_chapter(timeLastModified(markup),markup,top);
+	}
 }
 
 void check_git_log(string[] args) {
-  // by default we just check the last commit
-  // (run this in a post-commit hook)
+	// by default we just check the last commit
+	// (run this in a post-commit hook)
 	db.since_git((string last_version) {
 			string since;
 			if(args.length > 1) {
