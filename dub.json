@@ -3,8 +3,9 @@
 	"authors": [
 		"ferret"
 	],
+	"subPackages": ["htmld"],
 	"dependencies": {
-		"./htmld": "*",		
+		":htmld": "*",		
 		"d2sqlite3": "~>0.12.1",
 		"backtrace-d": "~>0.1.2",
 	},
