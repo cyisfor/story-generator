@@ -161,6 +161,30 @@ struct Database {
 			record_git.go(next_version);
 		}
 	}
+
+	Chapter to_chapter(Statement stmt, Story story, int which) {
+		import std.conv: to;
+		struct temp {
+			string id;
+			string title;
+			string modified;
+			string first_words;
+		}
+		temp t = stmt.as!temp;
+
+		Chapter ret = { id: to!long(t.id),
+										title: t.title,
+										modified: parse_mytimestamp(t.modified),
+										first_words: t.first_words,
+										db: &this,
+										story: story,
+										which: which
+		};
+		return ret;
+
+	}
+
+
 }
 
 Database db;
@@ -186,7 +210,6 @@ auto since_git(string delegate(string) action) {
 
 void close() {
   db.close();
-  db = null;
 }
 
 struct Chapter {
@@ -195,7 +218,7 @@ struct Chapter {
   string title;
   SysTime modified;
   string first_words;
-  Database db;
+  Database* db;
   Story story;
   int which;
   void remove() {
@@ -257,28 +280,6 @@ SysTime parse_mytimestamp(string timestamp) {
 		writeln("huhh?",timestamp);
 		throw(e);
   }
-}
-
-Chapter to_chapter(Statement stmt, Story story, int which) {
-  import std.conv: to;
-  struct temp {
-		string id;
-		string title;
-		string modified;
-		string first_words;
-  }
-  temp t = stmt.as!temp;
-
-	Chapter ret = { id: to!long(t.id),
-									title: t.title,
-									modified: parse_mytimestamp(t.modified),
-									first_words: t.first_words,
-									db: stmt.db,
-									story: story,
-									which: which
-	};
-	return ret;
-
 }
 
 struct Story {
