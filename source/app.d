@@ -403,6 +403,13 @@ void main(string[] args)
 		foreach(outdir; stories.keys) {
 			smackdir(buildPath("html",outdir));
 		}
+		foreach(loc,story;stories) {
+			print(loc);
+			foreach(c;cast(char[])(story.to!string)) {
+				print(c);
+			}
+		}
+				
 		print("stories",stories.values);
 		foreach(story;stories.values) {
 			print("DIRTY STORY",story,story.dirty);

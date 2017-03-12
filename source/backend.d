@@ -8,12 +8,12 @@ struct Statement {
 
 	void finalize() {
 		enforce(SQLITE_OK == sqlite3_finalize(stmt),
-						sqlite3_errmsg(*db));
+						db.errmsg());
 	}
 	
 	void reset() {
 		enforce(SQLITE_OK == sqlite3_reset(stmt),
-						sqlite3_errmsg(*db));
+						db.errmsg());
 	}
 
 	void go(Args...)(Args args) {
@@ -22,7 +22,7 @@ struct Statement {
 		}
 		try {
 			enforce(SQLITE_DONE == sqlite3_step(stmt),
-							sqlite3_errmsg(*db));
+							db.errmsg());
 		} finally {
 			sqlite3_reset(stmt);
 		}
@@ -60,20 +60,20 @@ struct Statement {
 													sqlite3_errmsg(*db));
 		} else static if(is(T == sqlite3_int64)) {
 			enforce(SQLITE_OK == sqlite3_bind_int64(stmt,col,value),
-							sqlite3_errmsg(*db));
+							db.errmsg());
 		} else static if(is(T == double) || is(T == float)) {
 			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value),
-							sqlite3_errmsg(*db));
+							db.errmsg());
 		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,
 																						 value.ptr,cast(int)value.length,null),
-							sqlite3_errmsg(*db));
+							db.errmsg());
 		} else {
 			string blob = value.to!string;
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col,
 																						 blob.ptr, cast(int)blob.length,
 																						 null),
-							sqlite3_errmsg(*db));
+							db.errmsg());
 		}
 	}
 
@@ -96,6 +96,8 @@ struct Statement {
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return p.to!T;
 		} else static if(is(T == string)) {
+			import print: print;
+			print("BEYTH",sqlite3_column_bytes(stmt,col));
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return cast(string)p;
 		} else {
@@ -144,7 +146,7 @@ struct Database {
   }
   this(string path) {
 		import std.string: toStringz;
-		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db),"couldn't open " .. path);
+		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db),"couldn't open " ~ path);
 
 		begin = this.prepare("BEGIN");
 		commit = this.prepare("COMMIT");
@@ -153,6 +155,10 @@ struct Database {
 
 	void error() {
 		throw new DBException(sqlite3_errmsg(db).to!string);
+	}
+	string errmsg() {
+		import std.string: fromStringz;
+		return sqlite3_errmsg(db).fromStringz.to!string;
 	}
 
 	void run(string stmts) {
@@ -187,7 +193,7 @@ struct Database {
 																						cast(int)sql.length,
 																						&result.stmt,
 																						null),
-						sqlite3_errmsg(db));
+						errmsg());
 		return result;
 	}
 

@@ -134,7 +134,7 @@ struct Database {
 		if(!find_story.next()) {
 			insert_story.bind(1,location);
 			get_info(insert_story);
-			enforce(find_story.next());
+			enforce(find_story.next(),"no story for " ~ location);
 		}
 		return Story(find_story.as!(Story.Params),this);
   }
@@ -310,6 +310,10 @@ struct Story {
 		this.db = db;
 		id = p.id;
 		title = p.title;
+		print(title.length);
+		foreach(c;title) {
+			print("boop",c);
+		}
 		description = p.description;
 		finished = p.finished;
 		try {
