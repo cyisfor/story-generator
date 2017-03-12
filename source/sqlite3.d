@@ -31,7 +31,7 @@
 ** part of the build process.
 */
 
-module d2sqlite3.sqlite3;
+module sqlite3;
 
 import core.stdc.stdarg;
 

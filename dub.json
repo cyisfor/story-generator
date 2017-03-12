@@ -6,7 +6,6 @@
 	"subPackages": ["htmld"],
 	"dependencies": {
 		":htmld": "*",		
-		"d2sqlite3": "~>0.12.1",
 		"backtrace-d": "~>0.1.2",
 	},
 	"sourceFiles": [

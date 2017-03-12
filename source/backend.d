@@ -1,4 +1,4 @@
-import d2sqlite3.sqlite3;
+import sqlite3;
 import std.exception: enforce;
 import std.conv: to;
 
@@ -109,7 +109,7 @@ class DBException: Exception {
 	}
 }
 
-class Database {
+struct Database {
   sqlite3* db;
 
   Statement begin;
@@ -128,7 +128,7 @@ class Database {
 		}
 		sqlite3_close(db);
   }
-  void init(string path) {
+  void initialize(string path) {
 		import std.string: toStringz;
 		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db));
 
@@ -142,20 +142,21 @@ class Database {
 	}
 
 	void run(string stmts) {
-		size_t left = stmts.length;
-		const(char*) sql = stmts.ptr;
+		assert(stmts.length < int.max);
+		int left = cast(int)stmts.length;
+		const(char)* sql = stmts.ptr;
 		while(left > 0) {
 			const(char*) tail = null;
-			Statement p;
+			sqlite3_stmt* p = null;
 
-			sqlite3_prepare_v2(&db,
+			sqlite3_prepare_v2(db,
 												 sql,
 												 left,
-												 &p.stmt,
+												 &p,
 												 &tail);
 
-			p.step();
-			p.finalize();
+			sqlite3_step(p);
+			sqlite3_finalize(p);
 			
 			if(tail == null) break;
 			left -= (tail-sql);
@@ -164,31 +165,46 @@ class Database {
 	}
 
 	Statement prepare(string sql) {
-		Statement result = Statement(this,null);
-		enforce(SQLITE_OK == sqlite3_prepare_v2(&db,
-																						sql,
-																						sql.length,
+		Statement result = {db:&this,
+												stmt:null};
+		assert(sql.length < int.max);
+		enforce(SQLITE_OK == sqlite3_prepare_v2(db,
+																						sql.ptr,
+																						cast(int)sql.length,
 																						&result.stmt,
 																						null));
 		return result;
 	}
-}
 
-struct Transaction {
-  bool committed;
-  ~this() {
-		if(!committed)
-			db.rollback();
-  }
-  void commit() {
-		db.commit();
-		committed = true;
-  }
-};
+	int transaction_depth = 0;
 
-Transaction transaction() {
-  Transaction t;
-  t.committed = false;
-  db.begin();
-  return t;
+	struct Transaction {
+		bool committed = false;
+		bool was_in = in_transaction;
+		~this() {
+			--transaction_depth;
+			if(transaction_depth == 0) {
+				if(!committed)
+					rollback();
+			}
+		}
+		void commit() {
+			--transaction_depth;
+			if(transaction_depth == 0) {
+				commit();
+			}
+			committed = true;
+		}
+	};
+
+	Transaction transaction() {
+		Transaction t = {
+			committed: false
+		};
+		if(transaction_depth == 0) {
+			begin();
+		}
+		++transaction_depth;
+		return t;
+	}
 }
