@@ -154,52 +154,6 @@ class Database {
 																						null));
 		return result;
 	}
-
-  void get_info(ref Statement stmt) {
-		import std.exception: enforce;
-		enforce(isatty(stdin.fileno), "stdin isn't a tty");
-		write("Title: ");
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		stmt.bind(2,readln().strip());
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		writeln("Description: (end with a dot)");
-		stmt.bind(3,readToDot());
-    stmt.go();
-  }
-
-  Story story(string location) {
-		find_story.bind(1,location);
-		scope(exit) find_story.reset();
-		if(!find_story.next()) {
-			insert_story.bind(1,location);
-			get_info(insert_story);
-			enforce(find_story.next());
-		}
-		return new Story(find_story.as!(Story.Params),this);
-  }
-
-  auto latest(void delegate(Story) handle) {
-		scope(exit) latest_stories.reset();
-		while(latest_stories.next()) {
-			handle(new Story(latest_stories.as!(Story.Params),this));
-		}
-  }
-
-	void since_git(string delegate(string) action) {
-		string next_version = null;
-		scope(exit) last_git.reset();
-		if(last_git.next()) {
-			string last_version = self.at!string(0);
-			next_version = action(last_version);
-			if(last_version == next_version)
-				next_version = null;
-		} else {
-			next_version = action(null);
-		}
-		if(next_version != null) {
-			record_git.go(next_version);
-		}
-	}
 }
 
 struct Transaction {

@@ -14,6 +14,149 @@ import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
 
+
+immutable string modified_format =
+  "strftime('%Y/%m%d%H%M%f',modified)";
+immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished";
+
+immutable Derp[] statements =
+	[
+		{q{update_desc},
+		 "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
+
+		{q{num_story_chapters},
+		 "SELECT COUNT(1) FROM chapters WHERE story = ?"},
+
+		{q{find_story},
+		 "SELECT "~story_fields~" from stories where location = ?"},
+
+		// just some shortcut bookkeeping
+		{q{update_story},
+		 `UPDATE stories SET
+modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
+chapters = (select count(1) from chapters where story = stories.id)
+WHERE id = ?`},
+
+		{q{insert_story},
+		 "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
+
+		{q{edit_story},
+		 "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
+
+		{q{finish_story},
+		 "UPDATE stories SET finished = ?2 WHERE id = ?1"},
+
+		{q{find_chapter},
+		 "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
+
+		{q{insert_chapter},
+		 "INSERT INTO chapters (which, story) VALUES (?,?)"},
+
+		{q{delete_chapter},
+		 "DELETE FROM chapters WHERE which = ? AND story = ?"},
+
+		{q{update_chapter},
+		 "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
+
+		{q{latest_stories},
+		 "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
+		{q{last_git},
+				"SELECT version FROM git where id = (SELECT MAX(id) FROM git)"},
+		{q{record_git},
+				"INSERT INTO git (version) VALUES (?)"},
+		];
+
+string declare_statements() {
+  string ret;
+  foreach(stmt; statements) {
+		ret ~= q{Statement }~stmt.name~";\n";
+  }
+  return ret;
+}
+
+string finalize_statements() {
+  string ret;
+  foreach(stmt; statements) {
+		ret ~= stmt.name~".finalize();\n";
+  }
+  return ret;
+}
+
+string initialize_statements() {
+  import std.format: format;
+  string ret;
+  foreach(stmt; statements) {
+		ret ~= format(q{
+				%s = this.prepare("%s");
+			},stmt.name,stmt.stmt);
+  }
+  return ret;
+}
+
+struct Database: backend.Database {
+	void init(string path) {
+		super.init(path);
+				
+		run(import("schema.sql"));
+		try {
+			db.execute("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
+		} catch(backend.SqliteException e) {}
+		import print: print;
+
+		mixin(initialize_statements());
+	}
+	void close() {
+		mixin(finalize_statements());
+		super.close();
+	}
+	
+  void get_info(ref Statement stmt) {
+		import std.exception: enforce;
+		enforce(isatty(stdin.fileno), "stdin isn't a tty");
+		write("Title: ");
+		enforce(!stdin.eof,"stdin ended unexpectedly!");
+		stmt.bind(2,readln().strip());
+		enforce(!stdin.eof,"stdin ended unexpectedly!");
+		writeln("Description: (end with a dot)");
+		stmt.bind(3,readToDot());
+    stmt.go();
+  }
+
+  Story story(string location) {
+		find_story.bind(1,location);
+		scope(exit) find_story.reset();
+		if(!find_story.next()) {
+			insert_story.bind(1,location);
+			get_info(insert_story);
+			enforce(find_story.next());
+		}
+		return new Story(find_story.as!(Story.Params),this);
+  }
+
+  void latest(void delegate(Story) handle) {
+		scope(exit) latest_stories.reset();
+		while(latest_stories.next()) {
+			handle(Story(latest_stories.as!(Story.Params),this));
+		}
+  }
+
+	void since_git(string delegate(string) action) {
+		string next_version = null;
+		scope(exit) last_git.reset();
+		if(last_git.next()) {
+			string last_version = self.at!string(0);
+			next_version = action(last_version);
+			if(last_version == next_version)
+				next_version = null;
+		} else {
+			next_version = action(null);
+		}
+		if(next_version != null) {
+			record_git.go(next_version);
+		}
+	}
+}
+
 Database db;
 void open() {
   db = new Database();
@@ -23,8 +166,8 @@ Story story(string location) {
   return db.story(location);
 }
 
-auto latest() {
-  return db.latest();
+void latest(void delegate(Story) handle) {
+  db.latest(handle);
 }
 
 auto since_git(string delegate(string) action) {
@@ -35,10 +178,6 @@ void close() {
   db.close();
   db = null;
 }
-
-
-
-
 
 struct Chapter {
   @disable this(this);
@@ -60,7 +199,7 @@ struct Chapter {
 		this.which = which;
 		import std.stdio;
 		if(title is null) { title = "???"; }
-		db.update_chapter.inject(title,modified.toISOExtString(),which,story.id);
+		db.update_chapter.go(title,modified.toISOExtString(),which,story.id);
   }
 };
 
@@ -191,25 +330,24 @@ class Story {
   }
 
   void remove(int which) {
-		db.delete_chapter.inject(which,id);
+		db.delete_chapter.go(which,id);
 		update();
   }
 
   void update() {
 		try {
-			db.update_story.inject(id);
+			db.update_story.go(id);
 		} catch(Exception e) {
 			writefln("Story %d(%s) wouldn't update: %s",id,title,e);
 			return;
 		}
-		try {
-			db.num_story_chapters.bindAll(id);
-
-			import std.algorithm.comparison: max;
-			chapters = max(chapters,db.num_story_chapters.execute().front.peek!int(0));
-		} finally {
-			db.num_story_chapters.reset();
-		}
+		scope(exit) db.num_story_chapters.reset();
+		db.num_story_chapters.bind(1,id);
+		enforce(db.num_story_chapters.next());
+			
+		import std.algorithm.comparison: max;
+		chapters = max(chapters,db.num_story_chapters.at!int(0));
+		
     dirty = false;
   }
 
@@ -234,7 +372,7 @@ class Story {
 			dirty = true;
 		}
 		if(dirty) {
-			db.update_desc.inject(title, description, id);
+			db.update_desc(title, description, id);
 		}
   }
 
@@ -247,7 +385,7 @@ class Story {
   }
 
   void finish(bool finished = true) {
-		db.finish_story.inject(id,finished);
+		db.finish_story.go(id,finished);
   }
 };
 
@@ -269,85 +407,6 @@ struct Derp {
   string name;
   string stmt;
   string alter = null;
-}
-
-immutable string modified_format =
-  "strftime('%Y/%m%d%H%M%f',modified)";
-immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished";
-
-
-immutable Derp[] statements =
-	[
-		{q{update_desc},
-		 "UPDATE stories SET title = COALESCE(?,title), description = COALESCE(?,description) WHERE id = ?"},
-
-		{q{num_story_chapters},
-		 "SELECT COUNT(1) FROM chapters WHERE story = ?"},
-
-		{q{find_story},
-		 "SELECT "~story_fields~" from stories where location = ?"},
-
-		// just some shortcut bookkeeping
-		{q{update_story},
-		 `UPDATE stories SET
-modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
-chapters = (select count(1) from chapters where story = stories.id)
-WHERE id = ?`},
-
-		{q{insert_story},
-		 "INSERT INTO stories (location,title,description) VALUES (?,?,?)"},
-
-		{q{edit_story},
-		 "UPDATE stories SET title = ?2, description = ?3 WHERE id = ?1"},
-
-		{q{finish_story},
-		 "UPDATE stories SET finished = ?2 WHERE id = ?1"},
-
-		{q{find_chapter},
-		 "SELECT id,title, "~modified_format~", first_words FROM chapters WHERE story = ? AND which = ?"},
-
-		{q{insert_chapter},
-		 "INSERT INTO chapters (which, story) VALUES (?,?)"},
-
-		{q{delete_chapter},
-		 "DELETE FROM chapters WHERE which = ? AND story = ?"},
-
-		{q{update_chapter},
-		 "UPDATE chapters SET title = ?, modified = ? WHERE which = ? AND story = ?"},
-
-		{q{latest_stories},
-		 "SELECT "~story_fields~" FROM stories ORDER BY modified DESC LIMIT 100"},
-		{q{last_git},
-				"SELECT version FROM git where id = (SELECT MAX(id) FROM git)"},
-		{q{record_git},
-				"INSERT INTO git (version) VALUES (?)"},
-		];
-
-string declare_statements() {
-  string ret;
-  foreach(stmt; statements) {
-		ret ~= q{Statement }~stmt.name~";\n";
-  }
-  return ret;
-}
-
-string finalize_statements() {
-  string ret;
-  foreach(stmt; statements) {
-		ret ~= stmt.name~".finalize();\n";
-  }
-  return ret;
-}
-
-string initialize_statements() {
-  import std.format: format;
-  string ret;
-  foreach(stmt; statements) {
-		ret ~= format(q{
-				%s = this.prepare("%s");
-			},stmt.name,stmt.stmt);
-  }
-  return ret;
 }
 
 extern (C) int isatty(int fd);
