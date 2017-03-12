@@ -1,5 +1,6 @@
 import d2sqlite3.sqlite3;
-import std.exception: enforce, newException;
+import std.exception: enforce;
+import std.conv: to;
 
 extern (C) void function(void*) nullfunc = null;
 
@@ -59,9 +60,8 @@ struct Statement {
 			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value));
 		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,
-																						 value.ptr,value.length,null));
+																						 value.ptr,cast(int)value.length,null));
 		} else {
-			import std.conv: to;
 			string blob = value.to!string;
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col,
 																						 blob.ptr, cast(int)blob.length,
@@ -103,7 +103,11 @@ struct Statement {
 
 };
 
-class DBException: Exception {}
+class DBException: Exception {
+	this(string msg, string file = __FILE__, size_t line = __LINE__) {
+		super(msg, file, line);
+	}
+}
 
 class Database {
   sqlite3* db;
@@ -134,12 +138,12 @@ class Database {
   }
 
 	void error() {
-		throw new DBException(sqlite3_errmsg(db));
+		throw new DBException(sqlite3_errmsg(db).to!string);
 	}
 
 	void run(string stmts) {
 		size_t left = stmts.length;
-		const(char*) sql = stmts;
+		const(char*) sql = stmts.ptr;
 		while(left > 0) {
 			const(char*) tail = null;
 			Statement p;
