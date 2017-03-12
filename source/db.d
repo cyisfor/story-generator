@@ -15,7 +15,7 @@ import std.path: buildPath;
 import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
-
+import std.exception: enforce;
 
 immutable string modified_format =
   "strftime('%Y/%m%d%H%M%f',modified)";
@@ -331,7 +331,7 @@ class Story {
         enforce(db.find_chapter.next());
       }
 		}
-		cache[which] = rset.front.to_chapter(db,this,which);
+		cache[which] = db.find_chapter.to_chapter(this,which);
 
 		return &cache[which];
   }

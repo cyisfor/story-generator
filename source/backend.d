@@ -1,5 +1,7 @@
 import d2sqlite3.sqlite3;
-import std.exception: enforce;
+import std.exception: enforce, newException;
+
+extern (C) void function(void*) nullfunc = null;
 
 struct Statement {
 	Database* db;
@@ -33,6 +35,7 @@ struct Statement {
 		default:
 			db.error();
 		}
+		return false;
 	}
 
 	bool opBool() {
@@ -55,11 +58,14 @@ struct Statement {
 		} else static if(is(T == double) || is(T == float)) {
 			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value));
 		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
-			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,value,value.length,null));
+			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,
+																						 value.ptr,value.length,null));
 		} else {
 			import std.conv: to;
 			string blob = value.to!string;
-			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col, value, value.length, null));
+			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col,
+																						 blob.ptr, cast(int)blob.length,
+																						 nullfunc));
 		}
 	}
 
@@ -97,6 +103,8 @@ struct Statement {
 
 };
 
+class DBException: Exception {}
+
 class Database {
   sqlite3* db;
 
@@ -117,12 +125,17 @@ class Database {
 		sqlite3_close(db);
   }
   void init(string path) {
-		enforce(SQLITE_OK == sqlite3_open(path, &db));
+		import std.string: toStringz;
+		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db));
 
-		begin.stmt = this.prepare("BEGIN");
-		commit.stmt = this.prepare("COMMIT");
-		rollback.stmt = this.prepare("ROLLBACK");
+		begin = this.prepare("BEGIN");
+		commit = this.prepare("COMMIT");
+		rollback = this.prepare("ROLLBACK");
   }
+
+	void error() {
+		throw new DBException(sqlite3_errmsg(db));
+	}
 
 	void run(string stmts) {
 		size_t left = stmts.length;
