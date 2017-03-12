@@ -100,13 +100,13 @@ struct Database {
 
 	mixin(declare_statements());
 	
-	this(string path) {
-		db = backend.Database(path);
+	void initialize() {
+		db = backend.Database("generate.sqlite");
 				
 		run(import("schema.sql"));
 		try {
 			db.run("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
-		} catch(backend.SqliteException e) {}
+		} catch(backend.DBException e) {}
 		import print: print;
 
 		mixin(initialize_statements());
@@ -136,7 +136,7 @@ struct Database {
 			get_info(insert_story);
 			enforce(find_story.next());
 		}
-		return new Story(find_story.as!(Story.Params),this);
+		return Story(find_story.as!(Story.Params),this);
   }
 
   void latest(void delegate(Story) handle) {
@@ -150,7 +150,7 @@ struct Database {
 		string next_version = null;
 		scope(exit) last_git.reset();
 		if(last_git.next()) {
-			string last_version = self.at!string(0);
+			string last_version = last_git.at!string(0);
 			next_version = action(last_version);
 			if(last_version == next_version)
 				next_version = null;
@@ -165,7 +165,7 @@ struct Database {
 
 Database db;
 void open() {
-  db = new Database();
+  db.initialize();
 }
 
 auto transaction() {
@@ -281,7 +281,7 @@ Chapter to_chapter(Statement stmt, Story story, int which) {
 
 }
 
-class Story {
+struct Story {
   long id;
   string title;
   string description;

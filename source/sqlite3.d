@@ -4343,7 +4343,7 @@ enum SQLITE3_TEXT = 3;
 ** pointer.  Subsequent calls to [sqlite3_errcode()] will return
 ** [SQLITE_NOMEM].)^
 */
-const(void)* sqlite3_column_blob(sqlite3_stmt*, int iCol);
+const(ubyte)* sqlite3_column_blob(sqlite3_stmt*, int iCol);
 int sqlite3_column_bytes(sqlite3_stmt*, int iCol);
 int sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
 double sqlite3_column_double(sqlite3_stmt*, int iCol);

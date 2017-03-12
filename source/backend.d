@@ -80,14 +80,17 @@ struct Statement {
 	T at(T)(int col) {
 		static if(is(T == int)) {
 			return sqlite3_column_int(stmt,col);
+		} else static if(is(T == bool)) {
+			return sqlite3_column_int(stmt,col) != 0;
 		} else static if(is(T == sqlite3_int64)) {
 			return sqlite3_column_int64(stmt,col);
 		} else static if(is(T == double) || is(T == float)) {
 			return sqlite3_column_double(stmt,col);
-		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
-			byte[] result;
-			result.length = sqlite3_column_bytes(stmt,col);
-			memcpy(result.ptr, sqlite3_column_blob(stmt,col), result.length);
+		} else static if(is(T == string) || is(T == char[]) || is(T == byte[]) || is(T == ubyte[])) {
+			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
+			return p.to!T;
+		} else {
+			static assert(false,"What type is this?");
 		}
 	}
 	
