@@ -1,4 +1,4 @@
-static import backend = d2sqlite3.sqlite3;
+static import backend = sqlite;
 import print: print;
 
 version(GNU) {
@@ -14,8 +14,31 @@ import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
 import std.array: join, appender;
 
-alias Statement = backend.sqlite3_stmt*;
-alias Database = backend.sqlite3*;
+Database db;
+void open() {
+  db = new Database();
+}
+
+Story story(string location) {
+  return db.story(location);
+}
+
+auto latest() {
+  return db.latest();
+}
+
+auto since_git(string delegate(string) action) {
+	return db.since_git(action);
+}
+
+void close() {
+  db.close();
+  db = null;
+}
+
+
+
+
 
 struct Chapter {
   @disable this(this);
@@ -87,8 +110,7 @@ SysTime parse_mytimestamp(string timestamp) {
   }
 }
 
-Chapter to_chapter(backend.Row row,
-									 Database db, Story story, int which) {
+Chapter to_chapter(Statement stmt, Story story, int which) {
   import std.conv: to;
   struct temp {
 		string id;
@@ -96,20 +118,19 @@ Chapter to_chapter(backend.Row row,
 		string modified;
 		string first_words;
   }
-  temp t = row.as!temp;
+  temp t = stmt.as!temp;
 
 	Chapter ret = { id: to!long(t.id),
 									title: t.title,
 									modified: parse_mytimestamp(t.modified),
 									first_words: t.first_words,
-									db: db,
+									db: stmt.db,
 									story: story,
 									which: which
 	};
 	return ret;
 
 }
-
 
 class Story {
   long id;
@@ -133,6 +154,7 @@ class Story {
 		int chapters;
 		bool finished;
   };
+	
   this(Params p, Database db) {
 		location = p.location;
 		this.db = db;
@@ -140,12 +162,12 @@ class Story {
 		title = p.title;
 		description = p.description;
 		finished = p.finished;
-			try {
-		modified = parse_mytimestamp(p.modified);
-			} catch(Exception e) {
-		print("uerrr",p.id);
-		throw(e);
-	}
+		try {
+			modified = parse_mytimestamp(p.modified);
+		} catch(Exception e) {
+			print("uerrr",p.id);
+			throw(e);
+		}
 
 		chapters = p.chapters;
 		check_for_desc();
@@ -154,15 +176,13 @@ class Story {
   Chapter* get(bool create = true)(int which) {
 		assert(id>=0);
 		scope(exit) db.find_chapter.reset();
-		db.find_chapter.bindAll(id, which);
-		auto rset = db.find_chapter.execute();
-		if(rset.empty) {
+		db.find_chapter.bind(id, which);
+		if(!db.find_chapter.next()) {
       static if(!create) {
         throw new Exception("no creating chapters");
       } else {
-        db.insert_chapter.inject(which, id);
-        db.find_chapter.reset();
-        rset = db.find_chapter.execute();
+        db.insert_chapter.go(which, id);
+        enforce(db.find_chapter.next());
       }
 		}
 		cache[which] = rset.front.to_chapter(db,this,which);
@@ -330,143 +350,7 @@ string initialize_statements() {
   return ret;
 }
 
-struct OneShot {
-  backend.Statement stmt;
-  auto opCall() {
-		auto ret = stmt.execute();
-		stmt.reset();
-		return ret;
-  }
-}
-
 extern (C) int isatty(int fd);
-
-class Database {
-  backend.Database db;
-  mixin(declare_statements());
-
-  OneShot begin;
-  OneShot commit;
-  OneShot rollback;
-
-  void close() {
-		mixin(finalize_statements());
-		db.close();
-  }
-  this() {
-		db = backend.Database("generate.sqlite");
-		db.run(import("schema.sql"));
-		try {
-			db.execute("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
-		} catch(backend.SqliteException e) {}
-		import print: print;
-		mixin(initialize_statements());
-		begin.stmt = this.prepare("BEGIN");
-		commit.stmt = this.prepare("COMMIT");
-		rollback.stmt = this.prepare("ROLLBACK");
-  }
-
-	Statement prepare(string sql) {
-		Statement result = null;
-		enforce(SQLITE_OK == sqlite3_prepare_v2(&db,
-																						sql,
-																						sql.length,
-																						&result,
-																						null));
-		return result;
-	}
-
-  void get_info(ref backend.Statement stmt) {
-		import std.exception: enforce;
-		enforce(isatty(stdin.fileno), "stdin isn't a tty");
-		write("Title: ");
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		stmt.bind(2,readln().strip());
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		writeln("Description: (end with a dot)");
-		stmt.bind(3,readToDot());
-    stmt.execute();
-		stmt.reset();
-  }
-
-  Story story(string location) {
-		find_story.bind(1,location);
-		scope(exit) find_story.reset();
-		auto rows = find_story.execute();
-		if(rows.empty) {
-			insert_story.bind(1,location);
-			get_info(insert_story);
-			rows = find_story.execute();
-		}
-		return new Story(rows.front.as!(Story.Params),this);
-  }
-
-  auto latest() {
-		return map!((auto ref row) => new Story(row.as!(Story.Params),this))
-			(latest_stories.execute());
-  }
-
-	void since_git(string delegate(string) action) {
-		auto res = last_git.execute();
-		string next_version = null;
-		try {
-			if(res.empty) {
-				next_version = action(null);
-			} else {
-				string last_version = res.front.peek!string(0);
-				next_version = action(last_version);
-				if(last_version == next_version)
-					next_version = null;
-			}
-		} finally {
-			if(next_version != null) {
-				record_git.inject(next_version);
-			}
-		}
-	}
-}
-
-Database db;
-void open() {
-  db = new Database();
-}
-
-Story story(string location) {
-  return db.story(location);
-}
-
-auto latest() {
-  return db.latest();
-}
-
-auto since_git(string delegate(string) action) {
-	return db.since_git(action);
-}
-
-void close() {
-  db.close();
-  db = null;
-}
-
-
-struct Transaction {
-  bool committed;
-  ~this() {
-		if(!committed)
-			db.rollback();
-  }
-  void commit() {
-		db.commit();
-		committed = true;
-  }
-};
-
-Transaction transaction() {
-  Transaction t;
-  t.committed = false;
-  db.begin();
-  return t;
-}
 
 unittest {
   if(db !is null) db.close(); // avoid memory leak error
