@@ -1,4 +1,4 @@
-import db
+import db: db;
 
 void go() {
 	auto sel = db.prepare("SELECT id,location,title,description FROM stories");
@@ -20,7 +20,7 @@ void go() {
 		upd.go(row.location,
 					 row.title,
 					 row.description,
-					 row.id)
+					 row.id);
 	}
 
 	sel.finalize();

@@ -54,10 +54,10 @@ struct Statement {
 		}
 	}
 
-	void bind(T)(int col, T value) {
+	void bind1(T)(int col, T value) {
 		static if(is(T == int)) {
 			enforce(SQLITE_OK == sqlite3_bind_int(stmt,col,value),
-													sqlite3_errmsg(*db));
+													db.errmsg());
 		} else static if(is(T == sqlite3_int64)) {
 			enforce(SQLITE_OK == sqlite3_bind_int64(stmt,col,value),
 							db.errmsg());
@@ -77,10 +77,9 @@ struct Statement {
 		}
 	}
 
-	void bind(T, Args...)(T t, Args args) {
-		bind(1, t);
+	void bindAll(Args...)(Args args) {
 		foreach (index, _; Args)
-			bind(index + 2, args[index]);
+			bind1(index + 1, args[index]);
 	}
 	
 	T at(T)(int col) {

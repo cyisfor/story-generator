@@ -364,11 +364,6 @@ void check_chapter(SysTime modified,
 
 void main(string[] args)
 {
-	if(args.length == 1 && args[0] == "fixblobs") {
-		import fixblobs: go;
-		go();
-		return;
-	}
 	import core.stdc.stdlib: getenv;
 	import std.path: buildPath;
 
@@ -379,6 +374,12 @@ void main(string[] args)
 	db.open();
 	scope(exit) db.close();
 
+	if(args.length == 2 && args[1] == "fixblobs") {
+		import fixblobs: go;
+		go();
+		return;
+	}
+	
 	if(auto location = getenv("edit")) {
 		db.story(to!string(location)).edit();
 		print("Edited");
