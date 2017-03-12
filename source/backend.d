@@ -17,7 +17,9 @@ struct Statement {
 	}
 
 	void go(Args...)(Args args) {
-		bind(args);
+		static if(Args.length > 0) {
+			bind(args);
+		}
 		try {
 			enforce(SQLITE_DONE == sqlite3_step(stmt));
 		} finally {
@@ -128,7 +130,7 @@ struct Database {
 		}
 		sqlite3_close(db);
   }
-  void initialize(string path) {
+  this(string path) {
 		import std.string: toStringz;
 		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db));
 
@@ -178,20 +180,20 @@ struct Database {
 
 	int transaction_depth = 0;
 
-	struct Transaction {
+	static struct Transaction {
+		Database* db;
 		bool committed = false;
-		bool was_in = in_transaction;
 		~this() {
-			--transaction_depth;
-			if(transaction_depth == 0) {
-				if(!committed)
-					rollback();
+			if(committed) return;
+			--db.transaction_depth;
+			if(db.transaction_depth == 0) {
+				db.rollback();
 			}
 		}
 		void commit() {
-			--transaction_depth;
-			if(transaction_depth == 0) {
-				commit();
+			--db.transaction_depth;
+			if(db.transaction_depth == 0) {
+				db.commit();
 			}
 			committed = true;
 		}
@@ -199,6 +201,7 @@ struct Database {
 
 	Transaction transaction() {
 		Transaction t = {
+			db: &this,
 			committed: false
 		};
 		if(transaction_depth == 0) {

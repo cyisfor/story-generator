@@ -1,6 +1,5 @@
 static import backend;
 import backend: Statement;
-public import backend: transaction;
 import print: print;
 
 version(GNU) {
@@ -101,12 +100,12 @@ struct Database {
 
 	mixin(declare_statements());
 	
-	void init(string path) {
-		db.init(path);
+	this(string path) {
+		db = backend.Database(path);
 				
 		run(import("schema.sql"));
 		try {
-			db.execute("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
+			db.run("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
 		} catch(backend.SqliteException e) {}
 		import print: print;
 
@@ -167,6 +166,10 @@ struct Database {
 Database db;
 void open() {
   db = new Database();
+}
+
+auto transaction() {
+	return db.transaction();
 }
 
 Story story(string location) {
