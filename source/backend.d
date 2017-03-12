@@ -1,7 +1,8 @@
 import d2sqlite3.sqlite3;
+import std.exception: enforce;
 
 struct Statement {
-	ref Database db;
+	Database* db;
 	sqlite3_stmt* stmt;
 
 	void finalize() {
@@ -51,13 +52,14 @@ struct Statement {
 			enforce(SQLITE_OK == sqlite3_bind_int(stmt,col,value));
 		} else static if(is(T == sqlite3_int64)) {
 			enforce(SQLITE_OK == sqlite3_bind_int64(stmt,col,value));
-		} else static if(is(T == double || T == float)) {
+		} else static if(is(T == double) || is(T == float)) {
 			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value));
-		} else static if(is(T == string || T == char[] || T == byte[])) {
+		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,value,value.length,null));
 		} else {
+			import std.conv: to;
 			string blob = value.to!string;
-			enforce(SQLITE_OK == sqliter_bind_blob(stmt, col, value, value.length, null));
+			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col, value, value.length, null));
 		}
 	}
 
@@ -72,9 +74,9 @@ struct Statement {
 			return sqlite3_column_int(stmt,col);
 		} else static if(is(T == sqlite3_int64)) {
 			return sqlite3_column_int64(stmt,col);
-		} else static if(is(T == double || T == float)) {
+		} else static if(is(T == double) || is(T == float)) {
 			return sqlite3_column_double(stmt,col);
-		} else static if(is(T == string || T == char[] || T == byte[])) {
+		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
 			byte[] result;
 			result.length = sqlite3_column_bytes(stmt,col);
 			memcpy(result.ptr, sqlite3_column_blob(stmt,col), result.length);
@@ -96,8 +98,7 @@ struct Statement {
 };
 
 class Database {
-  backend.Database db;
-  mixin(declare_statements());
+  sqlite3* db;
 
   Statement begin;
   Statement commit;
@@ -115,7 +116,7 @@ class Database {
 		}
 		sqlite3_close(db);
   }
-  init(string path) {
+  void init(string path) {
 		enforce(SQLITE_OK == sqlite3_open(path, &db));
 
 		begin.stmt = this.prepare("BEGIN");

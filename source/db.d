@@ -1,4 +1,6 @@
-static import backend = sqlite;
+static import backend;
+import backend: Statement;
+public import backend: transaction;
 import print: print;
 
 version(GNU) {
@@ -93,9 +95,14 @@ string initialize_statements() {
   return ret;
 }
 
-struct Database: backend.Database {
+struct Database {
+	backend.Database db;
+	alias db this;
+
+	mixin(declare_statements());
+	
 	void init(string path) {
-		super.init(path);
+		db.init(path);
 				
 		run(import("schema.sql"));
 		try {
@@ -107,7 +114,7 @@ struct Database: backend.Database {
 	}
 	void close() {
 		mixin(finalize_statements());
-		super.close();
+		db.close();
 	}
 	
   void get_info(ref Statement stmt) {
