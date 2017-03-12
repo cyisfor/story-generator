@@ -2,18 +2,18 @@ import sqlite3;
 import std.exception: enforce;
 import std.conv: to;
 
-extern (C) void function(void*) nullfunc = null;
-
 struct Statement {
 	Database* db;
 	sqlite3_stmt* stmt;
 
 	void finalize() {
-		enforce(SQLITE_OK == sqlite3_finalize(stmt));
+		enforce(SQLITE_OK == sqlite3_finalize(stmt),
+						sqlite3_errmsg(*db));
 	}
 	
 	void reset() {
-		enforce(SQLITE_OK == sqlite3_reset(stmt));
+		enforce(SQLITE_OK == sqlite3_reset(stmt),
+						sqlite3_errmsg(*db));
 	}
 
 	void go(Args...)(Args args) {
@@ -21,7 +21,8 @@ struct Statement {
 			bind(args);
 		}
 		try {
-			enforce(SQLITE_DONE == sqlite3_step(stmt));
+			enforce(SQLITE_DONE == sqlite3_step(stmt),
+							sqlite3_errmsg(*db));
 		} finally {
 			sqlite3_reset(stmt);
 		}
@@ -55,19 +56,24 @@ struct Statement {
 
 	void bind(T)(int col, T value) {
 		static if(is(T == int)) {
-			enforce(SQLITE_OK == sqlite3_bind_int(stmt,col,value));
+			enforce(SQLITE_OK == sqlite3_bind_int(stmt,col,value),
+													sqlite3_errmsg(*db));
 		} else static if(is(T == sqlite3_int64)) {
-			enforce(SQLITE_OK == sqlite3_bind_int64(stmt,col,value));
+			enforce(SQLITE_OK == sqlite3_bind_int64(stmt,col,value),
+							sqlite3_errmsg(*db));
 		} else static if(is(T == double) || is(T == float)) {
-			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value));
+			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value),
+							sqlite3_errmsg(*db));
 		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,
-																						 value.ptr,cast(int)value.length,null));
+																						 value.ptr,cast(int)value.length,null),
+							sqlite3_errmsg(*db));
 		} else {
 			string blob = value.to!string;
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt, col,
 																						 blob.ptr, cast(int)blob.length,
-																						 nullfunc));
+																						 null),
+							sqlite3_errmsg(*db));
 		}
 	}
 
@@ -86,9 +92,12 @@ struct Statement {
 			return sqlite3_column_int64(stmt,col);
 		} else static if(is(T == double) || is(T == float)) {
 			return sqlite3_column_double(stmt,col);
-		} else static if(is(T == string) || is(T == char[]) || is(T == byte[]) || is(T == ubyte[])) {
+		} else static if(is(T == char[]) || is(T == byte[]) || is(T == ubyte[])) {
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return p.to!T;
+		} else static if(is(T == string)) {
+			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
+			return cast(string)p;
 		} else {
 			static assert(false,"What type is this?");
 		}
@@ -135,7 +144,7 @@ struct Database {
   }
   this(string path) {
 		import std.string: toStringz;
-		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db));
+		enforce(SQLITE_OK == sqlite3_open(path.toStringz, &db),"couldn't open " .. path);
 
 		begin = this.prepare("BEGIN");
 		commit = this.prepare("COMMIT");
@@ -177,7 +186,8 @@ struct Database {
 																						sql.ptr,
 																						cast(int)sql.length,
 																						&result.stmt,
-																						null));
+																						null),
+						sqlite3_errmsg(db));
 		return result;
 	}
 

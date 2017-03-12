@@ -26,7 +26,7 @@
 		"unittest": {
 			"buildOptions": ["unittests","debugInfo","debugMode","alwaysStackFrame"],
 			"buildRequirements": ["allowWarnings"],
-		}
-		
-	}
+		},
+	},
+	"libs": ["sqlite3"]
 }

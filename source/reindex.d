@@ -146,7 +146,7 @@ void reindex(string outdir, Story[string] stories) {
 	//dfmt on
 	Feed recent = new Feed(p);
 
-	copy(db.latest(), recent);
+	db.latest(&recent.put);
 
 	recent.save(buildPath(outdir, "updates.atom"));
 }

@@ -162,7 +162,7 @@ struct Database {
 		}
 	}
 
-	Chapter to_chapter(Statement stmt, Story story, int which) {
+	Chapter to_chapter(ref Story story, int which) {
 		import std.conv: to;
 		struct temp {
 			string id;
@@ -170,7 +170,7 @@ struct Database {
 			string modified;
 			string first_words;
 		}
-		temp t = stmt.as!temp;
+		temp t = find_chapter.as!temp;
 
 		Chapter ret = { id: to!long(t.id),
 										title: t.title,
@@ -335,7 +335,7 @@ struct Story {
         enforce(db.find_chapter.next());
       }
 		}
-		cache[which] = db.find_chapter.to_chapter(this,which);
+		cache[which] = db.to_chapter(this,which);
 
 		return &cache[which];
   }

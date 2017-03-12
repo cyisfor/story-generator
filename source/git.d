@@ -53,7 +53,8 @@ string parse_log(string since, void delegate(SysTime, string) handler) {
 		// regenerate anyway
 		handler(modified, to!string(res[3]));
   }
-	print("hash is now",last_hash);
+	if(last_hash !is null)
+		print("hash is now",last_hash);
 	return last_hash;
 }
 
