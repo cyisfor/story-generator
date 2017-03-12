@@ -173,9 +173,9 @@ struct Database {
 		temp t = find_chapter.as!temp;
 
 		Chapter ret = { id: to!long(t.id),
-										title: t.title,
+										title: t.title.dup,
 										modified: parse_mytimestamp(t.modified),
-										first_words: t.first_words,
+										first_words: t.first_words.dup,
 										db: &this,
 										story: story,
 										which: which
@@ -306,15 +306,15 @@ struct Story {
   };
 	
   this(Params p, Database db) {
-		location = p.location;
+		location = p.location[];
 		this.db = db;
 		id = p.id;
-		title = p.title;
+		title = p.title.dup;
 		print(title.length);
 		foreach(c;title) {
 			print("boop",c);
 		}
-		description = p.description;
+		description = p.description.dup;
 		finished = p.finished;
 		try {
 			modified = parse_mytimestamp(p.modified);

@@ -364,6 +364,11 @@ void check_chapter(SysTime modified,
 
 void main(string[] args)
 {
+	if(args.length == 1 && args[0] == "fixblobs") {
+		import fixblobs: go;
+		go();
+		return;
+	}
 	import core.stdc.stdlib: getenv;
 	import std.path: buildPath;
 

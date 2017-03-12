@@ -97,7 +97,9 @@ struct Statement {
 			return p.to!T;
 		} else static if(is(T == string)) {
 			import print: print;
-			print("BEYTH",sqlite3_column_bytes(stmt,col));
+			print("BEYTH",col,sqlite3_column_bytes(stmt,col));
+			import std.string: fromStringz;
+			print("uhhh",(cast(const(char)*)sqlite3_column_text(stmt,col)).fromStringz);
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return cast(string)p;
 		} else {
