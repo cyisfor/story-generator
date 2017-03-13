@@ -107,7 +107,6 @@ struct Database {
 		try {
 			db.run("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
 		} catch(backend.DBException e) {}
-		import print: print;
 
 		mixin(initialize_statements());
 	}
@@ -310,10 +309,7 @@ struct Story {
 		this.db = db;
 		id = p.id;
 		title = p.title.dup;
-		print(title.length);
-		foreach(c;title) {
-			print("boop",c);
-		}
+
 		description = p.description.dup;
 		finished = p.finished;
 		try {

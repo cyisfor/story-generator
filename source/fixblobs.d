@@ -16,7 +16,11 @@ void go() {
 		ubyte[] description;
 	}
 	while(sel.next()) {
+		import std.conv: to;
+		import print: print;
 		auto row = sel.as!Row();
+		print(row.location);
+		print((cast(char[])row.location).to!string);
 		upd.go(row.location,
 					 row.title,
 					 row.description,
@@ -27,7 +31,7 @@ void go() {
 	upd.finalize();
 
 	sel = db.prepare("SELECT id,title,first_words FROM chapters");
-	upd = db.prepare("UPDATE stories SET title = ?, first_words = ? WHERE id = ?");
+	upd = db.prepare("UPDATE chapters SET title = ?, first_words = ? WHERE id = ?");
 
 	struct Chap {
 		long id;

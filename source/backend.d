@@ -18,7 +18,7 @@ struct Statement {
 
 	void go(Args...)(Args args) {
 		static if(Args.length > 0) {
-			bind(args);
+			bindAll(args);
 		}
 		try {
 			enforce(SQLITE_DONE == sqlite3_step(stmt),
@@ -64,7 +64,7 @@ struct Statement {
 		} else static if(is(T == double) || is(T == float)) {
 			enforce(SQLITE_OK == sqlite3_bind_double(stmt,col,value),
 							db.errmsg());
-		} else static if(is(T == string) || is(T == char[]) || is(T == byte[])) {
+		} else static if(is(T == string) || is(T == char[]) || is(T == byte[]) || is(T == ubyte[])) {
 			enforce(SQLITE_OK == sqlite3_bind_blob(stmt,col,
 																						 value.ptr,cast(int)value.length,null),
 							db.errmsg());
@@ -95,10 +95,7 @@ struct Statement {
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return p.to!T;
 		} else static if(is(T == string)) {
-			import print: print;
-			print("BEYTH",col,sqlite3_column_bytes(stmt,col));
-			import std.string: fromStringz;
-			print("uhhh",(cast(const(char)*)sqlite3_column_text(stmt,col)).fromStringz);
+			//print("uhhh",(cast(const(char)*)sqlite3_column_text(stmt,col)).fromStringz);
 			const(ubyte)[] p = (sqlite3_column_blob(stmt,col))[0..sqlite3_column_bytes(stmt,col)];
 			return cast(string)p;
 		} else {
