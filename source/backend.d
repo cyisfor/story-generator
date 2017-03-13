@@ -54,7 +54,7 @@ struct Statement {
 		}
 	}
 
-	void bind1(T)(int col, T value) {
+	void bind(T)(int col, T value) {
 		static if(is(T == int)) {
 			enforce(SQLITE_OK == sqlite3_bind_int(stmt,col,value),
 													db.errmsg());
@@ -79,7 +79,7 @@ struct Statement {
 
 	void bindAll(Args...)(Args args) {
 		foreach (index, _; Args)
-			bind1(index + 1, args[index]);
+			bind(index + 1, args[index]);
 	}
 	
 	T at(T)(int col) {

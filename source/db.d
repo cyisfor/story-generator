@@ -120,18 +120,18 @@ struct Database {
 		enforce(isatty(stdin.fileno), "stdin isn't a tty");
 		write("Title: ");
 		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		stmt.bind1(2,readln().strip());
+		stmt.bind(2,readln().strip());
 		enforce(!stdin.eof,"stdin ended unexpectedly!");
 		writeln("Description: (end with a dot)");
-		stmt.bind1(3,readToDot());
+		stmt.bind(3,readToDot());
     stmt.go();
   }
 
   Story story(string location) {
-		find_story.bind1(1,location);
+		find_story.bind(1,location);
 		scope(exit) find_story.reset();
 		if(!find_story.next()) {
-			insert_story.bind1(1,location);
+			insert_story.bind(1,location);
 			get_info(insert_story);
 			enforce(find_story.next(),"no story for " ~ location);
 		}
@@ -353,7 +353,7 @@ struct Story {
 			return;
 		}
 		scope(exit) db.num_story_chapters.reset();
-		db.num_story_chapters.bind1(1,id);
+		db.num_story_chapters.bind(1,id);
 		enforce(db.num_story_chapters.next());
 			
 		import std.algorithm.comparison: max;
@@ -391,7 +391,7 @@ struct Story {
 		import std.stdio: writeln;
 		writeln("Title: ",title);
 		writeln(description);
-		db.edit_story.bind1(1,id);
+		db.edit_story.bind(1,id);
 		db.get_info(db.edit_story);
   }
 
