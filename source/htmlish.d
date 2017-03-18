@@ -179,11 +179,12 @@ NodeType process_chat(Document* dest, ref NodeType e) {
 	e.detach();
 	dl.attr("class","chat");
 	foreach(line;e.html.split("\n")) {
-		auto colon = line.findSplit(":");
+		auto colon = line.findSplit(": ");
 		if(!colon) {
 			continue;
 		}
 		auto tr = dest.createElement("tr");
+
 		dl.appendChild(tr);
 		auto append(string what, const char[] derp, const char[] clas = null) {
 			auto term = dest.createElement(what);
@@ -196,7 +197,6 @@ NodeType process_chat(Document* dest, ref NodeType e) {
 		}
 		auto name = colon[0];
 		append("td",name,name);
-		append("td",colon[1]);
 		append("td",colon[2]);
 	}
 	return dl;
@@ -224,6 +224,21 @@ void process_root(Document* dest,
 			case "chat":
 				ctx.next(process_chat(dest,e));
 				break;
+			case "when":
+				auto else_clause = e.by_name!"else"
+				if(!environment.get(when.attr(0)) is null) {
+					if(!else_clause.empty) {
+						else_clause.front.detach();
+					}
+					process_root(dest,e,head,title);
+				} else {
+					if(!else_clause.empty) {
+						process_root(dest,else_clause.front);
+						else_clause.front.detach();
+					}
+				}
+				e.detach();
+
 			case "title":
 				auto maybetitle = e.html;
 				if(maybetitle.length == 0) {
@@ -436,3 +451,16 @@ With only space at the <u>end</u>
 It should still be a new paragraph.`);
   writeln(p.root.html);
 }
+
+unittest {
+	auto p = parse(`Testing when<when foo>
+foo is on the environment
+
+yea
+<else>
+foo ain't around
+</else>
+</when>`);
+	writeln(p.root.html);
+}
+
