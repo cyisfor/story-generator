@@ -208,10 +208,14 @@ void process_root(Document* dest,
 									ref string title) {
   import std.algorithm.searching: any;
   import std.array: array;
+	import std.string: replace;
+					
   auto ctx = Context(dest,root);
   bool in_paragraph = false;
+	print("foofoo",root.html.replace("\n","\\n"));
 
   foreach(e;array(root.children)) {
+		print("foofoofoo",root.html.replace("\n","\\n"));
 		if(e.isTextNode) {
 			import std.algorithm.searching: find;
 			if(process_text(ctx,e.text)) {
@@ -224,31 +228,6 @@ void process_root(Document* dest,
 			case "chat":
 				ctx.next(process_chat(dest,e));
 				break;
-			case "when":
-				auto else_clause = e.by_name!"else";
-				import print: print;
-				print("else?",else_clause);
-				import std.process: environment;
-				auto a = e.attrs().keys;
-				auto b = a[0];
-				auto c = environment.get(b);
-				if(!(c is null)) {
-					if(!else_clause.empty) {
-						else_clause.front.detach();
-					}
-					process_root(dest,e,head,title);
-					for(child;e.children) {
-						child.insertBefore(e);
-					}
-					e.tag = "span";
-				} else {
-					if(!else_clause.empty) {
-						process_root(dest,else_clause.front,head,title);
-						else_clause.insert_before(e);
-					}
-				}
-				e.detach();
-
 			case "title":
 				auto maybetitle = e.html;
 				if(maybetitle.length == 0) {
@@ -310,6 +289,33 @@ void process_root(Document* dest,
   }
 }
 
+void process_when(ref NodeType root) {
+	for(e;root.by_name!"when") {
+		auto else_clause = e.by_name!"else";
+		import print: print;
+		import std.process: environment;
+		auto a = e.attrs().keys;
+		auto b = a[0];
+		auto c = environment.get(b);
+		if(!(c is null)) {
+			if(!else_clause.empty) {
+				else_clause.front.detach();
+			}
+			foreach(child;e.children) {
+				child.insertBefore(e);
+			}
+		} else {
+			if(!else_clause.empty) {
+				foreach(child;else_clause.front) {
+					child.insertBefore(e);
+				}
+			}
+		}
+		e.destroy();
+		break;
+	}
+}
+
 import std.typecons: NullableRef;
 
 auto ref parse(string ident = "content",
@@ -355,6 +361,7 @@ auto ref parse(string ident = "content",
   }
 	auto temp = dest.createElement("div");
 	temp.html(source);
+	process_when(temp);
 	process_root(dest, temp, head, title);
 	import std.array: array;
 	foreach(child;temp.children.array) {
@@ -464,14 +471,18 @@ It should still be a new paragraph.`);
 
 unittest {
 	import std.stdio;
-	auto p = parse(`Testing when<when foo>
-foo is on the environment
+	auto p = parse(`uh
+
+Testing when<when meep>
+meep is on the environment
 
 yea
 <else>
-foo ain't around
+meep ain't around
 </else>
 </when>`);
-	writeln(p.root.html);
+	auto s = p.root.html;
+	writeln("-----------------------------------");
+	writeln(s);
 }
 
