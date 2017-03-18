@@ -225,16 +225,26 @@ void process_root(Document* dest,
 				ctx.next(process_chat(dest,e));
 				break;
 			case "when":
-				auto else_clause = e.by_name!"else"
-				if(!environment.get(when.attr(0)) is null) {
+				auto else_clause = e.by_name!"else";
+				import print: print;
+				print("else?",else_clause);
+				import std.process: environment;
+				auto a = e.attrs().keys;
+				auto b = a[0];
+				auto c = environment.get(b);
+				if(!(c is null)) {
 					if(!else_clause.empty) {
 						else_clause.front.detach();
 					}
 					process_root(dest,e,head,title);
+					for(child;e.children) {
+						child.insertBefore(e);
+					}
+					e.tag = "span";
 				} else {
 					if(!else_clause.empty) {
-						process_root(dest,else_clause.front);
-						else_clause.front.detach();
+						process_root(dest,else_clause.front,head,title);
+						else_clause.insert_before(e);
 					}
 				}
 				e.detach();
@@ -453,6 +463,7 @@ It should still be a new paragraph.`);
 }
 
 unittest {
+	import std.stdio;
 	auto p = parse(`Testing when<when foo>
 foo is on the environment
 

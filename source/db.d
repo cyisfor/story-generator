@@ -187,8 +187,10 @@ struct Database {
 }
 
 Database db;
+bool opened = false;
 void open() {
   db.initialize();
+	opened = true;
 }
 
 auto transaction() {
@@ -208,7 +210,9 @@ auto since_git(string delegate(string) action) {
 }
 
 void close() {
+	if(!opened) return;
   db.close();
+	opened = false;
 }
 
 struct Chapter {
@@ -423,7 +427,7 @@ struct Derp {
 extern (C) int isatty(int fd);
 
 unittest {
-  if(db !is null) db.close(); // avoid memory leak error
+  close(); // avoid memory leak error
   import std.stdio;
   writeln("derpaherp");
 }
