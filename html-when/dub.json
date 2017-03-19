@@ -1,0 +1,13 @@
+{
+	"name": "html-when",
+	"authors": [
+		"user"
+	],
+	"dependencies": {
+		":print": "*",
+		"htmld": "~>0.2.16"
+	},
+	"description": "different documents based on env variables",
+	"copyright": "nah",
+	"license": "nah"
+}

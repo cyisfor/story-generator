@@ -1,4 +1,10 @@
-import htmld;
+import fuck_selectors: by_name;
+
+import html.dom;
+
+import std.array: array;
+
+alias NodeType = typeof(Document.root);
 
 void process_when(ref NodeType root) {
 	foreach(ref e;root.by_name!"when".array) {
