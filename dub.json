@@ -3,10 +3,10 @@
 	"authors": [
 		"ferret"
 	],
-	"subPackages": ["htmld"],
+	"subPackages": ["htmld","htmlwhen"],
 	"dependencies": {
 		":htmld": "*",
-		":html-when": "*", 
+		":htmlwhen": "*", 
 		"backtrace-d": "~>0.1.2",
 	},
 	"sourceFiles": [
