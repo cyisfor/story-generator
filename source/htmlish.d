@@ -3,6 +3,7 @@ import std.conv: to;
 import std.algorithm.mutation: move;
 import htmlderp: detach;
 import html: Document, HTMLString, createDocument;
+import std.array: array;
 
 Document* default_template;
 static this() {
@@ -207,15 +208,12 @@ void process_root(Document* dest,
 									ref NodeType head,
 									ref string title) {
   import std.algorithm.searching: any;
-  import std.array: array;
 	import std.string: replace;
 					
   auto ctx = Context(dest,root);
   bool in_paragraph = false;
-	print("foofoo",root.html.replace("\n","\\n"));
 
   foreach(e;array(root.children)) {
-		print("foofoofoo",root.html.replace("\n","\\n"));
 		if(e.isTextNode) {
 			import std.algorithm.searching: find;
 			if(process_text(ctx,e.text)) {
@@ -290,29 +288,39 @@ void process_root(Document* dest,
 }
 
 void process_when(ref NodeType root) {
-	for(e;root.by_name!"when") {
-		auto else_clause = e.by_name!"else";
+	foreach(ref e;root.by_name!"when".array) {
 		import print: print;
 		import std.process: environment;
 		auto a = e.attrs().keys;
 		auto b = a[0];
 		auto c = environment.get(b);
 		if(!(c is null)) {
-			if(!else_clause.empty) {
-				else_clause.front.detach();
+			void subst_vals(ref NodeType e) {
+				if(e.tag == "val") {
+					e.html(c);
+					return;
+				}
+				foreach(arg; e.by_name!"val") {
+					arg.html(c);
+					while(arg.firstChild) {
+						arg.firstChild.insertBefore(arg);
+					}
+					arg.destroy();
 			}
-			foreach(child;e.children) {
-				child.insertBefore(e);
+			while(e.firstChild && e.firstChild.tag != "else") {
+				subst_vals(e.firstChild);
+				e.firstChild.insertBefore(e);
 			}
 		} else {
-			if(!else_clause.empty) {
-				foreach(child;else_clause.front) {
-					child.insertBefore(e);
+				while(e.firstChild && e.firstChild.tag != "else") {
+					e.firstChild.destroy();
+				}
+				while(e.firstChild) {
+					e.firstChild.insertBefore(e);
 				}
 			}
 		}
 		e.destroy();
-		break;
 	}
 }
 
@@ -345,8 +353,6 @@ auto ref parse(string ident = "content",
 			dest.root.appendChild(content);
 		} else {
 			content = dsux.front;
-			print("content derp",content.outerHTML);
-
 		}
   } else {
 		// have to replace <content>
@@ -473,12 +479,11 @@ unittest {
 	import std.stdio;
 	auto p = parse(`uh
 
-Testing when<when meep>
-meep is on the environment
+Testing when<when meep> meep is on the <val/> environment <val/>
 
 yea
 <else>
-meep ain't around
+meep ain't <i>around</i>
 </else>
 </when>`);
 	auto s = p.root.html;
