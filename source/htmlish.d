@@ -1,4 +1,4 @@
-import html_when: process_html;
+import html_when: process_when;
 import print: print;
 import std.conv: to;
 import std.algorithm.mutation: move;

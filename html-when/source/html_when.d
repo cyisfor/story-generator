@@ -15,12 +15,19 @@ void process_when(ref NodeType root) {
 		auto c = environment.get(b);
 		if(!(c is null)) {
 			void subst_vals(NodeType e) {
-				if(e.tag == "val") {
+				void replace_html(ref NodeType e) {
 					e.html(c);
+					while(e.firstChild) {
+						e.firstChild.insertBefore(e);
+					}
+					e.destroy();
+				}
+				if(e.tag == "val") {
+					replace_html(e);
 					return;
 				}
 				foreach(arg; e.by_name!"val") {
-					arg.html(c);
+					replace_html(arg);
 					while(arg.firstChild) {
 						arg.firstChild.insertBefore(arg);
 					}
@@ -32,11 +39,15 @@ void process_when(ref NodeType root) {
 				e.firstChild.insertBefore(e);
 			}
 		} else {
-			while(e.firstChild && e.firstChild.tag != "else") {
-				e.firstChild.destroy();
-			}
 			while(e.firstChild) {
-				e.firstChild.insertBefore(e);
+				if(e.firstChild.tag == "else") {
+					e.firstChild.destroy();
+					while(e.firstChild) {
+						e.firstChild.insertBefore(e);
+					}
+				} else {
+					e.firstChild.destroy();
+				}
 			}
 		}
 		e.destroy();
