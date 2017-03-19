@@ -3,12 +3,21 @@
 	"authors": [
 		"ferret"
 	],
-	"subPackages": ["htmld","htmlwhen"],
 	"dependencies": {
 		":htmld": "*",
-		":htmlwhen": "*", 
+		":html_when": "*", 
 		"backtrace-d": "~>0.1.2",
 	},
+	"subPackages": ["./htmld/",
+									{
+										"name": "html_when",
+										"dependencies": {
+											"generate:htmld": "*"
+										},
+										"targetType": "library",
+										"sourcePaths": ["html_when/source"],
+									}
+								 ],
 	"sourceFiles": [
 		"ddate-stub.o",
 		"ddate/ddate.o",
