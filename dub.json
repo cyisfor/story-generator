@@ -5,7 +5,8 @@
 	],
 	"subPackages": ["htmld"],
 	"dependencies": {
-		":htmld": "*",		
+		":htmld": "*",
+		":html-when": "*", 
 		"backtrace-d": "~>0.1.2",
 	},
 	"sourceFiles": [
@@ -28,5 +29,5 @@
 			"buildRequirements": ["allowWarnings"],
 		},
 	},
-	"libs": ["sqlite3"]
+	"libs": ["sqlite3"],
 }
