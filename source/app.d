@@ -318,7 +318,7 @@ void check_chapter(SysTime modified,
 	print("checking",location,which,"for updates!",modified,dest,exists(dest));
 
 	auto story = place_story(location,which);
-
+	
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
@@ -371,6 +371,13 @@ void main(string[] args)
 		import std.file: chdir;
 		chdir("..");
 	}
+
+	if(getenv("onefile")) {
+		htmlish.make(args[1],args[2],createDocument(import("template/chapter.xhtml")));
+		return;
+	}
+		
+	
 	db.open();
 	scope(exit) db.close();
 

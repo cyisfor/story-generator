@@ -16,6 +16,7 @@
 										},
 										"targetType": "library",
 										"sourcePaths": ["html_when/source"],
+										"importPaths": ["html_when/source"],
 									}
 								 ],
 	"sourceFiles": [

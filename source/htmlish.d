@@ -80,6 +80,7 @@ bool process_text(ref Context ctx, HTMLString text) {
   import std.algorithm.iteration: splitter, map, filter;
   import std.ascii: isWhite;
   if(text.length == 0) return false;
+	ctx.ended_newline = false;
   bool start_space, end_space;
   size_t i;
   // mehhhhhh ignore tabs and spaces, but keep newlines?
@@ -266,6 +267,9 @@ void process_root(Document* dest,
 			case "ol":
 			case "p":
 			case "div":
+			case "dl":
+			case "dd":
+			case "dt":
 			case "table":
 			case "blockquote":
 				ctx.ended_newline = false;
@@ -279,6 +283,9 @@ void process_root(Document* dest,
 				ctx.next(e);
 				break;
 			default:
+				if(ctx.ended_newline)
+					ctx.maybe_end("inline");
+				ctx.maybe_start("inline");
 				ctx.next(e);
 				break;
 			}

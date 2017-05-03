@@ -13,7 +13,7 @@ import std.file: exists, readText;
 import std.path: buildPath;
 import std.stdio: writeln,readln,stdin,write,writefln;
 import std.string: strip;
-import std.array: join, appender;
+import std.array: join, appender, array;
 import std.exception: enforce;
 
 immutable string modified_format =
@@ -94,6 +94,45 @@ string initialize_statements() {
   return ret;
 }
 
+L flatsplit(L,S)(L inp, S sep) {
+	import std.string: split;
+	import std.algorithm.iteration: joiner, map;
+	return joiner(inp.map!((a) => a.split(sep))).array;
+}
+
+S titleify(S)(S loc) {
+	import std.uni: asCapitalized;
+	import std.string: split;
+	import std.conv: to;
+	import std.range: enumerate;
+	import std.typecons: Tuple;
+	auto items = loc.split('-').flatsplit('_');
+	
+	S realcap(Tuple!(ulong, "index", string, "value") tup) {
+		size_t i = tup.index;
+		S s = tup.value;
+		if(i == 0 || i + 1 == items.length) {
+			return asCapitalized(s).to!S;
+		}
+		switch(s) {
+		case "a":
+		case "and":
+		case "but":
+		case "for":
+		case "of":
+		case "on":
+		case "or":
+		case "the":
+		case "to":
+			return s;
+		default:
+			return asCapitalized(s).to!S;
+		}
+	}
+		
+	return items.enumerate.map!realcap.join(" ");
+}
+		
 struct Database {
 	backend.Database db;
 	alias db this;
@@ -115,15 +154,31 @@ struct Database {
 		db.close();
 	}
 	
-  void get_info(ref Statement stmt) {
+  void get_info(ref Statement stmt, string location, string title, string desc) {
 		import std.exception: enforce;
-		enforce(isatty(stdin.fileno), "stdin isn't a tty");
-		write("Title: ");
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		stmt.bind(2,readln().strip());
-		enforce(!stdin.eof,"stdin ended unexpectedly!");
-		writeln("Description: (end with a dot)");
-		stmt.bind(3,readToDot());
+		if(title is null || desc is null) {
+			if(isatty(stdin.fileno)) {
+				if(title is null) {
+					write("Title: ");
+					enforce(!stdin.eof,"stdin ended unexpectedly!");
+					title = readln().strip();
+				}
+				if(desc is null) {
+					enforce(!stdin.eof,"stdin ended unexpectedly!");
+					writeln("Description: (end with a dot)");
+					desc = readToDot();
+				}
+			} else {
+				enforce(desc !is null, "Couldn't find description for " ~ location);
+				if(title is null) {
+					// last resort
+					title = titleify(location);
+				}
+			}		
+		}
+		enforce(!(title is null || desc is null));
+		stmt.bind(2,title);
+		stmt.bind(3,desc);
     stmt.go();
   }
 
@@ -131,8 +186,21 @@ struct Database {
 		find_story.bind(1,location);
 		scope(exit) find_story.reset();
 		if(!find_story.next()) {
+			import std.path: buildPath;
+			import std.file: exists;
+			
 			insert_story.bind(1,location);
-			get_info(insert_story);
+			string title = null;
+			auto path = buildPath(location,"title");
+			if(exists(path)) {
+				title = readText(path);
+			}
+			string desc = null;
+			path = buildPath(location,"description");
+			if(exists(path)) {
+				desc = readText(path);
+			}
+			get_info(insert_story,location,title,desc);
 			enforce(find_story.next(),"no story for " ~ location);
 		}
 		return Story(find_story.as!(Story.Params),this);
@@ -396,7 +464,7 @@ struct Story {
 		writeln("Title: ",title);
 		writeln(description);
 		db.edit_story.bind(1,id);
-		db.get_info(db.edit_story);
+		db.get_info(db.edit_story,location,null,null);
   }
 
   void finish(bool finished = true) {
