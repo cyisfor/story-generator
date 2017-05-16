@@ -10,14 +10,16 @@ void process_when(ref NodeType root) {
 	foreach(ref e;root.by_name!"when".array) {
 		import print: print;
 		import std.process: environment;
+		import std.string: strip, startsWith;
+					
 		auto a = e.attrs().keys;
 		auto b = a[0];
 		bool inverted;
 		if(b[0] == '!') {
-			b = b[1,$].strip();
+			b = b[1..$-1].strip();
 			inverted = true;
 		} else if(b.startsWith("not ")) {
-			b = b["not ".length,$];
+			b = b["not ".length..$-1];
 			inverted = true;
 		} else {
 			inverted = false;
