@@ -1,6 +1,6 @@
 import fuck_selectors: by_name;
 
-import html.dom;
+import html.dom: Document;
 import html.escape: unescape;
 
 import std.array: array;
@@ -39,7 +39,7 @@ void process_when(ref NodeType root) {
 			if(match is null) {
 				return c !is null;
 			}
-			return c == match
+			return c == match;
 		}
 		if(condition()) {
 			void subst_vals(NodeType e) {
@@ -81,3 +81,9 @@ void process_when(ref NodeType root) {
 		e.destroy();
 	}
 }
+
+Document process_when(Document doc) {
+	process_when(doc.root);
+	return doc;
+}
+		
