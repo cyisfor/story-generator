@@ -25,18 +25,19 @@ void process_when(ref NodeType root) {
 		}
 		auto c = environment.get(b);
 		auto match = e.attr(b);
-		if(match !is null) {
+		print("umm",c,match);
+		if(match != "") {
 			match = unescape(match);
 		}
 		bool condition() {
 			if(inverted) {
-				if(match is null) {
+				if(match == "") {
 					return c is null;
 				} else {
 					return c != match;
 				}
 			}
-			if(match is null) {
+			if(match == "") {
 				return c !is null;
 			}
 			return c == match;
