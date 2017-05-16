@@ -1,14 +1,14 @@
 unittest {
 	import html_when: process_when;
 	import html: createDocument;
-	import print: print;
+	import std.stdio: writeln;
 	import std.process: environment;
-	print(import("test-example.html"));
+	writeln(import("test-example.html"));
 	void doit() {
-		print("=============================================");
+		writeln("=============================================");
 		auto doc = createDocument(import("test-example.html"));
 		doc.process_when();
-		print(doc.root.html);
+		writeln(doc.root.html);
 	}
 	doit();
 	environment["censored"] = "1";

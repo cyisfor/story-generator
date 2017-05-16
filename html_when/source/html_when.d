@@ -86,4 +86,3 @@ void process_when(Document* doc) {
 	auto root = doc.root;
 	process_when(root);
 }
-		
