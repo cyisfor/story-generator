@@ -29,13 +29,16 @@ void process_when(ref NodeType root) {
 			match = unescape(match);
 		}
 		bool condition() {
-			if(inverted)
-				if(match is null)
+			if(inverted) {
+				if(match is null) {
 					return c is null;
-				else
+				} else {
 					return c != match;
-			if(match is null)
+				}
+			}
+			if(match is null) {
 				return c !is null;
+			}
 			return c == match
 		}
 		if(condition()) {
