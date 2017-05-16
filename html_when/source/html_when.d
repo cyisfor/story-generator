@@ -12,10 +12,10 @@ void process_when(ref NodeType root) {
 		import std.process: environment;
 		import std.string: strip, startsWith;
 					
-		bool inverted = e.attr("not") !is null;
+		bool inverted = e.hasAttr("not");
 		if(inverted) e.removeAttr("not");
 		auto a = e.attrs().keys;
-		print("DERP",inverted,a);
+		print("DERP",inverted,a,e.attr("not"));
 		auto b = a[0];
 		if(b[0] == '!') {
 			b = b[1..$].strip();
