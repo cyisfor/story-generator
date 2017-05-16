@@ -13,9 +13,9 @@ void process_when(ref NodeType root) {
 		import std.string: strip, startsWith;
 					
 		bool inverted = e.attr("not") !is null;
-		if(inverted) e.attrs.remove("not");
+		if(inverted) e.removeAttr("not");
 		auto a = e.attrs().keys;
-		print("DERP",a);
+		print("DERP",inverted,a);
 		auto b = a[0];
 		if(b[0] == '!') {
 			b = b[1..$].strip();
