@@ -1,6 +1,6 @@
 unittest {
 	import html_when: process_when;
-	import htmld: createDocument;
+	import html: createDocument;
 	import print: print;
 	import std.process: environment;
 	print(import("test-example.html"));
