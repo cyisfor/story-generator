@@ -9,23 +9,23 @@ alias NodeType = typeof(Document.root);
 
 void process_when(ref NodeType root) {
 	foreach(ref e;root.by_name!"when".array) {
-		import print: print;
+//		import print: print;
 		import std.process: environment;
 		import std.string: strip, startsWith;
 					
 		bool inverted = e.hasAttr("not");
 		if(inverted) e.removeAttr("not");
 		auto a = e.attrs().keys;
-		print("DERP",inverted,a);
+//		print("DERP",inverted,a);
 		auto b = a[0];
 		if(b[0] == '!') {
 			b = b[1..$].strip();
-			print("um",b);
+//			print("um",b);
 			inverted = !inverted;
 		}
 		auto c = environment.get(b);
 		auto match = e.attr(b);
-		print("umm",c,match);
+//		print("umm",c,match);
 		if(match != "") {
 			match = unescape(match);
 		}
