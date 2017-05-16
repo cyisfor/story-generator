@@ -15,7 +15,7 @@ void process_when(ref NodeType root) {
 		bool inverted = e.hasAttr("not");
 		if(inverted) e.removeAttr("not");
 		auto a = e.attrs().keys;
-		print("DERP",inverted,a,e.attr("not"));
+		print("DERP",inverted,a);
 		auto b = a[0];
 		if(b[0] == '!') {
 			b = b[1..$].strip();
@@ -29,6 +29,7 @@ void process_when(ref NodeType root) {
 			return c !is null;
 		}
 		if(condition()) {
+			print("censsssss");
 			void subst_vals(NodeType e) {
 				void replace_html(ref NodeType e) {
 					e.html(c);
