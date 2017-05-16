@@ -6,4 +6,10 @@
 
 <when !notcensored not>What did I fucking say?</when>
 
+<when not !censored>Still pretty stupid.</when>
+
+<when not="1" stupid="1">XML sucks, by the way. Don’t assign values just to make attributes exist.</when>
+
 The environment variable “foo” <when foo>has<else/>has not</when> been set.
+
+Checks based on environment variables at runtime, so you don’t get situations where it’s half censored, half not. &lt;when&gt; must have one or two attributes. If two, one attribute must be “not” which negates the condition. If the other attribute starts with ! that also negates the condition. 
