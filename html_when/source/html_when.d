@@ -12,8 +12,23 @@ void process_when(ref NodeType root) {
 		import std.process: environment;
 		auto a = e.attrs().keys;
 		auto b = a[0];
+		bool inverted;
+		if(b[0] == '!') {
+			b = b[1,$].strip();
+			inverted = true;
+		} else if(b.startsWith("not ")) {
+			b = b["not ".length,$];
+			inverted = true;
+		} else {
+			inverted = false;
+		}
 		auto c = environment.get(b);
-		if(!(c is null)) {
+		bool condition() {
+			if(inverted)
+				return c is null;
+			return c !is null;
+		}
+		if(condition()) {
 			void subst_vals(NodeType e) {
 				void replace_html(ref NodeType e) {
 					e.html(c);
