@@ -1,6 +1,7 @@
 import fuck_selectors: by_name;
 
 import html.dom;
+import html.escape: unescape;
 
 import std.array: array;
 
@@ -21,15 +22,23 @@ void process_when(ref NodeType root) {
 			b = b[1..$].strip();
 			print("um",b);
 			inverted = !inverted;
-		} 
+		}
 		auto c = environment.get(b);
+		auto match = e.attr(b);
+		if(match !is null) {
+			match = unescape(match);
+		}
 		bool condition() {
 			if(inverted)
-				return c is null;
-			return c !is null;
+				if(match is null)
+					return c is null;
+				else
+					return c != match;
+			if(match is null)
+				return c !is null;
+			return c == match
 		}
 		if(condition()) {
-			print("censsssss");
 			void subst_vals(NodeType e) {
 				void replace_html(ref NodeType e) {
 					e.html(c);
