@@ -82,8 +82,9 @@ void process_when(ref NodeType root) {
 	}
 }
 
-Document process_when(Document doc) {
-	process_when(doc.root);
+ref Document process_when(Document doc) {
+	auto root = doc.root;
+	process_when(root);
 	return doc;
 }
 		

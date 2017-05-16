@@ -4,9 +4,10 @@ unittest {
 	import print: print;
 	import std.process: environment;
 	print(import("test-example.html"));
-	function doit() {
+	void doit() {
 		print("=============================================");
-		auto doc = process_when(createDocument(import("test-example.html")));
+		auto doc = createDocument(import("test-example.html"));
+		doc.process_when();
 		print(doc.root.html);
 	}
 	doit();
