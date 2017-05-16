@@ -14,16 +14,11 @@ void process_when(ref NodeType root) {
 					
 		auto a = e.attrs().keys;
 		auto b = a[0];
-		bool inverted;
+		bool inverted = e.attr("not") !is null;
 		if(b[0] == '!') {
 			b = b[1..$-1].strip();
-			inverted = true;
-		} else if(b.startsWith("not ")) {
-			b = b["not ".length..$-1];
-			inverted = true;
-		} else {
-			inverted = false;
-		}
+			inverted = !inverted;
+		} 
 		auto c = environment.get(b);
 		bool condition() {
 			if(inverted)
