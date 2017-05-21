@@ -4,7 +4,9 @@ location TEXT UNIQUE NOT NULL,
 chapters INTEGER NOT NULL DEFAULT 0,
 modified TIMESTAMP DEFAULT (julianday(0)) NOT NULL,
 title TEXT NOT NULL,
-description TEXT NOT NULL);
+description TEXT NOT NULL,
+finished BOOL NOT NULL DEFAULT FALSE,
+current_chapter INT NOT NULL DEFAULT -1);
 
 CREATE TABLE IF NOT EXISTS chapters (
 id INTEGER PRIMARY KEY,
