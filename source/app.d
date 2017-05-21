@@ -282,6 +282,45 @@ void check_chapter(SysTime modified,
 		one_before.remove(key);
 	}
 
+	// also check side chapters for updates
+	void check_side(int which, bool prev) {
+		import std.format: format;
+		auto key = Upd8(location,which);
+		if(key in updated) return; // don't add a side chapter if we're updating normally.
+		if(prev) {
+			// if this chapter is the next one, always update
+			// only the previous chapter being a side chapter should skip updates
+			auto side = key in one_before;
+			if(!(side is null)) return;
+			one_before[key] = true;
+		}
+		print("SIDE CHAP",key);
+		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
+		SysTime modified;
+		try {
+			modified = timeLastModified(markup);
+		} catch(Exception e) {
+			try {
+				markup = buildPath(markuploc,"chapter%d.txt".format(which+1));
+				modified = timeLastModified(markup);
+			} catch(Exception e) {
+				return;
+			}
+		}
+		auto name = chapter_name(which);
+		auto dest = buildPath("html",location, name ~ ".html");
+		updated[key] = true;
+		//place_story(location,which); this will increase chapters beyond the last!
+		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
+	}
+	if(which > 0) {
+		check_side(which-1,true);
+	} 
+	check_side(which+1,false);
+
+	if(key in updated) return;
+	updated[key] = true;
+
 	// return true if updated
 	if(!exists(markup)) return;
 
@@ -319,47 +358,10 @@ void check_chapter(SysTime modified,
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
-	if(key !in updated) {
-		updated[key] = true;
-		pending_updates.emplacePut(story,modified,which,location,
-															 markup,dest,name);
-	}
+	pending_updates.emplacePut(story,modified,which,location,
+														 markup,dest,name);
 
-	// also check side chapters for updates
-	void check_side(int which, bool prev) {
-		import std.format: format;
-		auto key = Upd8(location,which);
-		if(key in updated) return; // don't add a side chapter if we're updating normally.
-		if(prev) {
-			// if this chapter is the next one, always update
-			// only the previous chapter being a side chapter should skip updates
-			auto side = key in one_before;
-			if(!(side is null)) return;
-			one_before[key] = true;
-		}
-		print("SIDE CHAP",key);
-		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
-		SysTime modified;
-		try {
-			modified = timeLastModified(markup);
-		} catch(Exception e) {
-			try {
-				markup = buildPath(markuploc,"chapter%d.txt".format(which+1));
-				modified = timeLastModified(markup);
-			} catch(Exception e) {
-				return;
-			}
-		}
-		auto name = chapter_name(which);
-		auto dest = buildPath("html",location, name ~ ".html");
-		updated[key] = true;
-		//place_story(location,which); this will increase chapters beyond the last!
-		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
-	}
-	if(which > 0) {
-		check_side(which-1,true);
-	} 
-	check_side(which+1,false);
+
 }
 
 void main(string[] args)
