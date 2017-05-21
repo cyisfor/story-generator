@@ -364,6 +364,37 @@ void check_chapter(SysTime modified,
 	check_side(which+1,false);
 }
 
+void check_chapters_for(string location) {
+	import std.file: dirEntries,
+		FileException, SpanMode, timeLastModified;
+	import std.path: buildPath;
+
+	string top = buildPath(location,"markup");
+	foreach(string markup; dirEntries(top,SpanMode.shallow)) {
+		print("checko",markup);
+		check_chapter(timeLastModified(markup),markup,top);
+	}
+}
+
+void check_git_log(string[] args) {
+	// by default we just check the last commit
+	// (run this in a post-commit hook)
+	db.since_git((string last_version) {
+			string since;
+			if(args.length > 1) {
+				since = args[1];
+				if(since=="") since = null;
+			} else if(last_version is null) {
+				since = "HEAD";
+			} else {
+				since = last_version ~ "..HEAD";
+			}
+			print("since "~since);
+			static import git;
+			return git.parse_log(since,&check_chapter);
+		});
+}
+
 void main(string[] args)
 {
 	import core.stdc.stdlib: getenv;
@@ -441,35 +472,4 @@ void main(string[] args)
 	} else {
 		print("no stories updated");
 	}
-}
-
-void check_chapters_for(string location) {
-	import std.file: dirEntries,
-		FileException, SpanMode, timeLastModified;
-	import std.path: buildPath;
-
-	string top = buildPath(location,"markup");
-	foreach(string markup; dirEntries(top,SpanMode.shallow)) {
-		print("checko",markup);
-		check_chapter(timeLastModified(markup),markup,top);
-	}
-}
-
-void check_git_log(string[] args) {
-	// by default we just check the last commit
-	// (run this in a post-commit hook)
-	db.since_git((string last_version) {
-			string since;
-			if(args.length > 1) {
-				since = args[1];
-				if(since=="") since = null;
-			} else if(last_version is null) {
-				since = "HEAD";
-			} else {
-				since = last_version ~ "..HEAD";
-			}
-			print("since "~since);
-			static import git;
-			return git.parse_log(since,&check_chapter);
-		});
 }
