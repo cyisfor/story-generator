@@ -431,8 +431,7 @@ void main(string[] args)
 		return;
 	}
 
-	only_until_current = (getenv("ready") !is null);
-	
+
 	db.open();
 	scope(exit) db.close();
 
@@ -447,10 +446,9 @@ void main(string[] args)
 		print("Edited");
 		return;
 	}
-	if(auto val = getenv("update_last")) {
-		update_last = true;
-	}
-
+	update_last = (getenv("update_last") !is null);
+	only_until_current = (getenv("ready") !is null);
+	
 	pending_updates = appender!(Update[]);
 	if(getenv("story")) {
 		only_location = to!string(getenv("story"));
