@@ -18,7 +18,7 @@ import std.exception: enforce;
 
 immutable string modified_format =
   "strftime('%Y/%m%d%H%M%f',modified)";
-immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished";
+immutable string story_fields = "id,title,description,"~modified_format~",location,chapters,finished,current_chapter";
 
 immutable Derp[] statements =
 	[
@@ -145,6 +145,9 @@ struct Database {
 		run(import("schema.sql"));
 		try {
 			db.run("ALTER TABLE stories ADD COLUMN finished BOOL NOT NULL DEFAULT FALSE");
+		} catch(backend.DBException e) {}
+		try {
+			db.run("ALTER TABLE stories ADD COLUMN current_chapter INT NOT NULL DEFAULT -1");
 		} catch(backend.DBException e) {}
 
 		mixin(initialize_statements());
@@ -360,6 +363,7 @@ struct Story {
   int chapters;
   SysTime modified;
   bool finished;
+	int current_chapter;
 
   Database db;
   string location;
@@ -374,6 +378,7 @@ struct Story {
 		string location;
 		int chapters;
 		bool finished;
+		int current_chapter;
   };
 	
   this(Params p, Database db) {
@@ -381,7 +386,8 @@ struct Story {
 		this.db = db;
 		id = p.id;
 		title = p.title.dup;
-
+		current_chapter = p.current_chapter;
+		
 		description = p.description.dup;
 		finished = p.finished;
 		try {
