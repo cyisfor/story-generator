@@ -117,7 +117,6 @@ struct Update {
 		auto make = herpaderp();
 
 		print("creating chapter",which,markup,story.id,name);
-		auto chapter = story.get(which);
 
 		auto base = buildPath(basedir,name ~ ".html");
 		make(markup,base);
@@ -180,10 +179,11 @@ struct Update {
 			}
 		}
 
-
-		chapter.update(modified,
-									 chapter.which,
-									 title);
+		// update chapter in db
+		story.get(which)
+			.update(modified,
+							which,
+							title);
 
 		print("writing",location, which,dest);
 		write(dest,doc.root.html);
@@ -255,9 +255,9 @@ db.Story* place_story(string location, int which) {
 	return story;
 }
 
-bool contents_exist_derp(string location) {
+bool contents_exist_derp(string location, string category = "html") {
 	import std.path: buildPath;
-	auto contents = buildPath("html",location,"contents.html");
+	auto contents = buildPath(category,location,"contents.html");
 	return exists(contents);
 }
 alias contents_exist = memoize!contents_exist_derp;
@@ -314,7 +314,9 @@ void check_chapter(SysTime modified,
 	/* check the destination modified time */
 	name = chapter_name(which); // ugh, chapter1 -> index
 
-	auto dest = buildPath("html",location, name ~ ".html");
+	string category = only_until_current ? "ready" : "html";
+
+	auto dest = buildPath(category,location, name ~ ".html");
 
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
@@ -325,7 +327,7 @@ void check_chapter(SysTime modified,
 		// EXCEPT if a side chapter
 		modified <= timeLastModified(dest)) {
 
-		if(!contents_exist(location)) {
+		if(!contents_exist(location,category)) {
 			// update contents anyway
 			place_story(location,which);
 		}
@@ -372,7 +374,7 @@ void check_chapter(SysTime modified,
 			}
 		}
 		auto name = chapter_name(which);
-		auto dest = buildPath("html",location, name ~ ".html");
+		auto dest = buildPath(category,location, name ~ ".html");
 		updated[key] = true;
 		//place_story(location,which); this will increase chapters beyond the last!
 		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
@@ -428,7 +430,8 @@ void main(string[] args)
 		htmlish.make(args[1],args[2],createDocument(import("template/chapter.xhtml")));
 		return;
 	}
-		
+
+	only_until_current = (getenv("ready") !is null);
 	
 	db.open();
 	scope(exit) db.close();
