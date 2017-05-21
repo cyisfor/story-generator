@@ -282,6 +282,8 @@ void check_chapter(SysTime modified,
 		one_before.remove(key);
 	}
 
+	auto story = place_story(location,which);
+
 	// also check side chapters for updates
 	void check_side(int which, bool prev) {
 		import std.format: format;
@@ -353,8 +355,6 @@ void check_chapter(SysTime modified,
 
 	print("checking",location,which,"for updates!",modified,dest,exists(dest));
 
-	auto story = place_story(location,which);
-	
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
