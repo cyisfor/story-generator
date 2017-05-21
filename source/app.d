@@ -145,12 +145,21 @@ struct Update {
 		} else {
 			links.appendText("Previous ");
 		}
+		/* only add a Next link if
+			 * there is a next chapter
+			 * the next chapter isn't the last chapter, and the story isn't finished
+			   (since that one's always in progress)
+			 * OR
+			 * this chapter isn't the "current" chapter
+			   (if we're only updating to the current chapter)
+		*/
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
 		print("urgh",derp,which,story.chapters);
-		if( which + derp < story.chapters &&
-				! ( only_until_current &&
-						story.current_chapter > 0 &&
-						which == story.current_chapter)) {
+		if( which + 1 < story.chapters &&
+				(which + derp < story.chapters ||
+				 ( only_until_current &&
+					 story.current_chapter > 0 &&
+					 which != story.current_chapter))) {
 			dolink(chapter_name(which+1)~".html", "next", "Next");
 			links.appendText(" ");
 		} else {
