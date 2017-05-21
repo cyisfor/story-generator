@@ -316,7 +316,10 @@ void check_chapter(SysTime modified,
 
 	string category = only_until_current ? "ready" : "html";
 
-	auto dest = buildPath(category,location, name ~ ".html");
+	smackdir(category);
+	auto dest = buildPath(category,location);
+	smackdir(dest);
+	dest = buildPath(dest, name ~ ".html");
 
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
