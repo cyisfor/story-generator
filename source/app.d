@@ -254,7 +254,7 @@ void check_chapter(SysTime modified,
 									 string markuploc,
 									 string name,
 									 string ext) {
-l	import std.string : isNumeric;
+	import std.string : isNumeric;
 	version(GNU) {
 		import std.algorithm: startsWith, endsWith, max;
 	} else {
