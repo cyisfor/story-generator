@@ -44,6 +44,7 @@ void smackdir(string p) {
 }
 
 bool update_last = false;
+bool only_until_current = false;
 
 struct Update {
 	@disable this(this);
@@ -129,27 +130,31 @@ struct Update {
 			links = doc.createElement("div", querySelector(doc,"body"));
 			links.attr("class","links");
 		}
-		bool didlinks = false;
 		void dolink(string href, string rel, string title) {
 			auto link = doc.createElement("link",head);
 			link.attr("rel",rel);
 			link.attr("href",href);
-			if( didlinks ) {
-				links.appendText(" ");
-			} else {
-				didlinks = true;
-			}
+
 			link = doc.createElement("a",links);
 			link.attr("href",href);
 			link.appendText(title);
 		}
-		if( chapter.which > 0 ) {
-			dolink(chapter_name(chapter.which-1)~".html", "prev", "Previous");
+		if( which > 0 ) {
+			dolink(chapter_name(which-1)~".html", "prev", "Previous");
+			links.appendText(" ");
+		} else {
+			links.appendText("Previous ");
 		}
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
-		print("urgh",derp,chapter.which,story.chapters);
-		if( chapter.which + derp < story.chapters ) {
-			dolink(chapter_name(chapter.which+1)~".html", "next", "Next");
+		print("urgh",derp,which,story.chapters);
+		if( which + derp < story.chapters &&
+				! ( only_until_current &&
+						story.current_chapter > 0 &&
+						which == story.current_chapter)) {
+			dolink(chapter_name(which+1)~".html", "next", "Next");
+			links.appendText(" ");
+		} else {
+			links.appendText("Next ");
 		}
 		dolink("contents.html","first","Contents");
 
@@ -287,9 +292,16 @@ void check_chapter(SysTime modified,
 	// return true if updated
 	if(!exists(markup)) return;
 
-	// only after we're sure we have a chapter that hasn't been queued
-	// for updating.
+	auto story = place_story(location,which);
 
+	// does this story have a "current" chapter?
+	// are we only updating up to the current chapter?
+	if(only_until_current &&
+		 story.current_chapter > 0 &&
+		 which > story.current_chapter) {
+		return;
+	}
+	
 	/* check the destination modified time */
 	name = chapter_name(which); // ugh, chapter1 -> index
 
@@ -316,8 +328,6 @@ void check_chapter(SysTime modified,
 
 	print("checking",location,which,"for updates!",modified,dest,exists(dest));
 
-	auto story = place_story(location,which);
-	
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
