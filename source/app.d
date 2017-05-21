@@ -326,14 +326,6 @@ void check_chapter(SysTime modified,
 	// return true if updated
 	if(!exists(markup)) return;
 
-	// only after we're sure we have a chapter that hasn't been queued
-	// for updating.
-
-	/* check the destination modified time */
-	name = chapter_name(which); // ugh, chapter1 -> index
-
-	auto dest = buildPath("html",location, name ~ ".html");
-
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
 
@@ -352,6 +344,16 @@ void check_chapter(SysTime modified,
 		//setTimes(dest,modified,modified);
 		return;
 	}
+
+	
+	// only after we're sure we have a chapter that hasn't been queued
+	// for updating.
+
+	/* check the destination modified time */
+	name = chapter_name(which); // ugh, chapter1 -> index
+
+	auto dest = buildPath("html",location, name ~ ".html");
+
 
 	print("checking",location,which,"for updates!",modified,dest,exists(dest));
 
