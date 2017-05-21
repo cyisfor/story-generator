@@ -254,7 +254,7 @@ void check_chapter(SysTime modified,
 									 string markuploc,
 									 string name,
 									 string ext) {
-	import std.string : isNumeric;
+l	import std.string : isNumeric;
 	version(GNU) {
 		import std.algorithm: startsWith, endsWith, max;
 	} else {
@@ -281,6 +281,8 @@ void check_chapter(SysTime modified,
 	if(key in one_before) {
 		one_before.remove(key);
 	}
+
+	print(updated);
 	
 	if(key in updated) return;
 	updated[key] = true;
