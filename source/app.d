@@ -282,11 +282,6 @@ void check_chapter(SysTime modified,
 		one_before.remove(key);
 	}
 
-	print(updated);
-	
-	if(key in updated) return;
-	updated[key] = true;
-
 	// return true if updated
 	if(!exists(markup)) return;
 
@@ -324,8 +319,11 @@ void check_chapter(SysTime modified,
 	// note: do not try to shrink the story if fewer chapters are found.
 	// unless the markup doesn't exist. We might not be processing the full
 	// git log, and the highest chapter might not have updated this time.
-	pending_updates.emplacePut(story,modified,which,location,
-														 markup,dest,name);
+	if(key !in updated) {
+		updated[key] = true;
+		pending_updates.emplacePut(story,modified,which,location,
+															 markup,dest,name);
+	}
 
 	// also check side chapters for updates
 	void check_side(int which, bool prev) {
