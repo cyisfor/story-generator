@@ -254,7 +254,7 @@ void check_chapter(SysTime modified,
 									 string markuploc,
 									 string name,
 									 string ext) {
-	import std.string : isNumeric;
+l	import std.string : isNumeric;
 	version(GNU) {
 		import std.algorithm: startsWith, endsWith, max;
 	} else {
@@ -280,9 +280,52 @@ void check_chapter(SysTime modified,
 	
 	if(key in one_before) {
 		one_before.remove(key);
+	} else {
+		if(key in updated) return;
 	}
 
+	// return true if updated
+	if(!exists(markup)) return;
+
+	// only after we're sure we have a chapter that hasn't been queued
+	// for updating.
+
+	/* check the destination modified time */
+	name = chapter_name(which); // ugh, chapter1 -> index
+
+	auto dest = buildPath("html",location, name ~ ".html");
+
+	// technically this is not needed, since git records the commit time
+	modified = max(timeLastModified(markup),modified);
+
+	if(// always update if dest is gone
+		exists(dest) &&
+		// can skip update if older than dest
+		// EXCEPT if a side chapter
+		modified <= timeLastModified(dest)) {
+
+		if(!contents_exist(location)) {
+			// update contents anyway
+			place_story(location,which);
+		}
+
+		print("unmodified",location,which);
+		//setTimes(dest,modified,modified);
+		return;
+	}
+
+	print("checking",location,which,"for updates!",modified,dest,exists(dest));
+
 	auto story = place_story(location,which);
+	
+	// note: do not try to shrink the story if fewer chapters are found.
+	// unless the markup doesn't exist. We might not be processing the full
+	// git log, and the highest chapter might not have updated this time.
+	if(key !in updated) {
+		updated[key] = true;
+		pending_updates.emplacePut(story,modified,which,location,
+															 markup,dest,name);
+	}
 
 	// also check side chapters for updates
 	void check_side(int which, bool prev) {
@@ -319,51 +362,6 @@ void check_chapter(SysTime modified,
 		check_side(which-1,true);
 	} 
 	check_side(which+1,false);
-
-	if(key in updated) return;
-	updated[key] = true;
-
-	// return true if updated
-	if(!exists(markup)) return;
-
-	// technically this is not needed, since git records the commit time
-	modified = max(timeLastModified(markup),modified);
-
-	if(// always update if dest is gone
-		exists(dest) &&
-		// can skip update if older than dest
-		// EXCEPT if a side chapter
-		modified <= timeLastModified(dest)) {
-
-		if(!contents_exist(location)) {
-			// update contents anyway
-			place_story(location,which);
-		}
-
-		print("unmodified",location,which);
-		//setTimes(dest,modified,modified);
-		return;
-	}
-
-	
-	// only after we're sure we have a chapter that hasn't been queued
-	// for updating.
-
-	/* check the destination modified time */
-	name = chapter_name(which); // ugh, chapter1 -> index
-
-	auto dest = buildPath("html",location, name ~ ".html");
-
-
-	print("checking",location,which,"for updates!",modified,dest,exists(dest));
-
-	// note: do not try to shrink the story if fewer chapters are found.
-	// unless the markup doesn't exist. We might not be processing the full
-	// git log, and the highest chapter might not have updated this time.
-	pending_updates.emplacePut(story,modified,which,location,
-														 markup,dest,name);
-
-
 }
 
 void main(string[] args)
