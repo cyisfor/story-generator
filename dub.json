@@ -30,7 +30,7 @@
 	"copyright": "meh",
 	"license": "whatever",
 	"buildTypes": {
-		"debug": {
+		"plain": {
 			"buildOptions": ["debugInfoC","debugMode","alwaysStackFrame"],
 			"buildRequirements": ["allowWarnings"],
 		},
