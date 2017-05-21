@@ -154,11 +154,17 @@ struct Update {
 		*/
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
 		print("urgh",derp,which,story.chapters);
-		if( which + 1 < story.chapters &&
-				(which + derp < story.chapters ||
-				 ( only_until_current &&
-					 story.current_chapter > 0 &&
-					 which != story.current_chapter))) {
+		bool doit() {
+			if( which + 1 == story.chapters ) return false;
+			if (only_until_current) {
+				if(story.current_chapter > 0 &&
+					 which == story.current_chapter) return false;
+			} else {
+				if (which + derp == story.chapters) return false;
+			}
+			return true;
+		}
+		if(doit()) {
 			dolink(chapter_name(which+1)~".html", "next", "Next");
 			links.appendText(" ");
 		} else {
