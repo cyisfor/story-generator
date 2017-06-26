@@ -34,7 +34,7 @@ immutable Derp[] statements =
 		// just some shortcut bookkeeping
 		{q{update_story},
 		 `UPDATE stories SET
-modified = (SELECT MAX(modified) FROM chapters WHERE story = stories.id),
+modified = (SELECT COALESCE(MAX(modified),current_timestamp) FROM chapters WHERE story = stories.id),
 chapters = (select count(1) from chapters where story = stories.id)
 WHERE id = ?`},
 
