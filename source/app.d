@@ -451,7 +451,8 @@ void main(string[] args)
 				story.update();
 			}
 			if(story.chapters_previously < story.chapters) {
-				print("chapters added, need update old last chap");
+				print("chapters added, need update old last chap",
+							story.chapters_previously,story.chapters);
 				auto which = story.chapters_previously-1;
 				auto key = Upd8(story.location,which);
 				auto chap = story.get(which);
