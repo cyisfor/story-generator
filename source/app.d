@@ -456,12 +456,13 @@ void main(string[] args)
 				auto name = chapter_name(which);
 				auto markup = buildPath(story.location,"markup",
 																"chapter" ~ (which+1).to!string ~ ".hish");
-				auto dest = build_dest(story.location,name));
+				auto dest = build_dest(story.location,name);
 				if(key !in updated) {
 					updated[key] = true;
 					pending_updates.emplacePut(story,chap.modified,which,story.location,
 																		 markup,dest,name);
 				}
+			}
 		}
 		
 
