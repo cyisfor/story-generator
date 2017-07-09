@@ -293,10 +293,10 @@ void check_chapter(SysTime modified,
 	string derp = name["chapter".length..name.length];
 	if(!isNumeric(derp)) return nope("not numeric " ~ derp);
 	int which = to!int(derp) - 1;
-	if(!exists(location)) return node("location not exists: " ~ location;
+	if(!exists(location)) return nope("location not exists: " ~ location);
 
 	// don't update if we're filtering by location...?
-	if(only_location && (!location.endsWith(only_location))) return;
+	if(only_location && (!location.endsWith(only_location))) return nope("not this location");
 
 	auto key = Upd8(location,which);
 
