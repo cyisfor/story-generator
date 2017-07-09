@@ -62,6 +62,8 @@ struct Update {
 		// don't do anything on the last chapter, if multiple chapters
 		// and there's more than 1 chapter.
 
+		print("making sure chap exists in db",which);
+		story.get(which); // eh
 		if(story.finished) {
 			print("story set as finished",story.title);
 		} else if(update_last) {
