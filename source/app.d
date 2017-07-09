@@ -69,14 +69,6 @@ struct Update {
 							(!story.finished) &&
 							(which >= story.chapters - 1)) {
 			print("Not updating last chapter",which,story.chapters);
-			// undo possible side chapter before
-			auto sidekey = Upd8(location, which-1);
-			if(sidekey in one_before) {
-				print("not updating previous (side) chapter",which-1);
-				// note, since side chapters are queued AFTER regular ones, if the
-				// regular one is the last, then no_update will capture the side chapter
-				no_update[sidekey] = true;
-			}
 			return;
 		} else {
 			auto key = Upd8(location, which);
@@ -272,6 +264,16 @@ void nope(string m) {
 	print("not updating",m);
 }
 
+string build_dest(string location, string name) {
+	
+	string category = only_until_current ? "ready" : "html";
+
+	smackdir(category);
+	auto dest = buildPath(category,location);
+	smackdir(dest);
+	return buildPath(dest, name ~ ".html");
+}
+
 void check_chapter(SysTime modified,
 									 string location,
 									 string markup,
@@ -324,12 +326,7 @@ void check_chapter(SysTime modified,
 	/* check the destination modified time */
 	name = chapter_name(which); // ugh, chapter1 -> index
 
-	string category = only_until_current ? "ready" : "html";
-
-	smackdir(category);
-	auto dest = buildPath(category,location);
-	smackdir(dest);
-	dest = buildPath(dest, name ~ ".html");
+	auto dest = build_dest(location,name);
 
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
@@ -360,42 +357,6 @@ void check_chapter(SysTime modified,
 		pending_updates.emplacePut(story,modified,which,location,
 															 markup,dest,name);
 	}
-
-	// also check side chapters for updates
-	void check_side(int which, bool prev) {
-		import std.format: format;
-		auto key = Upd8(location,which);
-		if(key in updated) return; // don't add a side chapter if we're updating normally.
-		if(prev) {
-			// if this chapter is the next one, always update
-			// only the previous chapter being a side chapter should skip updates
-			auto side = key in one_before;
-			if(!(side is null)) return;
-			one_before[key] = true;
-		}
-		print("SIDE CHAP",key);
-		auto markup = buildPath(markuploc,"chapter%d.hish".format(which+1));
-		SysTime modified;
-		try {
-			modified = timeLastModified(markup);
-		} catch(Exception e) {
-			try {
-				markup = buildPath(markuploc,"chapter%d.txt".format(which+1));
-				modified = timeLastModified(markup);
-			} catch(Exception e) {
-				return;
-			}
-		}
-		auto name = chapter_name(which);
-		auto dest = buildPath(category,location, name ~ ".html");
-		updated[key] = true;
-		//place_story(location,which); this will increase chapters beyond the last!
-		pending_updates.emplacePut(story,modified,which,location,markup,dest,name);
-	}
-	if(which > 0) {
-		check_side(which-1,true);
-	} 
-	check_side(which+1,false);
 }
 
 void check_chapters_for(string location) {
@@ -488,7 +449,18 @@ void main(string[] args)
 			if(story.dirty) {
 				story.update();
 			}
+			if(story.chapters_previously < story.chapters) {
+				print("chapters added, need update old last chap");
+				auto which = story.chapters_previously-1
+				auto key = Upd8(story.location,which);
+				auto chap = story.get(which);
+				if(key !in updated) {
+					updated[key] = true;
+					pending_updates.emplacePut(story,chap.modified,which,story.location,
+																		 markup,dest,name);
+				}
 		}
+		
 
 		foreach(ref update; pending_updates.data) {
 			update.perform();
