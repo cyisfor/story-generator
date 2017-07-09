@@ -80,7 +80,7 @@ struct Update {
 			return;
 		} else {
 			auto key = Upd8(location, which);
-			if(key in no_update) return;
+			if(key in no_update) return nope("next chapter doesn't exist");
 		}
 		print("updating ugh",which,story.chapters,which >= story.chapters-1);
 		noseriously();
