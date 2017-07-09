@@ -461,7 +461,7 @@ void main(string[] args)
 				auto dest = build_dest(story.location,name);
 				if(key !in updated) {
 					updated[key] = true;
-					pending_updates.emplacePut(story,chap.modified,which,story.location,
+					pending_updates.emplacePut(&story,chap.modified,which,story.location,
 																		 markup,dest,name);
 				}
 			}
