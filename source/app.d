@@ -265,7 +265,6 @@ void nope(string m) {
 }
 
 string build_dest(string location, string name) {
-	
 	string category = only_until_current ? "ready" : "html";
 
 	smackdir(category);
@@ -451,9 +450,13 @@ void main(string[] args)
 			}
 			if(story.chapters_previously < story.chapters) {
 				print("chapters added, need update old last chap");
-				auto which = story.chapters_previously-1
+				auto which = story.chapters_previously-1;
 				auto key = Upd8(story.location,which);
 				auto chap = story.get(which);
+				auto name = chapter_name(which);
+				auto markup = buildPath(story.location,"markup",
+																"chapter" ~ (which+1).to!string ~ ".hish");
+				auto dest = build_dest(story.location,name));
 				if(key !in updated) {
 					updated[key] = true;
 					pending_updates.emplacePut(story,chap.modified,which,story.location,
