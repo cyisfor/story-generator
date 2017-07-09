@@ -263,13 +263,18 @@ void nope(string m) {
 	print("not updating",m);
 }
 
-string build_dest(string location, string name) {
-	string category = only_until_current ? "ready" : "html";
+string build_dest(string location, string name, out string category) {
+	category = only_until_current ? "ready" : "html";
 
 	smackdir(category);
 	auto dest = buildPath(category,location);
 	smackdir(dest);
 	return buildPath(dest, name ~ ".html");
+}
+
+string build_dest(string location, string name) {
+	string category;
+	return build_dest(location, name, category);
 }
 
 void check_chapter(SysTime modified,
@@ -323,7 +328,8 @@ void check_chapter(SysTime modified,
 	/* check the destination modified time */
 	name = chapter_name(which); // ugh, chapter1 -> index
 
-	auto dest = build_dest(location,name);
+	string category;
+	auto dest = build_dest(location,name,category);
 
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
