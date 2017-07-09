@@ -361,6 +361,7 @@ struct Story {
   string title;
   string description;
   int chapters;
+	int chapters_previously;
   SysTime modified;
   bool finished;
 	int current_chapter;
@@ -397,6 +398,7 @@ struct Story {
 			throw(e);
 		}
 
+		this.chapters_previously = p.chapters;
 		chapters = p.chapters;
 		check_for_desc();
   }
