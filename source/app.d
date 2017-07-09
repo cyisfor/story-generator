@@ -305,11 +305,11 @@ void check_chapter(SysTime modified,
 	if(key in one_before) {
 		one_before.remove(key);
 	} else {
-		if(key in updated) return;
+		if(key in updated) return nope("already updated");
 	}
 
 	// return true if updated
-	if(!exists(markup)) return;
+	if(!exists(markup)) return nope("no markup");
 
 	auto story = place_story(location,which);
 
@@ -318,7 +318,7 @@ void check_chapter(SysTime modified,
 	if(only_until_current &&
 		 story.current_chapter > 0 &&
 		 which > story.current_chapter) {
-		return;
+		return nope("past current");
 	}
 	
 	/* check the destination modified time */
