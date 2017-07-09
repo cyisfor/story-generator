@@ -268,6 +268,10 @@ bool contents_exist_derp(string location, string category = "html") {
 }
 alias contents_exist = memoize!contents_exist_derp;
 
+void nope(string m) {
+	print("not updating",m);
+}
+
 void check_chapter(SysTime modified,
 									 string location,
 									 string markup,
@@ -284,12 +288,12 @@ void check_chapter(SysTime modified,
 	import std.path: buildPath;
 	import std.file: timeLastModified;
 
-	if(!name.startsWith("chapter")) return;
+	if(!name.startsWith("chapter")) return nope("name dun' start with chapter");
 	import std.stdio;
 	string derp = name["chapter".length..name.length];
-	if(!isNumeric(derp)) return;
+	if(!isNumeric(derp)) return nope("not numeric " ~ derp);
 	int which = to!int(derp) - 1;
-	if(!exists(location)) return;
+	if(!exists(location)) return node("location not exists: " ~ location;
 
 	// don't update if we're filtering by location...?
 	if(only_location && (!location.endsWith(only_location))) return;
