@@ -149,7 +149,7 @@ struct Update {
 		int derp = update_last ? 1 : (story.finished ? 1 : 2);
 		print("urgh",derp,which,story.chapters);
 		bool doit() {
-			if( which + 1 == story.chapters ) return false;
+			if( !update_last && which + 1 == story.chapters ) return false;
 			if (only_until_current) {
 				if(story.current_chapter > 0 &&
 					 which == story.current_chapter) return false;
