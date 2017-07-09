@@ -23,6 +23,7 @@ import std.conv: to;
 import std.datetime : SysTime;
 import std.algorithm: move;
 import std.functional: memoize;
+import std.path: buildPath;
 
 db.Story[string] stories;
 
@@ -88,7 +89,6 @@ struct Update {
 		static import nada = makers.birthverse;
 		static import nada2 = makers.littlepip;
 		import std.file: write, readText;
-		import std.path: buildPath;
 
 		// find a better place to put stuff so it doesn't scram the source directory
 		string basedir = "tmp";
@@ -254,7 +254,6 @@ db.Story* place_story(string location, int which) {
 }
 
 bool contents_exist_derp(string location, string category = "html") {
-	import std.path: buildPath;
 	auto contents = buildPath(category,location,"contents.html");
 	return exists(contents);
 }
@@ -286,7 +285,6 @@ void check_chapter(SysTime modified,
 		import std.algorithm.searching: startsWith, endsWith;
 		import std.algorithm.comparison: max;
 	}
-	import std.path: buildPath;
 	import std.file: timeLastModified;
 
 	if(!name.startsWith("chapter")) return nope("name dun' start with chapter");
@@ -361,7 +359,6 @@ void check_chapter(SysTime modified,
 void check_chapters_for(string location) {
 	import std.file: dirEntries,
 		FileException, SpanMode, timeLastModified;
-	import std.path: buildPath;
 
 	string top = buildPath(location,"markup");
 	foreach(string markup; dirEntries(top,SpanMode.shallow)) {
@@ -392,7 +389,6 @@ void check_git_log(string[] args) {
 void main(string[] args)
 {
 	import core.stdc.stdlib: getenv;
-	import std.path: buildPath;
 
 	while(!exists("code")) {
 		import std.file: chdir;
