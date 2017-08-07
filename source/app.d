@@ -255,28 +255,32 @@ db.Story* place_story(string location, int which) {
 	return story;
 }
 
-bool contents_exist_derp(string location, string category = "html") {
+void nope(string m) {
+	print("not updating",m);
+}
+
+bool censored = false;
+string category;
+void setup_category() {
+	category = only_until_current ? "ready" : "html";
+	smackdir(category);
+	if (censored) {
+		category = buildPath(category,"censored");
+		smackdir(category);
+	}
+}
+
+bool contents_exist_derp(string location) {
 	auto contents = buildPath(category,location,"contents.html");
 	return exists(contents);
 }
 alias contents_exist = memoize!contents_exist_derp;
 
-void nope(string m) {
-	print("not updating",m);
-}
 
-string build_dest(string location, string name, out string category) {
-	category = only_until_current ? "ready" : "html";
-
-	smackdir(category);
+string build_dest(string location, string name) {	
 	auto dest = buildPath(category,location);
 	smackdir(dest);
 	return buildPath(dest, name ~ ".html");
-}
-
-string build_dest(string location, string name) {
-	string category;
-	return build_dest(location, name, category);
 }
 
 void check_chapter(SysTime modified,
@@ -330,8 +334,7 @@ void check_chapter(SysTime modified,
 	/* check the destination modified time */
 	name = chapter_name(which); // ugh, chapter1 -> index
 
-	string category;
-	auto dest = build_dest(location,name,category);
+	auto dest = build_dest(location,name);
 
 	// technically this is not needed, since git records the commit time
 	modified = max(timeLastModified(markup),modified);
@@ -342,7 +345,7 @@ void check_chapter(SysTime modified,
 		// EXCEPT if a side chapter
 		modified <= timeLastModified(dest)) {
 
-		if(!contents_exist(location,category)) {
+		if(!contents_exist(location)) {
 			// update contents anyway
 			place_story(location,which);
 		}
@@ -408,6 +411,10 @@ void main(string[] args)
 		return;
 	}
 
+	if(getenv("censored")) {
+		censored = true;
+	}
+	setup_category();
 
 	db.open();
 	scope(exit) db.close();
