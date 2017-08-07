@@ -1,20 +1,33 @@
-import fuck_selectors: by_name;
+#include "fuck_selectors.h"
 
-import html.dom: Document;
-import html.escape: unescape;
+#include "gumbo.h"
 
-import std.array: array;
-
-alias NodeType = typeof(Document.root);
-
-void process_when(ref NodeType root) {
-	foreach(ref e;root.by_name!"when".array) {
-//		import print: print;
-		import std.process: environment;
-		import std.string: strip, startsWith;
-					
-		bool inverted = e.hasAttr("not");
-		if(inverted) e.removeAttr("not");
+void html_when(GumboOutput* root) {
+	GumboNode* cur = root->document;
+	while(cur) {
+		cur = next_by_name(cur,"when");
+		bool condition = true;
+		int i;
+		for(i=0;i<cur->v.element.attributes.length;++i) {
+			GumboAttribute* a = (GumboAttribute*)cur->v.element.attributes.data[i];
+			if(0==strcasecmp(a->name,"not")) {
+				condition = !condition;
+			} else if(a->name) {
+				const char* name = a->name;
+				while(*name && name[0] == '!') {
+					++name;
+					condition = !condition;
+				}
+				if(*name) {
+					const char* match = getenv(name);
+					if(match == NULL) {
+						condition = !condition;
+					} else {
+						if(*a->value
+						
+		if(inverted) {
+			gumbo_vector_remove(NULL, inverted, &cur->v.element.attributes);
+		}
 		auto a = e.attrs().keys;
 //		print("DERP",inverted,a);
 		auto b = a[0];
