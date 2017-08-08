@@ -45,7 +45,7 @@ void output(int dest, GumboNode* cur) {
 			int i;
 			for(i=0;i<e->attributes.length;++i) {
 				write(dest,LITLEN(" "));
-				GumboAttribute* a = e->attributes.data[i];
+				GumboAttribute* a = (GumboAttribute*)e->attributes.data[i];
 				write(dest,STRLEN(a->name));
 				if(0!=a->original_value.length) {
 					write(dest,LITLEN("="));
