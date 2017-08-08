@@ -2,7 +2,7 @@
 
 #include <unistd.h>
 #include <string.h>
-#include <error.h>
+#include <stdlib.h> // abort
 
 #define LITLEN(a) a,sizeof(a)-1
 #define STRLEN(a) (a),strlen(a)
