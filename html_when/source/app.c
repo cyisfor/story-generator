@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 int main(int argc, char**argv) {
-	char* buf;
+
 	struct stat info;
 	ensure0(fstat(0,&info));
 	const char* buf = mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,0,0);
