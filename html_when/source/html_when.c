@@ -16,11 +16,9 @@ bool is_element(GumboNode* n, const char* name, size_t nlen) {
 }
 void html_when(GumboNode* root) {
 	if(!root) return;
-	bool check(GumboNode* n, void* udata) {
-		return is_element(n,"when",4);
-	}
+
 	struct Selector selector = {};
-	find_start(&selector, root, &check, NULL);
+	find_start(&selector, root, GUMBO_ELEMENT_WHEN, NULL);
 	for(;;) {
 		GumboNode* cur = find_next(&selector);
 		if(!cur) return;
@@ -58,7 +56,7 @@ void html_when(GumboNode* root) {
 			// find else, if we can
 			for(i=0;i<kids->length;++i) {
 				GumboNode* kid = (GumboNode*) kids->data[i];
-				if(is_element(kid,"else",4)) {
+				if(kid->tag == GUMBO_ELEMENT_ELSE) {
 					// remove this, and all the rest after.
 					elsepoint = i;
 				}
@@ -74,7 +72,7 @@ void html_when(GumboNode* root) {
 			// try to find else...
 			for(i=0;i<cur->v.element.children.length;++i) {
 				GumboNode* kid = (GumboNode*) cur->v.element.children.data[i];
-				if(is_element(kid,"else",4)) {
+				if(kid->tag == GUMBO_ELEMENT_ELSE) {
 					elsepoint = i;
 					gumbo_destroy_node(&kGumboDefaultOptions, kid);
 					break;
