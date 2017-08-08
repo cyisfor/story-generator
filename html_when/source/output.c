@@ -15,7 +15,7 @@ void output(int dest, GumboNode* cur) {
 		// fall through
 	case GUMBO_NODE_ELEMENT:
 		{ GumboElement* e = &cur->v.element;
-			size_t nlen = strlen(e->name);
+			unsigned short nlen = strlen(e->name);
 			write(dest,LITLEN("<"));
 			write(dest,e->name,nlen);
 			int i;
