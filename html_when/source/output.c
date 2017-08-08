@@ -52,7 +52,7 @@ void output(int dest, GumboNode* cur) {
 		}
 		break;
 	default:
-		fprintf(stderr,"bad node type... wat is template?\n");
+		write(2,LITLEN("bad node type... wat is template?\n"));
 		abort();
 	};
 }
