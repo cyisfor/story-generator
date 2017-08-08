@@ -7,13 +7,31 @@ enum { UP, DOWN, /*LEFT,*/ RIGHT} directions;
 
 // for moving up, has to keep a stack of cpos's...
 // can't use call stack because next gets re-called... function pointers?
-struct cposes {
-	int* data;
+
+typedef bool (*Checker)(GumboNode*,void*);
+struct Selector {
+	int* data; // make sure to init = {}
 	size_t n;
 	size_t space;
+	void* udata;
+	Checker check;
+	GumboNode* cur;
 };
 
-GumboNode* next_by_name(struct cposes* pos, GumboNode* cur, const char* name, size_t nlen) {
+void find_destroy(struct Selector* s) {
+	free(s->data);
+	s->data = NULL; // just in case
+	s->n = 0;
+}
+
+void find_start(struct Selector* s, GumboNode* top, Checker check, void* udata) {
+	if(check) s->check = check;
+	if(udata) s->udata = udata;
+	if(top) s->cur = top;
+	s->n = 0;
+}
+
+GumboNode* find_next(struct Selector* pos) {
 	#define POS pos->data[pos->n-1];
 	GumboNode* parent = cur->parent;
 	bool right(void) {
@@ -35,6 +53,7 @@ GumboNode* next_by_name(struct cposes* pos, GumboNode* cur, const char* name, si
 
 	bool up(void) {
 		if(!parent) return false;
+		--pos->n;
 		cur = parent;
 		parent = parent->parent;
 		return true;
@@ -52,7 +71,11 @@ GumboNode* next_by_name(struct cposes* pos, GumboNode* cur, const char* name, si
 		case UP:
 			if(right()) d = RIGHT;
 			else if(up()) d = UP;
-			else return NULL; // couldn't find it...
+			else {
+				// we're done
+				pos->n = 0;
+				return NULL;
+			}
 		case DOWN:
 		case RIGHT:
 			if(down()) d = DOWN;
