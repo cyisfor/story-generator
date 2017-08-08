@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <string.h>
 
+#define LITLEN(a) a,sizeof(a)-1
+#define STRLEN(a) (a),strlen(a)
+
 void output(int dest, GumboNode* cur) {
 	switch(cur->type) {
 	case GUMBO_NODE_TEXT:
