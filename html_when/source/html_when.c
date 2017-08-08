@@ -4,7 +4,8 @@
 void html_when(GumboNode* root) {
 	if(!root) return;
 	bool check(GumboNode* n, void* udata) {
-		short len = strlen(n->name);
+		return n->tag == 
+		short len = strlen(n->tag );
 		if(len != 4) return false;
 		return 0 == strncasecmp(n->name,"when",4);
 	}
