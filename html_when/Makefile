@@ -11,3 +11,5 @@ libhtmlwhen.a: o/html_when.o o/selectors.o | o
 o:
 	mkdir $@
 
+o/%.o: source/%.c
+	gcc $(CFLAGS) -c -o $@ $^
