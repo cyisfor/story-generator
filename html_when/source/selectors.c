@@ -6,7 +6,7 @@ enum { UP, DOWN, /*LEFT,*/ RIGHT} directions;
 */
 
 // for moving up, has to keep a stack of cpos's...
-// can't use stack because next gets re-called... function pointers?
+// can't use call stack because next gets re-called... function pointers?
 struct cposes {
 	int* data;
 	size_t n;
