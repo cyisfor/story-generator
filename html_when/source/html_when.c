@@ -1,6 +1,5 @@
+#include "html_when.h"
 #include "selectors.h"
-
-#include "gumbo.h"
 
 void html_when(GumboNode* root) {
 	if(!root) return;

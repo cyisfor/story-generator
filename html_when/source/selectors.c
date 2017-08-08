@@ -5,7 +5,7 @@ enum { UP, DOWN, /*LEFT,*/ RIGHT} directions;
 /* Theseus strategy: if last direction was UP, check RIGHT, UP, then done
 	 if last direction was RIGHT, check DOWN, RIGHT, UP
 	 if last direction was DOWN, check DOWN, RIGHT, UP
-	 keep left hand on the wall!
+	 keep right hand on the wall!
 */
 
 // for moving up, has to keep a stack of cpos's...

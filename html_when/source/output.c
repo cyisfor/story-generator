@@ -1,3 +1,7 @@
+#include "output.h"
+
+#include <unistd.h>
+
 void output(int dest, GumboNode* cur) {
 	switch(cur->type) {
 	case GUMBO_NODE_TEXT:
