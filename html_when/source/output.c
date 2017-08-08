@@ -23,9 +23,8 @@ void output(int dest, GumboNode* cur) {
 		// fall through
 	case GUMBO_NODE_ELEMENT:
 		{ GumboElement* e = &cur->v.element;
-			unsigned short nlen = strlen(e->name);
 			write(dest,LITLEN("<"));
-			write(dest,e->name,nlen);
+			write(dest,e->original_tag.data,e->original_tag.length);
 			int i;
 			for(i=0;i<e->attributes.length;++i) {
 				write(dest,LITLEN(" "));
@@ -45,7 +44,7 @@ void output(int dest, GumboNode* cur) {
 					output_node(dest,e->children.data[i]);
 				}
 				write(dest,LITLEN("</"));
-				write(dest,e->name,nlen);
+				write(dest,e->original_tag.data,e->original_tag.length);
 				write(dest,LITLEN(">"));
 			}
 		}
