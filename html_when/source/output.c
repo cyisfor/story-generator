@@ -23,6 +23,7 @@ void output(int dest, GumboNode* cur) {
 		write(dest,LITLEN("<!DOCTYPE html>\n"));
 		// fall through
 	case GUMBO_NODE_ELEMENT:
+	case GUMBO_NODE_TEMPLATE:
 		{ GumboElement* e = &cur->v.element;
 			write(dest,LITLEN("<"));
 			write(dest,e->original_tag.data,e->original_tag.length);
