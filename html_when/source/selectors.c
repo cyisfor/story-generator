@@ -14,8 +14,8 @@ static void find_destroy(struct Selector* s) {
 	s->n = 0;
 }
 
-void find_start(struct Selector* s, GumboNode* top, Checker check, void* udata) {
-	if(check) s->check = check;
+void find_start(struct Selector* s, GumboNode* top, GumboTag check, void* udata) {
+	s->check = check;
 	if(udata) s->udata = udata;
 	if(top) s->cur = top;
 	s->n = 0;
@@ -54,7 +54,7 @@ GumboNode* find_next(struct Selector* pos) {
 
 	for(;;) {
 		if(cur->type != GUMBO_NODE_ELEMENT) {
-			if(pos->check(cur,pos->udata)) {
+			if(cur->tag == pos->check) {
 				pos->cur = cur;
 				return cur;
 			}
@@ -64,7 +64,7 @@ GumboNode* find_next(struct Selector* pos) {
 				return NULL;
 			}
 		}
-		if(pos->check(cur,pos->udata)) {
+		if(cur->tag == pos->check) {
 			pos->cur = cur;
 			return cur;
 		}
