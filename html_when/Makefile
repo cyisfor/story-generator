@@ -7,9 +7,10 @@ test: libhtmlwhen.a source/app.c source/output.c
 	gcc $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 libhtmlwhen.a: o/html_when.o o/selectors.o | o
+	$(AR) $(ARFLAGS) $@ $^
 
 o:
 	mkdir $@
 
-o/%.o: source/%.c
+o/%.o: source/%.c | o
 	gcc $(CFLAGS) -c -o $@ $^
