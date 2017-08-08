@@ -22,7 +22,7 @@ void find_start(struct Selector* s, GumboNode* top, Checker check, void* udata) 
 }
 
 GumboNode* find_next(struct Selector* pos) {
-	#define POS pos->data[pos->n-1];
+#define POS pos->data[pos->n-1];
 	GumboNode* cur = pos->cur;
 	GumboNode* parent = cur->parent;
 	bool right(void) {
