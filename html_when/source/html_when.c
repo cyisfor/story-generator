@@ -2,15 +2,19 @@
 #include "selectors.h"
 #include <string.h> // strlen
 #include <stdlib.h> // getenv
+
+bool is_element(GumboNode* n, const char* name, size_t nlen) {
+	if(n->type != GUMBO_NODE_ELEMENT) return false;
+	// gumbo suuuucks
+	if(n->v.element.tag != GUMBO_TAG_UNKNOWN) return false;
+	if(n->v.element.original_tag.length != nlen) return false;
+	if(0!=strncasecmp(n->v.element.original_tag.data,name,nlen)) return false;
+	return true;
+}
 void html_when(GumboNode* root) {
 	if(!root) return;
 	bool check(GumboNode* n, void* udata) {
-		if(n->type != GUMBO_NODE_ELEMENT) return false;
-		// gumbo suuuucks
-		if(n->v.element.tag != GUMBO_TAG_UNKNOWN) return false;
-		if(n->v.element.original_tag.length != 4) return false;
-		if(0!=strncasecmp(n->v.element.original_tag.data,"when",4)) return false;
-		return true;
+		return is_element(n,"when",4);
 	}
 	struct Selector selector = {};
 	find_start(&selector, root, &check, NULL);
@@ -51,7 +55,7 @@ void html_when(GumboNode* root) {
 			// find else, if we can
 			for(i=0;i<kids->length;++i) {
 				GumboNode* kid = (GumboNode*) kids->data[i];
-				if(strcasecmp(kid->name,"else")) {
+				if(is_element(kid,"else",4)) {
 					// remove this, and all the rest after.
 					elsepoint = i;
 				}
