@@ -47,7 +47,7 @@ void output(int dest, GumboNode* cur) {
 				write(dest,LITLEN(" "));
 				GumboAttribute* a = e->attributes.data[i];
 				write(dest,STRLEN(a->name));
-				if(0==a->original_value.length) {
+				if(0!=a->original_value.length) {
 					write(dest,LITLEN("="));
 					// includes quotation marks
 					write(dest,a->original_value.data,a->original_value.length);
