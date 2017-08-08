@@ -6,9 +6,9 @@ void html_when(GumboNode* root) {
 	bool check(GumboNode* n, void* udata) {
 		// gumbo suuuucks
 		if(n->tag != GUMBO_TAG_UNKNOWN) return false;
-		short len = strlen(n->tag );
-		if(len != 4) return false;
-		return 0 == strncasecmp(n->name,"when",4);
+		if(n->original_tag.length != 4) return false;
+		if(0!=strncasecmp(n->original_tag.data,"when",4)) return false;
+			 return true;
 	}
 	struct Selector selector = {};
 	find_start(&selector, root, &check, NULL);
