@@ -3,9 +3,20 @@
 #include "gumbo.h"
 
 void html_when(GumboOutput* root) {
-	GumboNode* cur = root->document;
-	while(cur) {
-		cur = next_by_name(cur,"when");
+	if(!root->document) return;
+	bool check(GumboNode* n, void* udata) {
+		short len = strlen(n->name);
+		if(len != 4) return false;
+		return 0 == strncasecmp(n->name,"when",4);
+	}
+	struct Selector selector = {};
+	find_start(&selector, root->document, &check, NULL);
+	for(;;) {
+		cur = find_next(selector);
+		if(!cur) {
+			find_destroy(&selector);
+			return;
+		}
 		bool condition = true;
 		int i;
 		for(i=0;i<cur->v.element.attributes.length;++i) {

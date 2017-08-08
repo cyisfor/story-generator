@@ -18,7 +18,7 @@ struct Selector {
 	GumboNode* cur;
 };
 
-void find_destroy(struct Selector* s) {
+static void find_destroy(struct Selector* s) {
 	free(s->data);
 	s->data = NULL; // just in case
 	s->n = 0;
@@ -62,9 +62,17 @@ GumboNode* find_next(struct Selector* pos) {
 	directions d = DOWN; // "first" last move is down
 
 	for(;;) {
-		if(cur->type != GUMBO_NODE_ELEMENT) return NULL;
-		size_t otherlen = strlen(cur->name);
-		if(otherlen == nlen && 0==memcmp(cur->name,name,nlen)) {
+		if(cur->type != GUMBO_NODE_ELEMENT) {
+			if(pos->check(cur,pos->udata)) {
+				return cur;
+			}
+			// we can only go up
+			if(!up()) {
+				find_destroy(pos);
+				return NULL;
+			}
+		}
+		if(pos->check(cur,pos->udata)) {
 			return cur;
 		}
 		switch(d) {
@@ -73,7 +81,7 @@ GumboNode* find_next(struct Selector* pos) {
 			else if(up()) d = UP;
 			else {
 				// we're done
-				pos->n = 0;
+				find_destroy(pos);
 				return NULL;
 			}
 		case DOWN:
