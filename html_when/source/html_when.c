@@ -1,4 +1,4 @@
-#include "fuck_selectors.h"
+#include "selectors.h"
 
 #include "gumbo.h"
 
