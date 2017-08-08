@@ -61,7 +61,7 @@ void output(int dest, GumboNode* cur) {
 					output(dest,e->children.data[i]);
 				}
 				write(dest,LITLEN("</"));
-				write(dest,e->original_tag.data,e->original_tag.length);
+				write(dest,name.data,name.length);
 				write(dest,LITLEN(">"));
 			}
 		}
