@@ -1,3 +1,4 @@
+#include "ensure.h"
 #include "html_when.h"
 #include "output.h"
 #include "gumbo.h"
