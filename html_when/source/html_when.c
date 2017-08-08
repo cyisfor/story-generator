@@ -1,6 +1,7 @@
 #include "html_when.h"
 #include "selectors.h"
 #include <string.h> // strlen
+#include <stdlib.h> // getenv
 void html_when(GumboNode* root) {
 	if(!root) return;
 	bool check(GumboNode* n, void* udata) {
