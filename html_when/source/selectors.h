@@ -15,4 +15,3 @@ struct Selector {
 void find_start(struct Selector* s, GumboNode* top, Checker check, void* udata);
 GumboNode* find_next(struct Selector* pos);
 
-GumboNode* next_by_name(GumboNode* cur, const char* name, size_t nlen);
