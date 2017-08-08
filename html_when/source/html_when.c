@@ -63,7 +63,7 @@ void html_when(GumboNode* root) {
 					elsepoint = i;
 				}
 				if(elsepoint >= 0) {
-					gumbo_destroy_node(&kDefaultOptions, kid);
+					gumbo_destroy_node(&kGumboDefaultOptions, kid);
 				}
 			}
 			if(elsepoint >= 0) {
@@ -76,10 +76,10 @@ void html_when(GumboNode* root) {
 				GumboNode* kid = (GumboNode*) cur->v.element.children.data[i];
 				if(strcasecmp(kid->name,"else")) {
 					elsepoint = i;
-					gumbo_destroy_node(&kDefaultOptions, kid);
+					gumbo_destroy_node(&kGumboDefaultOptions, kid);
 					break;
 				}
-				gumbo_destroy_node(&kDefaultOptions, kid);				
+				gumbo_destroy_node(&kGumboDefaultOptions, kid);				
 			}
 			// move everything past elsepoint down to 0
 			if(elsepoint == -1) {
