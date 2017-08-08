@@ -40,7 +40,8 @@ void output(int dest, GumboNode* cur) {
 			} else {
 				name.data = gumbo_normalized_tagname(e->tag);
 				name.length = kGumboTagSizes[e->tag];
-				write(dest,e->original_tag.data,e->original_tag.length);
+			}
+			write(dest,name.data,name.length);
 			int i;
 			for(i=0;i<e->attributes.length;++i) {
 				write(dest,LITLEN(" "));
