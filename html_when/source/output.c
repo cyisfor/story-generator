@@ -1,6 +1,7 @@
 #include "output.h"
 
 #include <unistd.h>
+#include <string.h>
 
 void output(int dest, GumboNode* cur) {
 	switch(cur->type) {
