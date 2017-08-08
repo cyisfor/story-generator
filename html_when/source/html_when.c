@@ -18,7 +18,7 @@ void html_when(GumboNode* root) {
 	if(!root) return;
 
 	struct Selector selector = {};
-	find_start(&selector, root, GUMBO_ELEMENT_WHEN, NULL);
+	find_start(&selector, root, GUMBO_TAG_WHEN, NULL);
 	for(;;) {
 		GumboNode* cur = find_next(&selector);
 		if(!cur) return;
@@ -56,7 +56,7 @@ void html_when(GumboNode* root) {
 			// find else, if we can
 			for(i=0;i<kids->length;++i) {
 				GumboNode* kid = (GumboNode*) kids->data[i];
-				if(kid->tag == GUMBO_ELEMENT_ELSE) {
+				if(kid->tag == GUMBO_TAG_ELSE) {
 					// remove this, and all the rest after.
 					elsepoint = i;
 				}
@@ -72,7 +72,7 @@ void html_when(GumboNode* root) {
 			// try to find else...
 			for(i=0;i<cur->v.element.children.length;++i) {
 				GumboNode* kid = (GumboNode*) cur->v.element.children.data[i];
-				if(kid->tag == GUMBO_ELEMENT_ELSE) {
+				if(kid->tag == GUMBO_TAG_ELSE) {
 					elsepoint = i;
 					gumbo_destroy_node(&kGumboDefaultOptions, kid);
 					break;
