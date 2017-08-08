@@ -74,7 +74,7 @@ void html_when(GumboNode* root) {
 			// try to find else...
 			for(i=0;i<cur->v.element.children.length;++i) {
 				GumboNode* kid = (GumboNode*) cur->v.element.children.data[i];
-				if(is_element(kid,"else")) {
+				if(is_element(kid,"else",4)) {
 					elsepoint = i;
 					gumbo_destroy_node(&kGumboDefaultOptions, kid);
 					break;
