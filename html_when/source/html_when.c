@@ -14,7 +14,7 @@ void html_when(GumboNode* root) {
 	struct Selector selector = {};
 	find_start(&selector, root, &check, NULL);
 	for(;;) {
-		GumboNode* cur = find_next(selector);
+		GumboNode* cur = find_next(&selector);
 		if(!cur) return;
 
 		bool condition = true;
