@@ -2,21 +2,19 @@
 
 #include "gumbo.h"
 
-void html_when(GumboOutput* root) {
-	if(!root->document) return;
+void html_when(GumboNode* root) {
+	if(!root) return;
 	bool check(GumboNode* n, void* udata) {
 		short len = strlen(n->name);
 		if(len != 4) return false;
 		return 0 == strncasecmp(n->name,"when",4);
 	}
 	struct Selector selector = {};
-	find_start(&selector, root->document, &check, NULL);
+	find_start(&selector, root, &check, NULL);
 	for(;;) {
 		cur = find_next(selector);
-		if(!cur) {
-			find_destroy(&selector);
-			return;
-		}
+		if(!cur) return;
+
 		bool condition = true;
 		int i;
 		for(i=0;i<cur->v.element.attributes.length;++i) {
@@ -85,9 +83,4 @@ void html_when(GumboOutput* root) {
 			}
 		}
 	}
-}
-
-void process_when(Document* doc) {
-	auto root = doc.root;
-	process_when(root);
 }
