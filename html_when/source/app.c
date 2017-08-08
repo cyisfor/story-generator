@@ -1,7 +1,8 @@
 #include "html_when.h"
-#include "gumbo.h"
 #include "output.h"
-#include <stdio.h>
+#include "gumbo.h"
+#include <sys/mman.h>
+#include <sys/stat.h>
 
 #define OUTPUT_XML {
 
@@ -14,5 +15,5 @@ int main(int argc, char**argv) {
 	GumboOutput* out = gumbo_parse_with_options(&kGumboDefaultOptions, buf, info.st_size);
 	munmap(buf,info.st_size);
 	html_when(out);
-	output(out);
+	output(1,out);
 }
