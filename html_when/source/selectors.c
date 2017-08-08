@@ -1,3 +1,6 @@
+#include "selectors.h"
+#include <stdlib.h> // malloc...
+
 enum { UP, DOWN, /*LEFT,*/ RIGHT} directions;
 /* Theseus strategy: if last direction was UP, check RIGHT, UP, then done
 	 if last direction was RIGHT, check DOWN, RIGHT, UP
