@@ -50,7 +50,7 @@ GumboNode* find_next(struct Selector* pos) {
 		return true;
 	}
 		
-	directions d = DOWN; // "first" last move is down
+	enum directions d = DOWN; // "first" last move is down
 
 	for(;;) {
 		if(cur->type != GUMBO_NODE_ELEMENT) {
