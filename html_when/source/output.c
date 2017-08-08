@@ -36,7 +36,7 @@ void output(int dest, GumboNode* cur) {
 			GumboStringPiece name;
 			if(e->tag == GUMBO_TAG_UNKNOWN) {
 				name = e->original_tag;
-				gumbo_tag_from_original_text(&txt);
+				gumbo_tag_from_original_text(&name);
 			} else {
 				name.data = gumbo_normalized_tagname(e->tag);
 				name.length = kGumboTagSizes[e->tag];
