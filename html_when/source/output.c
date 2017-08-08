@@ -7,6 +7,13 @@
 #define LITLEN(a) a,sizeof(a)-1
 #define STRLEN(a) (a),strlen(a)
 
+// gumbo sucks
+static const unsigned char kGumboTagSizes[] = {
+#include "tag_sizes.h"
+    0,  // TAG_UNKNOWN
+    0,  // TAG_LAST
+};
+
 void output(int dest, GumboNode* cur) {
 	switch(cur->type) {
 	case GUMBO_NODE_TEXT:
@@ -24,9 +31,16 @@ void output(int dest, GumboNode* cur) {
 		// fall through
 	case GUMBO_NODE_ELEMENT:
 	case GUMBO_NODE_TEMPLATE:
-		{ GumboElement* e = &cur->v.element;
-			write(dest,LITLEN("<"));
-			write(dest,e->original_tag.data,e->original_tag.length);
+		{ write(dest,LITLEN("<"));
+			GumboElement* e = &cur->v.element;
+			GumboStringPiece name;
+			if(e->tag == GUMBO_TAG_UNKNOWN) {
+				name = e->original_tag;
+				gumbo_tag_from_original_text(&txt);
+			} else {
+				name.data = gumbo_normalized_tagname(e->tag);
+				name.length = kGumboTagSizes[e->tag];
+				write(dest,e->original_tag.data,e->original_tag.length);
 			int i;
 			for(i=0;i<e->attributes.length;++i) {
 				write(dest,LITLEN(" "));
