@@ -14,5 +14,5 @@ int main(int argc, char**argv) {
 	GumboOutput* out = gumbo_parse_with_options(&kGumboDefaultOptions, buf, info.st_size);
 	munmap(buf,info.st_size);
 	html_when(out->document);
-	output(1,out);
+	output(1,out->document);
 }
