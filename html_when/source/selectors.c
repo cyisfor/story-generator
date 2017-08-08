@@ -23,7 +23,8 @@ void find_start(struct Selector* s, GumboNode* top, Checker check, void* udata) 
 
 GumboNode* find_next(struct Selector* pos) {
 	#define POS pos->data[pos->n-1];
-	GumboNode* parent = pos->cur->parent;
+	GumboNode* cur = pos->cur;
+	GumboNode* parent = cur->parent;
 	bool right(void) {
 		if(POS + 1 == cur->v.element.children.length) return false;
 		cur = parent->v.element.children.data[++POS];
@@ -54,6 +55,7 @@ GumboNode* find_next(struct Selector* pos) {
 	for(;;) {
 		if(cur->type != GUMBO_NODE_ELEMENT) {
 			if(pos->check(cur,pos->udata)) {
+				pos->cur = cur;
 				return cur;
 			}
 			// we can only go up
@@ -63,6 +65,7 @@ GumboNode* find_next(struct Selector* pos) {
 			}
 		}
 		if(pos->check(cur,pos->udata)) {
+			pos->cur = cur;
 			return cur;
 		}
 		switch(d) {
