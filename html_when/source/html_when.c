@@ -3,6 +3,9 @@
 #include <string.h> // strlen
 #include <stdlib.h> // getenv
 
+// gumbo sucks
+void gumbo_destroy_node(GumboOptions* options, GumboNode* node);
+
 bool is_element(GumboNode* n, const char* name, size_t nlen) {
 	if(n->type != GUMBO_NODE_ELEMENT) return false;
 	// gumbo suuuucks
