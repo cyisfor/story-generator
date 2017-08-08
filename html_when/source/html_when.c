@@ -4,7 +4,7 @@
 #include <stdlib.h> // getenv
 
 // gumbo sucks
-void gumbo_destroy_node(GumboOptions* options, GumboNode* node);
+void gumbo_destroy_node(const GumboOptions* options, GumboNode* node);
 
 bool is_element(GumboNode* n, const char* name, size_t nlen) {
 	if(n->type != GUMBO_NODE_ELEMENT) return false;
