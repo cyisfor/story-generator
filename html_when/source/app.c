@@ -4,8 +4,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#define OUTPUT_XML {
-
 int main(int argc, char**argv) {
 	char* buf;
 	struct stat info;
