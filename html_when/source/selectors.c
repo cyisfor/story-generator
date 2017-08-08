@@ -54,17 +54,18 @@ GumboNode* find_next(struct Selector* pos) {
 
 	for(;;) {
 		if(cur->type != GUMBO_NODE_ELEMENT) {
-			if(cur->tag == pos->check) {
+/*			it's not a tag
+				if(cur->tag == pos->check) {
 				pos->cur = cur;
 				return cur;
-			}
+			} */
 			// we can only go up
 			if(!up()) {
 				find_destroy(pos);
 				return NULL;
 			}
 		}
-		if(cur->tag == pos->check) {
+		if(cur->v.element.tag == pos->check) {
 			pos->cur = cur;
 			return cur;
 		}
