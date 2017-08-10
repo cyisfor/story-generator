@@ -71,7 +71,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 	// html, head
 	xmlNode* head = doc->children->children->next;
-	xmlNode* links = head->next->last;
+	xmlNode* links = head->next->next->last;
 	while(links->type != XML_ELEMENT_NODE) {
 		links = links->prev;
 		assert(links);
