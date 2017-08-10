@@ -46,8 +46,8 @@ void create_setup(void) {
 int create_contents(const string location,
 										const string dest,
 										size_t chapters,
-										void (*get_title)(string* title, size_t chapter)) {
-	
+										void (*with_title)(identifier chapter,
+																			 void(*handle)(const string title))) {	
 	xmlDoc* doc = xmlCopyDoc(contents_template,1);
 	// root, doctype, html, text prefix, head
 	xmlNode* head = doc->children->next->children->next;
@@ -90,8 +90,10 @@ int create_contents(const string location,
 			snprintf(buf,0x100,"chapter%d.html",i);
 		}
 		xmlSetProp(a,"href",buf);
-		get_title(&title, i);
-		xmlNodeAddContentLen(a,title.s,title.l);
+		void got_title(const string title) {
+			xmlNodeAddContentLen(a,title.s,title.l);
+		}
+		with_title(i, got_title);
 	}
 	free(title.s);
 
