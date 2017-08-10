@@ -1,5 +1,5 @@
 #include "ensure.h"
-#include "git.h"
+#include "storygit.h"
 #include "string.h"
 #include "repo.h"
 #include "create.h"
