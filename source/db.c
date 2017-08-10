@@ -84,8 +84,8 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	db_once(insert);
 }
 
-bool db_last_seen_commit(db_oid commit) {
-	DECLARE_STMT(find,"SELECT oid FROM commits ORDER BY timestamp DESC LIMIT 1");
+bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits ORDER BY timestamp DESC LIMIT 1");
 
 	int res = sqlite3_step(find);
 	switch(res) {
@@ -95,6 +95,7 @@ bool db_last_seen_commit(db_oid commit) {
 	case SQLITE_ROW:
 		assert(sizeof(git_oid) == sqlite3_column_bytes(find,0));
 		ensure0(memcpy(oid, sqlite3_column_blob(find, 0), len));
+		*timestamp = sqlite3_column_int64(find,1);
 		sqlite3_reset(find);
 		return true;
 	default:
@@ -103,23 +104,30 @@ bool db_last_seen_commit(db_oid commit) {
 	};
 }
 
-identifier db_find_story(const string location) {
+identifier db_find_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT OR IGNORE INTO STORIES (location) VALUES (?)");
-
+	DECLARE_STMT(insert,"INSERT INTO STORIES (location,timestamp) VALUES (?,?)");
+	DECLARE_STMT(update,"UPDATE STORIES SET timestamp = MAX(timestamp,?) WHERE id = ?");
+	
 	begin();
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		identifier id = sqlite3_column_int64(find,0);
 		sqlite3_reset(find);
+		sqlite3_bind_int64(update,1,timestamp);
+		sqlite3_bind_int64(update,2,id);
+		db_once(update);
+		commit();
 		return id;
 	} else {
 		sqlite3_reset(find);
 		sqlite3_bind_blob(insert,1,location.s, location.l);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
-		return sqlite3_last_insert_rowid(db);
+		identifier id = sqlite3_last_insert_rowid(db);
+		commit();
+		return id;
 	}
 }
 
@@ -130,10 +138,22 @@ void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long i
 		sqlite3_bind_int64(delete,2,chapnum);
 		db_once(delete);
 	} else {
-		DECLARE_STMT(insert, "INSERT OR REPLACE INTO chapters (story,chapter,timestamp) VALUES (?,?,?)");
-		sqlite3_bind_int64(insert,1,story);
-		sqlite3_bind_int64(insert,2,chapnum);
-		sqlite3_bind_int64(insert,3,timestamp);
-		db_once(insert);
+		// need a programmatic upsert, because timestamp = max(timestamp,?)
+		// could insert or replace select ...max(...)...
+		
+		DECLARE_STMT(update,"UPDATE STORIES SET timestamp = MAX(timestamp,?) WHERE story = ? AND chapter = ?");
+		begin();
+		sqlite3_bind_int64(update,1,timestamp);
+		sqlite3_bind_int64(update,2,story);
+		sqlite3_bind_int64(update,3,chapter);
+		db_once(update);
+		if(0 == sqlite3_changes(db)) {
+			DECLARE_STMT(insert,"INSERT INTO chapters (story,chapter,timestamp) VALUES (?,?,?)");
+			sqlite3_bind_int64(insert,1,story);
+			sqlite3_bind_int64(insert,2,chapnum);
+			sqlite3_bind_int64(insert,3,timestamp);
+			db_once(insert);
+		}
+		commit();
 	}
 }
