@@ -33,7 +33,7 @@ bool git_for_commits(const git_oid* until, // db_last_seen_commit
 	git_commit* commit = NULL;
 	git_tree* last = NULL;
 	git_tree* cur = NULL;
-	db_oid commit_oid;
+	git_oid commit_oid;
 	for(;;) {
 		if(0!=git_revwalk_next(&commit_oid, walker)) return true;
 		//printf("rev oid %s\n",git_oid_tostr_s(&oid));
@@ -62,10 +62,10 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 		/* either deleted, pass old_file, true
 			 renamed, old_file, true, new_file, false
 			 otherwise, new_file, false */
-		bool one_file(const char* path, bool deleted) {
+		bool one_file(const char* spath, bool deleted) {
 			const string path = {
-				.s = delta->new_file.path,
-				.l = strlen(delta->new_file.path)
+				.s = spath,
+				.l = strlen(spath)
 			};
 			if(path.l < LITSIZ("a/markup/chapterN.hish")) return 0;
 			const char* slash = strchr(path.s,'/');
