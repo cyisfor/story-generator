@@ -2,6 +2,7 @@
 #include "repo.h"
 #include <stdlib.h> // mergesort, NULL
 #include <string.h> // memcmp, memcpy
+#include <sys/stat.h>
 
 string* locations = NULL;
 size_t nloc = 0;
