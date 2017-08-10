@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 																			(void*)find_chapter);
 		if(chapter == NULL) {
 			printf("CREATE CHAPTER %d ",chapter->num);
-			STRPRINT(loc);
+			STRPRINT(chapter->location);
 			putchar('\n');
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 20) return false;
