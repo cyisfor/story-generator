@@ -1,3 +1,4 @@
+#include "db.h"
 #include "ensure.h"
 #include "storygit.h"
 #include "string.h"
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
 			printf("saw %d of ",chapnum);
 			STRPRINT(loc);
 			fputc('\n',stdout);
-			db_saw_chapter(deleted,loc,chapnum);
+			db_saw_chapter(deleted,db_find_story(loc),timestamp,chapnum);
 			return true;
 		}
 		git_for_chapters_changed(last,cur,on_chapter);

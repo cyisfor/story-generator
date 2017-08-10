@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include <stdint.h> // int64_t
 #include <git2/oid.h> // GIT_OID_RAWSZ
 #include <stdbool.h>
