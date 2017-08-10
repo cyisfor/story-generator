@@ -19,10 +19,14 @@ int main(int argc, char *argv[])
 		switch(sql[i]) {
 		case '\n':
 			PUTLIT("\\n\"\n\t\"");
+			while(i < st.st_size && isspace(sql[++i]));
+			break;
 		case '\r':
 			PUTLIT("\\r");
+			break;
 		case '"':
 			PUTLIT("\\\"");
+			break;
 		default:
 			write(1,sql+i,1);
 		};
