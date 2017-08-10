@@ -6,7 +6,7 @@
 #include <git2/revwalk.h>
 
 #include <string.h> // strlen, memcmp
-
+#include <assert.h>
 
 #define LITLEN(a) a,sizeof(a)-1
 
