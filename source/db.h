@@ -17,3 +17,15 @@ typedef int64_t identifier;
 
 identifier db_find_story(const string location);
 void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long int chapnum);
+
+
+void db_for_story(void (*handle)(identifier story,
+																 const string location,
+																 size_t numchaps,
+																 git_time_t timestamp),
+									git_time_t since);
+
+void db_for_chapter(identifier story,
+										void (*handle)(identifier chapter,
+																	 git_time_t timestamp),
+										git_time_t since);
