@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
 		string dest = {
 			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
 		};
-		size_t dspace = dest.l
-		dest.s = malloc(dspace);
+		size_t dspace = dest.l;
+		dest.s = malloc(dspace); // use malloc so we can realloc and use this as prefix for chaps
 		memcpy(dest.s,LITLEN("testnew/\0"));
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/"),location.s,location.l);
@@ -73,10 +73,10 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		string storydest = {
 			.s = dest.s,
-			.l = LITSIZ("testnew/")+locations.l + 1
+			.l = LITSIZ("testnew/")+location.l + 1
 		};
 
-		memcpy(dest.s+LITSIZ("testnew/")+locations.l,LITLEN("/contents.html\0"));
+		memcpy(dest.s+LITSIZ("testnew/")+location.l,LITLEN("/contents.html\0"));
 		create_contents(location, dest, numchaps);
 
 		void for_chapter(int chapter, git_time_t timestamp) {

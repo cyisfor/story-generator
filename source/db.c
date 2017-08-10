@@ -183,7 +183,7 @@ void db_for_story(void (*handle)(identifier story,
 void db_for_chapter(identifier story,
 										void (*handle)(identifier chapter,
 																	 git_time_t timestamp),
-										git_timestamp_t since) {
+										git_time_t since) {
 	DECLARE_STMT(find,
 							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
 	sqlite3_bind_int64(find,since);
