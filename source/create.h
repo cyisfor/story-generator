@@ -1,4 +1,5 @@
 #include "string.h"
+#include "storygit.h" // identifier
 void create_setup(void);
 int create_contents(const string location,
 										const string dest,

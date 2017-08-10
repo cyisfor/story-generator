@@ -1,4 +1,5 @@
 #include "string.h"
+#include "db.h"
 
 #include <stdbool.h>
 #include <git2/tree.h>
