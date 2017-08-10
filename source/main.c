@@ -53,24 +53,33 @@ int main(int argc, char *argv[])
 
 	puts("processing...");
 
-	void for_story(const string location, int numchaps) {
-		printf("story %d ",numchaps);
+	void for_story(identifier story,
+								 const string location,
+								 size_t numchaps,
+								 git_time_t timestamp) {
+		printf("story %lu ",numchaps);
 		STRPRINT(location);
 		fputc('\n',stdout);
 		
 		string dest = {
 			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
 		};
-		dest.s = alloca(dest.l);
+		size_t dspace = dest.l
+		dest.s = malloc(dspace);
 		memcpy(dest.s,LITLEN("testnew/\0"));
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/"),location.s,location.l);
 		dest.s[LITSIZ("testnew/") +  location.l] = '\0';
 		mkdir(dest.s,0755); // just in case
+		string storydest = {
+			.s = dest.s,
+			.l = LITSIZ("testnew/")+locations.l + 1
+		};
+
 		memcpy(dest.s+LITSIZ("testnew/")+locations.l,LITLEN("/contents.html\0"));
 		create_contents(location, dest, numchaps);
 
-		void for_chapter(int chapter) {
+		void for_chapter(int chapter, git_time_t timestamp) {
 			char htmlnamebuf[0x100] = "index.html";
 			string htmlname = {
 				.s = htmlnamebuf,
@@ -80,29 +89,36 @@ int main(int argc, char *argv[])
 			STRPRINT(chapter->location);
 			fputc('\n',stdout);
 		
-		if(chapter->num > 0) {
-			// XXX: index.html -> chapter2.html ehh...
-			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
+			if(chapter > 1) {
+				// XXX: index.html -> chapter2.html ehh...
+				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
+			}
+			// reuse dest, extend if htmlname is longer than contents.html plus nul
+			size_t chap_dlen = storydest.l + htmlname.l + 1;
+			if(dspace < chap_dlen) {
+				dspace = ((chap_dlen>>8)+1)<<8;
+				dest.s = realloc(dest.s, dspace);
+			}
+			memcpy(dest.s + storydest.l, htmlname.s, htmlname.l);
+			dest.s[storydest.l + htmlname.l] = '\0';
+			dest.l = storydest.l + htmlname.l + 1;
+
+			string src = {
+				.l = location.l + LITSIZ("/markup\0")
+			};
+			src.s = alloca(src.l);
+			memcpy(src.s,location.s,location.l);
+			memcpy(src.s + location.l, LITLEN("/markup\0"));
+			
+			create_chapter(src,dest,chapter,numchaps);
 		}
-		string dest = {
-			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 3
-		};
-		dest.s = alloca(dest.l);
-		memcpy(dest.s,LITLEN("testnew/"));
-		memcpy(dest.s + LITSIZ("testnew/"), chapter->location.s, chapter->location.l);
-		dest.s[LITSIZ("testnew/")+chapter->location.l] = '/';
-		memcpy(dest.s+LITSIZ("testnew/")+chapter->location.l+1,htmlname.s,htmlname.l);
-		dest.s[LITSIZ("testnew/")+chapter->location.l+1 + htmlname.l] = '\0';
 
-		struct location* testloc = bsearch(&chapter->location,
-																			 locations,nloc,sizeof(*locations),
-																			 (void*)compare_loc);
-		assert(testloc);
-		create_chapter(src,dest,chapter->num,testloc->totalchaps);
-		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
-			 chapters are done. */
-
+		db_for_chapters(story, for_chapter, timestamp);
+		
+		free(dest.s);
 	}
+
+	db_for_stories(for_story, timestamp);
 
 	return 0;
 }
