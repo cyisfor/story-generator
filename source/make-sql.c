@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	for(i=0;i<st.st_size;++i) {
 		switch(sql[i]) {
 		case '\n':
-			PUTLIT("\\n");
+			PUTLIT("\\n\"\n\t\"");
 		case '\r':
 			PUTLIT("\\r");
 		case '"':
