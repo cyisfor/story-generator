@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		fputc('\n',stdout);
 		// lookup location
 		string* testloc = bsearch(&loc,locations,nloc,sizeof(*locations),
-															 (void*)&compare_loc);
+															 (void*)compare_loc);
 		char* internkey;
 		if(testloc == NULL) {
 			if(nloc+1 >= sloc) {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 			internkey = locations[nloc].s;
 			locations[nloc].l = loc.l;
 			memcpy(locations[nloc].s, loc.s, loc.l);
-			ensure0(mergesort(locations,nloc,sizeof(*locations),(void*)&compare_loc));
+			ensure0(mergesort(locations,nloc,sizeof(*locations),(void*)compare_loc));
 		} else {
 			internkey = testloc->s;
 		}
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 		}
 
 		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
-																			(void*)&find_chapter);
+																			(void*)find_chapter);
 		if(chapter == NULL) {
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 100) return false;
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
-			ensure0(mergesort(chapters,nchap,sizeof(*chapters),(void*)&compare_chap));
+			ensure0(mergesort(chapters,nchap,sizeof(*chapters),(void*)compare_chap));
 		}
 		
 		return true;
