@@ -162,7 +162,18 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
+
+		string src = {
+			.l = chapter->location.l + LITSIZ("/markup/") + name.l
+		};
+		src.s = malloc(src.l);
+		memcpy(src.s,chapter->location.s,chapter->location.l);
+		memcpy(src.s + chapter->location.l,LITLEN("/markup/"));
+		memcpy(src.s + chapter->location.l + LITLEN("/markup/"), name.s, name.l);
+		
 		fputs("then create uh ",stdout);
+		STRPRINT(src);
+		fputs(" -> ",stdout);
 		STRPRINT(dest);
 		fputc('\n',stdout);
 	}
