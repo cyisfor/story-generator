@@ -12,7 +12,13 @@
 #include <fcntl.h> // open, O_*
 #include <assert.h>
 
-string* locations = NULL;
+struct location {
+	char* s;
+	short l;
+	int totalchaps;
+}
+
+struct location* locations = NULL;
 size_t nloc = 0;
 size_t sloc = 0;
 
@@ -137,6 +143,17 @@ int main(int argc, char *argv[])
 	puts("searching...");
 	git_for_chapters(on_chapter);
 	printf("%d locations found\n",nloc);
+
+	int* chaptotal = malloc(sizeof(int*) * nloc);
+	for(i=0;i<nloc;++i) {
+		string dest = {
+			.l = LITSIZ("testnew/") + locations[i].l + LITSIZ("/contents.html\0")
+		};
+		memcpy(dest,LITLEN("testnew/"));
+		memcpy(dest+LITSIZ("testnew/"),locations[i].s,locations[i].l);
+		memcpy(dest+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
+		locations[i].numchaps = create_contents(locations[i], dest);
+	}
 	
 	puts("processing...");
 
@@ -186,7 +203,11 @@ int main(int argc, char *argv[])
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
 		src.s[chapter->location.l + LITSIZ("/markup/") + name.l] = '\0';
 
-		create_chapter(src,dest,chapter->num,9000);
+		struct location* testloc = bsearch(&chapter->location,
+																			 locations,nloc,sizeof(*locations),
+																			 (void*)compare_loc);
+		assert(testloc);
+		create_chapter(src,dest,chapter->num,testloc->totalchaps);
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
