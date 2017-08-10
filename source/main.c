@@ -107,9 +107,6 @@ int main(int argc, char *argv[])
 		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
 																			(void*)find_chapter);
 		if(chapter == NULL) {
-			printf("CREATE CHAPTER %d ",chapnum);
-			STRPRINT(chapter->location);
-			putchar('\n');
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
@@ -120,6 +117,10 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
+			printf("CREATE CHAPTER %d ",chapter->num);
+			STRPRINT(chapter->location);
+			putchar('\n');
+
 			ensure0(mergesort(chapters,++nchap,sizeof(*chapters),(void*)compare_chap));
 		}
 		
