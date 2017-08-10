@@ -27,7 +27,7 @@ void git_for_commits(bool (*handle)(git_commit*)) {
 
 bool git_for_stories(git_tree* root,
 										 bool (*handle)(const char* location,
-																		const git_tree_entry* contents)) {
+																		const git_tree* contents)) {
 	size_t count = git_tree_entrycount(root);
 	size_t i;
 	for(i=0;i<count;++i) {
