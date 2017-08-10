@@ -25,7 +25,7 @@ test_git: $O
 o/%.o: source/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $^
 
-source/db.o: source/db-sql.gen.c
+source/db.c: source/db-sql.gen.c
 
 source/db-sql.gen.c: source/db.sql make-sql
 	./make-sql <$< >$@.temp
