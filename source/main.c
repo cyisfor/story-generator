@@ -124,9 +124,9 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
-			printf("CREATE CHAPTER %d %p ",chapter->num, internkey);
+			/*printf("CREATE CHAPTER %d %p ",chapter->num, internkey);
 			STRPRINT(chapter->location);
-			putchar('\n');
+			putchar('\n');*/
 
 			ensure0(mergesort(chapters,++nchap,sizeof(*chapters),(void*)compare_chap));
 		}

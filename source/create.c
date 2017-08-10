@@ -38,7 +38,10 @@ void create_setup(void) {
 
 void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
-	assert(srcfd >= 0);
+	if(srcfd < 0) {
+		printf("%s moved...\n",src.s);
+		return;
+	}
 	struct stat srcinfo;
 	assert(0==fstat(srcfd,&srcinfo));
 	struct stat destinfo;
