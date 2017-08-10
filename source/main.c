@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 		src.s = malloc(src.l);
 		memcpy(src.s,chapter->location.s,chapter->location.l);
 		memcpy(src.s + chapter->location.l,LITLEN("/markup/"));
-		memcpy(src.s + chapter->location.l + LITLEN("/markup/"), name.s, name.l);
+		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
 		
 		fputs("then create uh ",stdout);
 		STRPRINT(src);
