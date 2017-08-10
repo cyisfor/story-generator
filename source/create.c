@@ -61,6 +61,9 @@ int create_contents(string location, string dest) {
 	}
 	closedir(d);
 
+	// somehow get contents template per story here...
+	// and return per-story chapter template?
+
 	xmlDoc* doc = xmlCopyDoc(contents_template,1);
 	// root, doctype, html, text prefix, head
 	xmlNode* head = doc->children->next->children->next;
