@@ -161,16 +161,16 @@ int main(int argc, char *argv[])
 			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
 		}
 		string dest = {
-			.l = LITSIZ("../html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
+			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
 		};
 		dest.s = malloc(dest.l);
-		memcpy(dest.s,LITLEN("../html/"));
+		memcpy(dest.s,LITLEN("html/"));
 		mkdir(dest.s,0755); // just in case
-		memcpy(dest.s + LITSIZ("../html/"), chapter->location.s, chapter->location.l);
+		memcpy(dest.s + LITSIZ("html/"), chapter->location.s, chapter->location.l);
 		mkdir(dest.s,0755); // just in case
-		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
-		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
-		dest.s[LITSIZ("../html/")+chapter->location.l+1 + htmlname.l] = '\0';
+		dest.s[LITSIZ("html/")+chapter->location.l] = '/';
+		memcpy(dest.s+LITSIZ("html/")+chapter->location.l+1,htmlname.s,htmlname.l);
+		dest.s[LITSIZ("html/")+chapter->location.l+1 + htmlname.l] = '\0';
 
 		char namebuf[0x100];
 		string name = {
@@ -193,12 +193,14 @@ int main(int argc, char *argv[])
 		struct stat srcinfo;
 		assert(0==fstat(srcfd,&srcinfo));
 		struct stat destinfo;
-		if(0!=stat(dest.s,&destinfo) || AISOLDER(destinfo,srcinfo)) {
-					fputs("then create uh ",stdout);
-					STRPRINT(src);
-					fputs(" -> ",stdout);
-					STRPRINT(dest);
-					fputc('\n',stdout);
+		bool dest_exists = 0==stat(dest.s,&destinfo);
+		if(!dest_exists || AISOLDER(destinfo,srcinfo)) {
+			
+			fputs("then create uh ",stdout);
+			STRPRINT(src);
+			fputs(" -> ",stdout);
+			STRPRINT(dest);
+			fputc('\n',stdout);
 		}
 		close(srcfd);
 		free(src.s);
