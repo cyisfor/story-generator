@@ -170,7 +170,7 @@ void db_for_story(void (*handle)(identifier story,
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW: {
-			const cstring location = {
+			const string location = {
 				.s = sqlite3_column_blob(find,1),
 				.l = sqlite3_column_bytes(find,1)
 			};
@@ -221,7 +221,7 @@ void db_with_chapter_title(identifier story,
 	sqlite3_bind_int64(find,2,chapter);
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
-		const cstring title = {
+		const string title = {
 			.s = sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};

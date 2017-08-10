@@ -6,15 +6,15 @@
 typedef struct mstring {
 	char* s;
 	size_t l;
-} string;
+} mstring;
 
 /* because C sucks, const string str; str.s has type char* not const char*
 	 and there's no way to conditionally make it const char*
  */
 typedef struct string {
-	const char* s;
+	const char* const s;
 	size_t l;
-} cstring;
+} string;
 
 #define STRPRINT(str) fwrite((str).s,(str).l,1,stdout);
 
