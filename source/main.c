@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 			chapter = &chapters[nchap++];
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
-			chapter->location.s = loc.l; // ...fine
+			chapter->location.l = loc.l; // ...fine
 			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),(void*)&compare_chap));
 		}
 		
