@@ -8,6 +8,7 @@
 
 #include <string.h> // strlen, memcmp
 #include <assert.h>
+#include <stdio.h>
 
 #define LITLEN(a) a,sizeof(a)-1
 
