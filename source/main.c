@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
 									const string loc,
 									const string name) {
 
-		printf("saw %d of ",chapnum);
+		/*printf("saw %d of ",chapnum);
 		STRPRINT(loc);
-		fputc('\n',stdout);
+		fputc('\n',stdout);*/
 		// lookup location
 		string* testloc = bsearch(&loc,locations,nloc,sizeof(*locations),
 															 (void*)compare_loc);
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
 		}
 		string dest = {
-			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
+			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 3
 		};
 		dest.s = alloca(dest.l);
 		memcpy(dest.s,LITLEN("testnew/\0"));
