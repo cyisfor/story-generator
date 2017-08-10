@@ -125,22 +125,20 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location) VALUES (?)");
-	
+	identifier id = 0;
 	void intrans(void) {
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
-		identifier id = sqlite3_column_int64(find,0);
+		id = sqlite3_column_int64(find,0);
 		sqlite3_reset(find);
-		commit();
-		return id;
+		return;
 	} else {
 		sqlite3_reset(find);
 		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
 		db_once(insert);
-		identifier id = sqlite3_last_insert_rowid(db);
-		commit();
-		return id;
+		id = sqlite3_last_insert_rowid(db);
+		return;
 	}
 	}
 	db_transaction(intrans);
