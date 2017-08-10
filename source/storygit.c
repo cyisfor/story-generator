@@ -1,4 +1,4 @@
-#include "git.h"
+#include "storygit.h"
 #include "db.h"
 #include "repo.h"
 
@@ -16,7 +16,10 @@
 
 
 bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
-										 bool (*handle)(db_oid, git_time_t timestamp, git_tree* last, git_tree* cur)) {
+										 bool (*handle)(db_oid commit,
+																		git_time_t timestamp,
+																		git_tree* last,
+																		git_tree* cur)) {
 	git_revwalk* walker=NULL;
 	repo_check(git_revwalk_new(&walker, repo));
 
