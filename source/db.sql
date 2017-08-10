@@ -1,7 +1,9 @@
 CREATE TABLE IF NOT EXISTS commits (
-			 oid BLOB PRIMARY KEY,
-			 timestamp INTEGER NOT NULL);
+			 oid BLOB NOT NULL,
+			 timestamp INTEGER NOT NULL,
+			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
+-- we can do this... right?
 CREATE UNIQUE INDEX IF NOT EXISTS bytimestamp ON commits(timestamp);
 
 CREATE TABLE IF NOT EXISTS stories (
