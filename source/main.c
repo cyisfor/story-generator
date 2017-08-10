@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 		string htmlname = {
 			.s = htmlnamebuf,
 			.l = LITSIZ("index.html")
-		}
+		};
 		const struct chapter* chapter = chapters + i;
 		printf("chapter %d of ",chapter->num);
 		STRPRINT(chapter->location);
