@@ -323,9 +323,14 @@ void db_set_story_info(identifier story,
 }
 
 void db_transaction(void (*run)(void)) {
+	static bool in_trans = false;
+
+	if(in_trans) return run();
+	in_trans = true;
 	begin();
 	run();
 	commit();
+	in_trans = false;
 }
 
 void db_retransaction(void) {
