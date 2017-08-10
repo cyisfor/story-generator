@@ -147,3 +147,54 @@ void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long i
 		db_once(insert);
 	}
 }
+
+
+void db_for_story(void (*handle)(identifier story,
+																 const string location,
+																 sqlite3_int64 numchaps,
+																 git_time_t timestamp),
+									git_time_t since) {
+	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp > ?");
+	sqlite3_bind_int64(find,since);
+	for(;;) {
+		int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_ROW: {
+			string location = {
+				.s = sqlite3_column_blob(find,1),
+				.l = sqlite3_column_bytes(find,1)
+			};
+			handle(sqlite3_column_int64(find,0),
+						 location,
+						 sqlite3_column_int64(find,1),
+						 sqlite3_column_int64(find,2),
+						 sqlite3_column_int64(find,3));
+			continue;
+		}
+		case SQLITE_DONE:
+			return;
+		default:
+			db_check(res);
+			abort();
+		};
+	}
+}
+
+void db_for_chapter(void (*handle)(sqlite3_int64 chapter, git_time_t since) {
+		DECLARE_STMT(find,"SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
+		sqlite3_bind_int64(find,since);
+		int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_ROW:
+			handle(sqlite3_column_int64(find,0),
+						 sqlite3_column_int64(find,1));
+			continue;
+		case SQLITE_DONE:
+			return;
+		default:
+			db_check(res);
+			abort();
+		};
+	}
+
+			
