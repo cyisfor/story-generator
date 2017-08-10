@@ -201,4 +201,79 @@ void db_for_chapter(identifier story,
 	};
 }
 
-			
+void db_with_chapter_title(identifier story,
+													 identifier chapter,
+													 void (*handle)(const string)) {
+	DECLARE_STMT(find,"SELECT title FROM chapters WHERE story = ? AND chapter = ?");
+	sqlite3_bind_int64(find,1,story);
+	sqlite3_bind_int64(find,2,chapter);
+	int res = sqlite3_step(find);
+	if(res == SQLITE3_ROW) {
+		string title = {
+			.s = sqlite3_column_blob(find,0),
+			.l = sqlite3_column_bytes(find,0)
+		};
+		handle(title);
+	} else {
+		db_check(res);
+		string title = {};
+		handle(title);
+	}
+	sqlite3_reset(find);
+}
+
+void db_with_story_info(identifier story, void (*handle)(const string title,
+																												 const string description,
+																												 const string source)) {
+	DECLARE_STMT(find,"SELECT title,description,source FROM storier WHERE id = ?");
+	sqlite3_bind_int64(find,1,story);
+	string title = {};
+	string description = {};
+	string source = {};
+	int res = sqlite3_step(find);
+	if(res == SQLITE3_ROW) {
+		void CHECK(int col, string* str) {
+			if(!sqlite3_column_isnull(find,col)) { 
+				str->s = sqlite3_column_blob(find,col); 
+				str->l = sqlite3_column_bytes(find,col);
+			}
+		}
+		CHECK(0,&title);
+		CHECK(1,&description);
+		CHECK(2,&source);
+	} else {
+		db_check(res);
+	}
+	handle(title,description,source);
+}
+
+// should set to NULL if string is empty
+void db_set_chapter_title(const string title, identifier story, identifier chapter) {
+	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ?");
+	sqlite3_bind_blob(update,1,title.s,title.l,NULL);
+	sqlite3_bind_int64(update,2,story);
+	sqlite3_bind_int64(update,3,chapter);
+	db_once(update);
+}
+void db_set_story_info(identifier story,
+											 const string title,
+											 const string description,
+											 const string source) {
+	DECLARE_STMT(update,"UPDATE stories SET title = COALESCE(?,title),"
+							 "description = COALESCE(?,description),"
+							 "source = COALESCE(?,source) "
+							 "WHERE id = ?");
+	void one(int col, const string thing) {
+		if(name.l == 0 || name.s == NULL) {
+			sqlite3_bind_null(update,col);
+		} else {
+			sqlite3_bind_blob(update,col,thing.s,thing.l,NULL);
+		}
+		sqlite3_once(update);
+	}
+	one(1,title);
+	one(2,description);
+	one(3,source);
+	sqlite3_bind_int64(update,4,story);
+	db_once(update);
+}
