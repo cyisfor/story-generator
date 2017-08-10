@@ -2,6 +2,8 @@ CFLAGS+=-ggdb -fdiagnostics-color=always
 
 all: test_git ddate/ddate.o ddate-stub.o
 
+generderp: o/main.o o/git.o o/repo.o 
+
 test_git: o/test_git.o o/git.o o/repo.o 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS) -lgit2
 
