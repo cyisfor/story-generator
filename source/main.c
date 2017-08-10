@@ -51,7 +51,13 @@ int main(int argc, char *argv[])
 		git_for_commits(NULL, on_commit);
 	}
 
+	puts("processing...");
+
 	void for_story(const string location, int numchaps) {
+		printf("story %d ",numchaps);
+		STRPRINT(location);
+		fputc('\n',stdout);
+		
 		string dest = {
 			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
 		};
@@ -63,21 +69,16 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/")+locations.l,LITLEN("/contents.html\0"));
 		create_contents(location, dest, numchaps);
-	}
-	
-	puts("processing...");
 
-	for(i=0;i<nchap;++i) {
-		printf("chapter %d of %d (allstories)\n",i,nchap);
-		char htmlnamebuf[0x100] = "index.html";
-		string htmlname = {
-			.s = htmlnamebuf,
-			.l = LITSIZ("index.html")
-		};
-		const struct chapter* chapter = chapters + i;
-		printf("%p chapter %d of ",chapter->location.s, chapter->num);
-		STRPRINT(chapter->location);
-		fputc('\n',stdout);
+		void for_chapter(int chapter) {
+			char htmlnamebuf[0x100] = "index.html";
+			string htmlname = {
+				.s = htmlnamebuf,
+				.l = LITSIZ("index.html")
+			};
+			printf("chapter %d\n", chapter);
+			STRPRINT(chapter->location);
+			fputc('\n',stdout);
 		
 		if(chapter->num > 0) {
 			// XXX: index.html -> chapter2.html ehh...

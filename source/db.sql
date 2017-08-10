@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS commits (
 			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
 -- we can do this... right?
-CREATE UNIQUE INDEX IF NOT EXISTS bytimestamp ON commits(timestamp);
+CREATE UNIQUE INDEX IF NOT EXISTS committime ON commits(timestamp);
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
