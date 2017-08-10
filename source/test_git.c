@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
 		printf("timestamp %d\n",timestamp);
 		
-s		bool on_chapter(long int num,
+		bool on_chapter(long int num,
 										bool deleted,
 										const string location,
 										const string path) {
@@ -26,12 +26,13 @@ s		bool on_chapter(long int num,
 			return true;
 		}
 		git_for_chapters_changed(last,cur,on_chapter);
+		return true;
 	}
 
 	puts("chapter location name");
 
 	repo_discover_init(".",1);
-	git_for_commits(on_chapter);
+	git_for_commits(NULL, on_commit);
 
 	return 0;
 }
