@@ -36,6 +36,69 @@ void create_setup(void) {
 	}
 }
 
+int create_contents(string location, string dest) {
+	// meh, might as well count by walking the directory
+	DIR* d = opendir(location.s);
+	assert(d);
+	struct dirent* dp;
+	int chapters = 0;
+	while((dp = readdir(d))) {
+		size_t len = strlen(dp->d_name);
+		if(len < LITSIZ("chapter1.hish")) continue;
+		if(0!=memcmp(dp->d_name-5,".hish",5)) continue;
+		if(0!=memcmp(dp->d_name,LITLEN("chapter"))) continue;
+		++chapters;
+	}
+	closedir(d);
+
+	xmlDoc* doc = xmlCopyDoc(contents_template,1);
+	// root, doctype, html, text prefix, head
+	xmlNode* head = doc->children->next->children->next;
+	xmlNode* body = head->next->next;
+	xmlNode* find_toc(xmlNode* cur) {
+		if(cur->type == XML_ELEMENT_NODE) {
+			if(0==strcmp(cur->name,"ol")) {
+				if(xmlHasProp(cur,"id")) {
+					xmlChar* val = xmlGetPrep(cur,"id");
+					bool yes = 0 == strcmp(val,"toc");
+					xmlFree(val);
+					if(yes) {
+						return cur;
+					}
+				}
+			}
+		}
+
+		xmlNode* test = find_toc(cur->children);
+		if(test) return test;
+		return find_toc(cur->next);
+	}
+
+	xmlNode* toc = find_toc(body);
+	assert(toc);
+
+	for(i=0;i<chapters;++i) {
+		// find titles... somehow...
+		xmlNode* li = xmlNewNode(toc->ns,"li");
+		xmlNode* a = xmlNewNode(li->ns,"a");
+		xmlAddChild(li,a);
+		xmlAddChild(toc,li);
+		char buf[0x100] = "index.html";
+		if(i > 0) {
+			snprintf(buf,0x100,"chapter%d.html",i);
+		}
+		xmlSetProp(a,"href",buf);
+		snprintf(buf,0x100,"Chapter %d",i+1);
+		xmlNodeAddContent(a,buf);
+	}
+
+	char buf[0x100];
+	snprintf(buf,0x100,"%s/contents.html",location.s);
+	htmlSaveFileEnc(buf,doc,"UTF-8");
+	
+	return chapters;
+}
+
 void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
 	if(srcfd < 0) {

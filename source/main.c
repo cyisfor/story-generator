@@ -16,7 +16,7 @@ struct location {
 	char* s;
 	short l;
 	int totalchaps;
-}
+};
 
 struct location* locations = NULL;
 size_t nloc = 0;
