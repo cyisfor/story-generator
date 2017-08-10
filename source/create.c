@@ -27,16 +27,13 @@ const char defaultTemplate[] =
 
 void create_setup(void) {
 	chapter_template = htmlParseFile("template/chapter.html","UTF-8");
-	if(chapter_template) {
-		puts("weeee");
-		abort();
-		return;
+	if(!chapter_template) {
+		chapter_template = htmlReadMemory(LITLEN(defaultTemplate),
+																			"","utf-8",
+																			HTML_PARSE_RECOVER |
+																			HTML_PARSE_NOBLANKS |
+																			HTML_PARSE_COMPACT);
 	}
-	chapter_template = htmlReadMemory(LITLEN(defaultTemplate),
-																		"","utf-8",
-																		HTML_PARSE_RECOVER |
-																		HTML_PARSE_NOBLANKS |
-																		HTML_PARSE_COMPACT);
 }
 
 void create_chapter(string src, string dest) {
