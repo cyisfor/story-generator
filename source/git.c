@@ -70,7 +70,7 @@ void git_for_chapters(chapter_handler handle) {
 				assert(chapnum>0);
 				// got it!
 				// use 0-indexed chapters everywhere we can...
-				return handle(timestamp, chapnum-1, location, name);
+				if(!handle(timestamp, chapnum-1, location, name)) return false;
 			}
 			return true;
 		}
