@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h> // chdir, mkdir
 #include <stdio.h>
+#include <fcntl.h> // open, O_*
 
 static bool AISOLDER(struct stat a, struct stat b) {
 	if(a.st_mtime < b.st_mtime) return true;
@@ -198,6 +199,7 @@ int main(int argc, char *argv[])
 					STRPRINT(dest);
 					fputc('\n',stdout);
 		}
+		close(srcfd);
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
