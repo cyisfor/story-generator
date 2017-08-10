@@ -64,7 +64,7 @@ void git_for_chapters(chapter_handler handle) {
 				.l = (end+LITSIZ(".hish"))-(markup + LITSIZ("markup/"))
 			};
 			// use 0-indexed chapters everywhere we can...
-			if(!handle(timestamp, chapnum-1, location, name)) return -1;
+			if(!handle(timestamp, chapnum-1, location, strname)) return -1;
 		}
 
 		git_tree* tree;
