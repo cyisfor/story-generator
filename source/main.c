@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		int find_chapter(void* ignoredkey, struct chapter* value) {
 			if(chapnum < value->num) return -1;
 			if(chapnum == value->num)
-				if(internkey > value->location.s) // magic
+				if(internkey < value->location.s) // magic
 					return -1;
 				else if(internkey == value->location.s)
 					return 0;
