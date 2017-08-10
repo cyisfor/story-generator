@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		fputc('\n',stdout);
 		// lookup location
 		string* location = bsearch(location,locations,nloc,sizeof(*locations),
-															 &compare_loc);
+															 (void*)&compare_loc);
 		if(location == NULL) {
 			if(nloc+1 >= sloc) {
 				sloc += 0x80;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 			location->l = loc.l;
 			memcpy(location->s, loc.s, loc.l);
 			locations[nloc++] = location;
-			ensure0(mergesort(locations,nloc,sizeof(*locations),&compare_loc));
+			ensure0(mergesort(locations,nloc,sizeof(*locations),(void*)&compare_loc));
 		}
 
 		// now location->s is our interned string key, combine with chapnum to make a unique key
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		}
 
 		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
-																			&find_chapter);
+																			(void*)&find_chapter);
 		if(chapter == NULL) {
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 100) return false;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = location->s; // NOT loc.s
 			chapter->location.s = loc.l; // ...fine
-			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),&compare_chap));
+			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),(void*)&compare_chap));
 		}
 		
 		return true;
