@@ -197,18 +197,20 @@ void db_for_chapter(identifier story,
 							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
-	int res = sqlite3_step(find);
-	switch(res) {
-	case SQLITE_ROW:
-		handle(sqlite3_column_int64(find,0),
-					 sqlite3_column_int64(find,1));
-		continue;
-	case SQLITE_DONE:
-		return;
-	default:
-		db_check(res);
-		abort();
-	};
+	for(;;) {
+		int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_ROW:
+			handle(sqlite3_column_int64(find,0),
+						 sqlite3_column_int64(find,1));
+			continue;
+		case SQLITE_DONE:
+			return;
+		default:
+			db_check(res);
+			abort();
+		};
+	}
 }
 
 void db_with_chapter_title(identifier story,
@@ -244,7 +246,7 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
 			if(SQLITE_NULL == sqlite3_column_type(find,col)) { 
-				str->s = sqlite3_column_blob(find,col); 
+				str->s = (char*) sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
 			}
 		}
