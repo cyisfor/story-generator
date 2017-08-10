@@ -107,7 +107,7 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 		assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
 		const char* blob = sqlite3_column_blob(find, 0);
 		assert(blob != NULL);
-		ensure0(memcpy(commit, blob, sizeof(db_oid)));
+		memcpy(commit, blob, sizeof(db_oid));
 		*timestamp = sqlite3_column_int64(find,1);
 		sqlite3_reset(find);
 		return true;
@@ -118,8 +118,8 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 }
 
 identifier db_find_story(const string location) {
-	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO STORIES (location) VALUES (?)");
+	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
+	DECLARE_STMT(insert,"INSERT INTO stories (location) VALUES (?)");
 	
 	begin();
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
@@ -141,9 +141,9 @@ identifier db_find_story(const string location) {
 
 
 identifier db_find_story_derp(const string location, git_time_t timestamp) {
-	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO STORIES (location,timestamp) VALUES (?,?)");
-	DECLARE_STMT(update,"UPDATE STORIES SET timestamp = MAX(timestamp,?) WHERE id = ?");
+	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
+	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
+	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 	
 	begin();
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
