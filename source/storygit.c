@@ -87,7 +87,7 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 				.l = slash-path.s
 			};
 
-			return handle(chapnum, deleted, location, path);
+			return handle(chapnum, deleted, location, path) ? 0 : -1;
 		}
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {
