@@ -3,7 +3,7 @@
 #include "string.h"
 #include "repo.h"
 
-#include <stdlib.h> // mergesort, NULL
+#include <bsd/stdlib.h> // mergesort
 #include <string.h> // memcmp, memcpy
 #include <sys/stat.h>
 #include <unistd.h> // chdir, mkdir
