@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 		memcpy(dest.s,LITLEN("testnew/\0"));
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
-		dest.s[LITSIZ("testnew/") +  chapter->location.l] = '\0';
+		dest.s[LITSIZ("testnew/") +  locations[i].l] = '\0';
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
 		string hack = {
