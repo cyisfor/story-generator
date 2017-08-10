@@ -28,30 +28,10 @@ void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
 #include "db-sql.gen.c"
-	const char* err = NULL;
+	char* err = NULL;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 }
 
-void db_close_and_exit(void) {
-	size_t i;
-	for(i=0;i<nstmt;++i) {
-		db_check(sqlite3_finalize(stmts[i]));
-	}
-	db_check(sqlite3_close(db));
-	/* if we do any DB thing after this, it will die horribly.
-		 if we need to continue past this, and reopen the db, have to:
-		 1) preserve a copy of each SQL statement, before finalizing, via sqlite3_expanded_sql
-		 2) when reopening, iterate to nstmt, re-preparing each one, then freeing the SQL string
-		 3) change all use of statements to be stmts[stmt] where stmt is an index into stmts
-	*/
-	exit(0);
-}
-
-static void db_once(sqlite3_stmt* stmt) {
-	int res = sqlite3_step(stmt);
-	sqlite3_reset(stmt);
-	db_check(res);
-}
 
 /* since sqlite sucks, have to malloc copies of pointers to all statements,
 	 since the database won't close until we finalize them all. */
@@ -77,6 +57,28 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	DECLARE_STMT(stmt, sql);																 \
 	db_once(stmt);																					 \
 	}
+
+void db_close_and_exit(void) {
+	size_t i;
+	for(i=0;i<nstmt;++i) {
+		db_check(sqlite3_finalize(stmts[i]));
+	}
+	db_check(sqlite3_close(db));
+	/* if we do any DB thing after this, it will die horribly.
+		 if we need to continue past this, and reopen the db, have to:
+		 1) preserve a copy of each SQL statement, before finalizing, via sqlite3_expanded_sql
+		 2) when reopening, iterate to nstmt, re-preparing each one, then freeing the SQL string
+		 3) change all use of statements to be stmts[stmt] where stmt is an index into stmts
+	*/
+	exit(0);
+}
+
+static void db_once(sqlite3_stmt* stmt) {
+	int res = sqlite3_step(stmt);
+	sqlite3_reset(stmt);
+	db_check(res);
+}
+
 
 DECLARE_DB_FUNC(begin, "BEGIN");
 DECLARE_DB_FUNC(commit, "COMMIT");
