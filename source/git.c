@@ -1,4 +1,3 @@
-#define _GNU_SOURCE // memmem
 #include "git.h"
 #include "repo.h"
 
@@ -46,12 +45,12 @@ void git_for_chapters(chapter_handler handle) {
 			if(slash == NULL) return 0;
 			const char* markup = slash+1;
 			if(nlen-(markup-name) < sizeof("markup/chapterN.hish")-1) return 0;
-			if(0!=memmem(markup,LITLEN("markup/chapter"))) return 0;
+			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
 			const char* num = markup + sizeof("markup/chapter")-1;
 			char* end;
 			long int chapnum = strtol(num,&end,10);
 			if(nlen-(end-name) < sizeof(".hish")-1) return 0;
-			if(0!=memmem(end,LITLEN(".hish"))) return 0;
+			if(0!=memcmp(end,LITLEN(".hish"))) return 0;
 			// got it!
 
 			char* location = malloc(slash-name+1);
