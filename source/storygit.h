@@ -44,4 +44,4 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 															bool (*handle)(long int num,
 																						 bool deleted,
 																						 const string location,
-																						 const string path));
+																						 const string name));
