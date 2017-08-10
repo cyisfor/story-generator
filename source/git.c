@@ -26,58 +26,55 @@ void git_for_commits(bool (*handle)(git_commit*)) {
 	}
 }
 
-bool git_for_stories(git_tree* root,
-										 bool (*handle)(const char* location,
-																		const git_tree* contents)) {
-	size_t count = git_tree_entrycount(root);
-	size_t i;
-	for(i=0;i<count;++i) {
-		// stories are directories with "markup" folder in them.
-		const git_tree_entry * storyent = git_tree_entry_byindex(root,i);
-		if(git_tree_entry_type(storyent) != GIT_OBJ_TREE) continue;
-		git_tree* story=NULL;
-		repo_check(git_tree_lookup(&story, repo, git_tree_entry_id(storyent)));
-		const git_tree_entry* markup = git_tree_entry_byname(story, "markup");
-		if(markup == NULL) continue;
-		if(git_tree_entry_type(markup) != GIT_OBJ_TREE) continue;
-		git_tree* contents=NULL;
-		repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
-		if(!handle(git_tree_entry_name(storyent), contents)) return false;
-	}
-	return true;
-}
-
 void git_for_chapters(chapter_handler handle) {
+	git_tree* last = NULL;
 	bool on_commit(git_commit* commit) {
 		git_time_t timestamp = git_commit_time(commit);
-		bool on_story(const char* location,
-												 const git_tree* contents) {
-			size_t i=0;
-			size_t count = git_tree_entrycount(contents);
-			for(;i<count;++i) {
-				const git_tree_entry* chapter = git_tree_entry_byindex(contents,i);
-				const char* name = git_tree_entry_name(chapter);
-				size_t len = strlen(name);
-				if(len < sizeof("chapter1.hish")-1) continue;
-				if(0!=memcmp(name,LITLEN("chapter"))) continue;
-				// position at the number...
-				char* end = (char*)name + sizeof("chapter")-1;
-				// parse the number
-				long int chapnum = strtol(end, &end, 10);
-				// now end points to the .hish part... make sure of this
-				if(len-(end-name) < sizeof(".hish")-1) continue;
-				if(0!=memcmp(end,LITLEN(".hish"))) continue;
-				assert(chapnum>0);
-				// got it!
-				// use 0-indexed chapters everywhere we can...
-				if(!handle(timestamp, chapnum-1, location, name)) return false;
-			}
-			return true;
+		
+		int file_changed(const git_diff_delta *delta,
+										 float progress,
+										 void *payload) {
+			// can't see only directory changes and descend, have to parse >:(
+			// location/markup/chapterN.hish
+			const char* name = delta->new_file->path;
+			size_t nlen = strlen(name);
+			if(nlen < sizeof("a/markup/chapterN.hish")-1) return 0;
+			const char* slash = strchr(name,'/');
+			if(slash == NULL) return 0;
+			const char* markup = slash+1
+			if(nlen-(markup-name) < sizeof("markup/chapterN.hish")-1) return 0;
+			if(0!=memmem(markup,LITLEN("markup/chapter"))) return 0;
+			const char* num = markup + sizeof("markup/chapter")-1;
+			char* end;
+			long int chapnum = strtol(num,&end,10);
+			if(nlen-(end-name) < sizeof(".hish")-1) return 0;
+			if(0!=memmem(end,LITLEN(".hish"))) return 0;
+			// got it!
+
+			char* location = malloc(slash-name+1);
+			memcpy(location,name,slash-name);
+			location[slash-name] = '\0';
+			// XXX: upgrade location to a string object, so we don't have to strlen again.
+			name = markup + sizeof("markup/")-1;
+			// use 0-indexed chapters everywhere we can...
+			if(!handle(timestamp, chapnum-1, location, name)) return -1;
 		}
+
 		git_tree* tree;
 		repo_check(git_commit_tree(&tree,commit));
+		if(last != NULL) {
+			git_diff* diff=NULL;
+			git_diff_options_t opts =
+				GIT_DIFF_SKIP_BINARY_CHECK ||
+				GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS;
+			
+			repo_check(git_diff_tree_to_tree(&diff,repo,last,tree,&opts));
+			if(0 != git_diff_foreach(diff,
+															 file_changed,
+															 NULL, NULL, NULL)) return;
+		}
 
-		return git_for_stories(tree, on_story);
+		last = tree;
 	}
 	return git_for_commits(on_commit);
 }
