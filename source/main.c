@@ -44,9 +44,11 @@ static int compare_loc(const string* key, const string* test) {
 static int compare_chap(const struct chapter* key, const struct chapter* test) {
 	// arbitrary sort, go with quick algorithm: num, then interned string pointer
 	if(key->num < test->num) return -1;
-	if(key->num > test->num) return 1;
-	if(key->location.s > test->location.s) return -1;
-	if(key->location.s == test->location.s) return 0;
+	if(key->num == test->num) 
+		if(key->location.s < test->location.s)
+			return -1;
+		else if(key->location.s == test->location.s)
+			return 0;
 	return 1;
 }
 
