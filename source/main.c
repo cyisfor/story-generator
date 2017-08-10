@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 			.l = LITSIZ("index.html")
 		};
 		const struct chapter* chapter = chapters + i;
-		printf("chapter %d of ",chapter->num);
+		printf("%p chapter %d of ",chapter->location.s, chapter->num);
 		STRPRINT(chapter->location);
 		fputc('\n',stdout);
 		
