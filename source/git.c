@@ -79,7 +79,7 @@ void git_for_chapters(chapter_handler handle) {
 			repo_check(git_diff_tree_to_tree(&diff,repo,last,tree,&opts));
 			if(0 != git_diff_foreach(diff,
 															 file_changed,
-															 NULL, NULL, NULL)) return false;
+															 NULL, NULL, NULL, NULL)) return false;
 		}
 
 		last = tree;
