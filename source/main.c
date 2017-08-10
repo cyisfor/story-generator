@@ -50,7 +50,10 @@ int main(int argc, char *argv[])
 	git_oid last_commit;
 	git_time_t timestamp = 0;
 	if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
-		git_for_commits(&last_commit, on_commit);
+		void intrans(void) {
+			git_for_commits(&last_commit, on_commit);
+		}
+		db_transaction(intrans);
 	} else {
 		git_for_commits(NULL, on_commit);
 	}

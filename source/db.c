@@ -316,3 +316,9 @@ void db_set_story_info(identifier story,
 	sqlite3_bind_int64(update,4,story);
 	db_once(update);
 }
+
+void db_transaction(void (*run)(void)) {
+	begin();
+	run();
+	commit();
+}

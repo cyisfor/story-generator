@@ -60,3 +60,5 @@ void db_set_story_info(identifier story,
 											 const string title,
 											 const string description,
 											 const string source);
+
+void db_transaction(void (*run)(void));
