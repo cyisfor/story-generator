@@ -72,7 +72,7 @@ void git_for_chapters(chapter_handler handle) {
 			}
 		}
 		git_tree* tree;
-		repo_check(git_commit_tree(&tree,&commit));
+		repo_check(git_commit_tree(&tree,commit));
 
 		return git_for_stories(tree, on_story);
 	}
