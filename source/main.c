@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
 		db_saw_commit(timestamp, oid);
+		db_retransaction();
 		return ret;
 	}
 
@@ -49,14 +50,14 @@ int main(int argc, char *argv[])
 	// but not older than the last commit we dealt with
 	git_oid last_commit;
 	git_time_t timestamp = 0;
-	if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
-		void intrans(void) {
+	void intrans(void) {
+		if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
 			git_for_commits(&last_commit, on_commit);
+		}	else {
+			git_for_commits(NULL, on_commit);
 		}
-		db_transaction(intrans);
-	} else {
-		git_for_commits(NULL, on_commit);
 	}
+	db_transaction(intrans);
 
 	puts("processing...");
 
