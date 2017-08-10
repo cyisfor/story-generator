@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
 																			(void*)find_chapter);
 		if(chapter == NULL) {
-			printf("CREATE CHAPTER %d ",chapter->num);
+			printf("CREATE CHAPTER %d ",chapnum);
 			STRPRINT(chapter->location);
 			putchar('\n');
 			// if timestamp <= the earliest time we last went to...
