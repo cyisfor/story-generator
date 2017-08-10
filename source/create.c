@@ -2,6 +2,9 @@
 #include "htmlish.h"
 #include <libxml/HTMLparser.h> // input
 #include <libxml/HTMLtree.h> // output
+#include <fcntl.h> // open
+#include <unistd.h> // close
+#include <assert.h>
 
 xmlDoc* chapter_template = NULL;
 
