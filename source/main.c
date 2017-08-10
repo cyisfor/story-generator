@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
-				schap += 0x40;
+				schap += ((((nchap+1)<<1)>>8+1)<<8);
 				chapters = realloc(chapters,schap*sizeof(*chapters));
 			}
 			chapter = &chapters[nchap];
