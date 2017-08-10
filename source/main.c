@@ -9,6 +9,7 @@
 #include <unistd.h> // chdir, mkdir
 #include <stdio.h>
 #include <fcntl.h> // open, O_*
+#include <assert.h>
 
 static bool AISOLDER(struct stat a, struct stat b) {
 	if(a.st_mtime < b.st_mtime) return true;
