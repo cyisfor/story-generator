@@ -17,7 +17,8 @@ typedef int64_t identifier;
 
 identifier db_find_story(const string location, git_time_t timestamp);
 
-void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long int chapnum);
+void db_saw_chapter(bool deleted, identifier story,
+										git_time_t timestamp, identifier chapter);
 
 
 void db_for_story(void (*handle)(identifier story,
