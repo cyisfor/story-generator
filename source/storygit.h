@@ -12,28 +12,28 @@
 	 you can finish the traversal before finishing the calling function.
 */
 
-/* handle gets passed every commit starting from HEAD and going back. */
-void git_for_commits(bool (*handle)(git_commit*));
+/* git_for_commits
 
-/* chapter handler,
-	 timestamp: time of commit (same for all chapters in a commit)
-	 num: a chapter index starting from 0
-	 location: the "id" of the story, its subdirectory name
-	 name: the filename of the chapter chapter%d.hish
-
-	 note: location/name are no good outside the handler
+	 handle gets passed that commit's timestamp and tree,
+	 as well as a tree of the previous commit (which will be NULL for the first commit)
+	 commits are received in default order, which is ordered by time.
 */
+bool git_for_commits(bool (*handle)(git_time_t timestamp, git_tree* last, git_tree* cur));
 
-typedef bool (*chapter_handler)(git_time_t timestamp,
-																long int num,
-																const string location,
-																const string name);
+/*
+	git_for_chapters_changed
 
-/* git_for_chapters
-	 handle: passed info on each chapter in order of modification from newest to oldest
+	from can be NULL, which is a no-op
+	
+	chapters are defined as things matching LOCATION/markup/chapterN.hish
+	indexed from 1 because chapter0.hish looks dumb
+	every location passed will thus be a valid story, not just any directory.
+	handle gets passed the parsed number, the (not null terminated) location, and
+	the (null terminated) path found.
 
-	 the same timestamp for a given commit, it doesn't really distinguish between commits,
-	 treating it like a sequence of file changes. chapters can and will repeat!
+	note: this is the DIFF of the trees not the changes of each commit in between.
 */
-
-void git_for_chapters(chapter_handler handle);
+bool git_for_chapters_changed(git_tree* from, git_tree* to,
+															bool (*handle)(long int num,
+																						 const string location,
+																						 const string path)) {
