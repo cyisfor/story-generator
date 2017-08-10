@@ -9,16 +9,17 @@
 #define LITLEN(a) a,sizeof(a)-1
 
 void git_for_commits(bool (*handle)(git_commit*)) {
-	repo_check(git_revwalk_new(&swalker, repo));
+	git_revwalk* walker;
+	repo_check(git_revwalk_new(&walker, repo));
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
-	repo_check(git_revwalk_push_head(swalker));
+	repo_check(git_revwalk_push_head(walker));
 	git_oid oid;
 	git_commit commit;
 	for(;;) {
 		if(0!=git_revwalk_next(&oid, walker)) return NULL;
 		repo_check(git_commit_lookup(&commit, repo, &oid));
-		if(!handle(commit, payload)) break;
+		if(!handle(commit)) break;
 	}
 }
 
