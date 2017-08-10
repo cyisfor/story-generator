@@ -2,6 +2,7 @@
 #include "git.h"
 #include "string.h"
 #include "repo.h"
+#include "create.h"
 
 #include <bsd/stdlib.h> // mergesort
 #include <string.h> // memcmp, memcpy
@@ -60,6 +61,8 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
+
+	create_setup();
 
 	bool on_chapter(git_time_t timestamp,
 									long int chapnum,

@@ -55,7 +55,7 @@ void create_chapter(string src, string dest) {
 	STRPRINT(dest);
 	fputc('\n',stdout);
 
-	xmlDoc* doc = xmlCopyDoc(template,1);
+	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	htmlish(doc,srcfd);
 	close(srcfd);
 	htmlDocSaveFileEnc(dest.s,doc,"UTF-8");
