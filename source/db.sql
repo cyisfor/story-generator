@@ -9,7 +9,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS committime ON commits(timestamp);
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
-			 timestamp INTEGER NOT NULL);
+			 timestamp INTEGER NOT NULL,
+			 title TEXT,
+			 description TEXT,
+			 source TEXT);
 			 
 CREATE INDEX IF NOT EXISTS storytime ON stories(timestamp);
 
@@ -17,6 +20,7 @@ CREATE TABLE IF NOT EXISTS chapters (
 			 story INTEGER NOT NULL REFERENCES stories(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 			 chapter INTEGER NOT NULL,
 			 timestamp INTEGER NOT NULL,
+			 title TEXT,
 			 PRIMARY KEY(story,chapter)) WITHOUT ROWID;
 
 -- we can do this... right?

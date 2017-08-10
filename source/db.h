@@ -29,3 +29,31 @@ void db_for_chapter(identifier story,
 										void (*handle)(identifier chapter,
 																	 git_time_t timestamp),
 										git_time_t since);
+
+void db_with_chapter_title(identifier story,
+													 identifier chapter,
+													 void (*handle)(const string));
+
+void db_with_story_info(identifier story, void (*handle)(const string title,
+																												 const string description,
+																												 const string source));
+
+// for db_set_* empty strings will set the db value to NULL
+void db_set_story_info(identifier story,
+											 const string title,
+											 const string description,
+											 const string source);
+
+void db_set_chapter_title(const string title, identifier story, identifier chapter);
+
+void db_get_chapter_title(string* dest, identifier story, identifier chapter);
+void db_get_story_title(string* dest, identifier story);
+void db_get_story_description(string* dest, identifier story);
+void db_get_story_source(string* dest, identifier story);
+
+// should set to NULL if string is empty
+void db_set_chapter_title(const string title, identifier story, identifier chapter);
+void db_set_story_info(identifier story,
+											 const string title,
+											 const string description,
+											 const string source, 
