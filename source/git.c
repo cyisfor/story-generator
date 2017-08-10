@@ -37,6 +37,7 @@ bool git_for_stories(git_tree* root,
 		git_tree* story=NULL;
 		repo_check(git_tree_lookup(&story, repo, git_tree_entry_id(storyent)));
 		const git_tree_entry* markup = git_tree_entry_byname(story, "markup");
+		if(markup == NULL) continue;
 		if(git_tree_entry_type(markup) != GIT_OBJ_TREE) continue;
 		git_tree* contents=NULL;
 		repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
