@@ -95,6 +95,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlAddChild(head,a);
 	}
 	if(chapter < chapters-1) {
+		xmlNodeAddContent(links," ");
 		snprintf(buf,0x100,"chapter%d.html",chapter+2);
 		xmlNode* a = xmlNewNode(links->ns,"a");
 		xmlSetProp(a,"href",buf);

@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 																			(void*)find_chapter);
 		if(chapter == NULL) {
 			// if timestamp <= the earliest time we last went to...
-			if(nchap > 20) return false;
+			if(nchap > 2000) return false;
 			if(nchap+1 >= schap) {
 				schap = ((((nchap+1)>>7)+1)<<8);
 				chapters = realloc(chapters,schap*sizeof(*chapters));
