@@ -151,8 +151,11 @@ int main(int argc, char *argv[])
 			.l = LITSIZ("testnew/") + locations[i].l + LITSIZ("/contents.html\0")
 		};
 		dest.s = alloca(dest.l);
-		memcpy(dest.s,LITLEN("testnew/"));
+		memcpy(dest.s,LITLEN("testnew/\0"));
+		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
+		dest.s[LITSIZ("testnew/") +  chapter->location.l] = '\0';
+		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
 		string hack = {
 			.l = locations[i].l+1,
@@ -185,11 +188,8 @@ int main(int argc, char *argv[])
 			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 3
 		};
 		dest.s = alloca(dest.l);
-		memcpy(dest.s,LITLEN("testnew/\0"));
-		mkdir(dest.s,0755); // just in case
+		memcpy(dest.s,LITLEN("testnew/"));
 		memcpy(dest.s + LITSIZ("testnew/"), chapter->location.s, chapter->location.l);
-		dest.s[LITSIZ("testnew/") +  chapter->location.l] = '\0';
-		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("testnew/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("testnew/")+chapter->location.l+1,htmlname.s,htmlname.l);
 		dest.s[LITSIZ("testnew/")+chapter->location.l+1 + htmlname.l] = '\0';
