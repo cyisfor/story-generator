@@ -10,7 +10,9 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define LITLEN(a) a,sizeof(a)-1
+#define LITSIZ(a) (sizeof(a)-1)
+#define LITLEN(a) a,LITSIZ(a)
+
 
 void git_for_commits(bool (*handle)(git_commit*)) {
 	git_revwalk* walker;
@@ -40,24 +42,27 @@ void git_for_chapters(chapter_handler handle) {
 			// location/markup/chapterN.hish
 			const char* name = delta->new_file.path;
 			size_t nlen = strlen(name);
-			if(nlen < sizeof("a/markup/chapterN.hish")-1) return 0;
+			if(nlen < LITSIZ("a/markup/chapterN.hish")) return 0;
 			const char* slash = strchr(name,'/');
 			if(slash == NULL) return 0;
 			const char* markup = slash+1;
-			if(nlen-(markup-name) < sizeof("markup/chapterN.hish")-1) return 0;
+			if(nlen-(markup-name) < LITSIZ("markup/chapterN.hish")) return 0;
 			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
-			const char* num = markup + sizeof("markup/chapter")-1;
+			const char* num = markup + LITSIZ("markup/chapter");
 			char* end;
 			long int chapnum = strtol(num,&end,10);
-			if(nlen-(end-name) < sizeof(".hish")-1) return 0;
+			if(nlen-(end-name) < LITSIZ(".hish")) return 0;
 			if(0!=memcmp(end,LITLEN(".hish"))) return 0;
 			// got it!
 
-			char* location = malloc(slash-name+1);
-			memcpy(location,name,slash-name);
-			location[slash-name] = '\0';
-			// XXX: upgrade location to a string object, so we don't have to strlen again.
-			name = markup + sizeof("markup/")-1;
+			const string location = {
+				.s = name,
+				.l = slash-name
+			};
+			const string strname = {
+				.s = markup + LITSIZ("markup/"),
+				.l = (end+LITSIZ(".hish"))-(markup + LITSIZ("markup/"))
+			};
 			// use 0-indexed chapters everywhere we can...
 			if(!handle(timestamp, chapnum-1, location, name)) return -1;
 		}
