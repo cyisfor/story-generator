@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 									const string loc,
 									const string name) {
 
-		printf("saw %d of",chapnum);
+		printf("saw %d of ",chapnum);
 		STRPRINT(loc);
 		fputc('\n',stdout);
 		// lookup location
