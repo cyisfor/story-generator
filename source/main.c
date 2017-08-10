@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
 		void for_chapter(int chapter, git_time_t timestamp) {
 			char htmlnamebuf[0x100] = "index.html";
-			string htmlname = {
+			mstring htmlname = {
 				.s = htmlnamebuf,
 				.l = LITSIZ("index.html")
 			};
@@ -117,14 +117,14 @@ int main(int argc, char *argv[])
 			dest.s[storydest.l + htmlname.l] = '\0';
 			dest.l = storydest.l + htmlname.l + 1;
 
-			string src = {
+			mstring src = {
 				.l = location.l + LITSIZ("/markup\0")
 			};
 			src.s = alloca(src.l);
 			memcpy(src.s,location.s,location.l);
 			memcpy(src.s + location.l, LITLEN("/markup\0"));
 			
-			create_chapter(src,dest,chapter,numchaps);
+			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps);
 		}
 
 		db_for_chapters(story, for_chapter, timestamp);
