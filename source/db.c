@@ -101,7 +101,7 @@ void db_commit_commits(void) {
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE NOT committed ORDER BY timestamp DESC LIMIT 1");
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE committed ORDER BY timestamp DESC LIMIT 1");
 
 	int res = sqlite3_step(find);
 	switch(res) {
