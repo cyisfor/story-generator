@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include <stdbool.h>
 #include <git2/tree.h>
 #include <git2/commit.h>
@@ -18,12 +20,14 @@ void git_for_commits(bool (*handle)(git_commit*));
 	 num: a chapter index starting from 0
 	 location: the "id" of the story, its subdirectory name
 	 name: the filename of the chapter chapter%d.hish
+
+	 note: location/name are no good outside the handler
 */
 
 typedef bool (*chapter_handler)(git_time_t timestamp,
 																long int num,
-																const char* location,
-																const char* name);
+																const string location,
+																const string name);
 
 /* git_for_chapters
 	 handle: passed info on each chapter in order of modification from newest to oldest
