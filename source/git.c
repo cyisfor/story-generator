@@ -17,7 +17,7 @@ void git_for_commits(bool (*handle)(git_commit*)) {
 	git_oid oid;
 	git_commit* commit;
 	for(;;) {
-		if(0!=git_revwalk_next(&oid, walker)) return NULL;
+		if(0!=git_revwalk_next(&oid, walker)) return;
 		repo_check(git_commit_lookup(&commit, repo, &oid));
 		if(!handle(commit)) break;
 	}
@@ -29,16 +29,16 @@ bool git_for_stories(git_tree* root,
 	size_t count = git_tree_entrycount(root);
 	size_t i;
 	for(i=0;i<count;++i) {
-		const git_tree_entry * story = git_tree_entry_byindex(root,i);
 		// stories are directories with "markup" folder in them.
-		if(git_tree_entry_type(story) == GIT_OBJ_TREE) {
-			const git_tree_entry* markup = git_tree_entry_byname(story, "markup");
-			if(git_tree_entry_type(markup) != GIT_OBJ_TREE)
-				continue;
-			git_tree* contents=NULL;
-			repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
-			if(!handle(git_tree_entry_name(story))) return false;
-		}
+		const git_tree_entry * storyent = git_tree_entry_byindex(root,i);
+		if(git_tree_entry_type(storyent) != GIT_OBJ_TREE) continue;
+		git_tree* story=NULL;
+		repo_check(git_tree_lookup(&story, repo, git_tree_entry_id(storyent)));
+		const git_tree_entry* markup = git_tree_entry_byname(story, "markup");
+		if(git_tree_entry_type(markup) != GIT_OBJ_TREE) continue;
+		git_tree* contents=NULL;
+		repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
+		if(!handle(git_tree_entry_name(story))) return false;
 	}
 	return true;
 }
