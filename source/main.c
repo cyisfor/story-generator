@@ -2,7 +2,6 @@
 #include "repo.h"
 #include <stdlib.h> // mergesort, NULL
 
-
 string* locations = NULL;
 size_t nloc = 0;
 size_t sloc = 0;
@@ -19,7 +18,7 @@ size_t sloc = 0;
 
 
 struct chapter {
-	long int chapnum;
+	long int num;
 	string location;
 };
 
@@ -27,8 +26,22 @@ struct chapter* chapters = NULL;
 size_t nchap = 0;
 size_t schap = 0;
 
-int compare_loc(const string key, const string*test) {
-	
+static int compare_loc(const string* key, const string* test) {
+	// arbitrary sort, go with quick algorithm: size, then strcmp
+	if(key->l < test->l) return -1;
+	if(key->l == test->l)
+		return memcmp(key->s,test->s,key->l);
+	return 1;
+}
+
+static int compare_chap(const struct chapter* key, const struct chapter* test) {
+	// arbitrary sort, go with quick algorithm: num, then interned string pointer
+	if(key->num < test->num) return -1;
+	if(key->num > test->num) return 1;
+	if(key->location.s < test->location.s) return -1;
+	if(key->location.s == test->location.s) return 0;
+	return 1;
+}
 
 int main(int argc, char *argv[])
 {
@@ -38,22 +51,87 @@ int main(int argc, char *argv[])
 	repo_init(".");
 
 	bool on_chapter(git_time_t timestamp,
-									long int num,
-									string loc,
+									long int chapnum,
+									const string loc,
 									const char* name) {
 
 		// lookup location
-		const char** location = bsearch(location,locations,nloc,sizeof(*locations),
-																		compare_loc
-		
-		if(nchap > 100) return false;
+		string* location = bsearch(location,locations,nloc,sizeof(*locations),
+															 &compare_loc);
+		if(location == NULL) {
+			if(nloc+1 >= sloc) {
+				sloc += 0x80;
+				locations = realloc(locations,sizeof(*locations)*sloc);
+			}
+			location = malloc(sizeof(string));
+			location->s = malloc(loc.l);
+			location->l = loc.l;
+			memcpy(location->s, loc.s, loc.l);
+			locations[nloc++] = location;
+			ensure0(mergesort(locations,nloc,sizeof(*locations),&compare_loc));
+		}
+
+		// now location->s is our interned string key, combine with chapnum to make a unique key
+		// note: this algorithm will process all chapter 1's, then all chapter 2's etc
+
+		int find_chapter(void* ignoredkey, struct chapter* value) {
+			if(chapnum < value->num) return -1;
+			if(chapnum == value->num)
+				if(location->s < value->location.s) // magic
+					return -1;
+				else if(location->s == value->location.s)
+					return 0;
+			return 1;
+		}
+
+		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
+																			&find_chapter);
+		if(chapter == NULL) {
+			// if timestamp <= the earliest time we last went to...
+			if(nchap > 100) return false;
+			if(nchap+1 >= schap) {
+				schap += 0x40;
+				chapters = realloc(chapters,schap*sizeof(*chapters));
+			}
+			chapter = &chapters[nchap++];
+			chapter->num = chapnum;
+			chapter->location.s = location->s; // NOT loc.s
+			chapter->location.s = loc.l; // ...fine
+			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),&compare_chap));
+		}
 		
 		return true;
-
 	}
-		char htmlname[0x100];
-		snprintf(htmlname,0x100,"chapter%d.html"
-		char* dest = build_path(NULL, "..", "html", location, htmlname);
+
+	size_t i;
+	for(i=0;i<nchap;++i) {
+		printf("chapter %d of %d (allstories)\n",i,nchap);
+		char htmlnamebuf[0x100] = "index.html";
+		string htmlname = {
+			.s = htmlnamebuf,
+			.l = LITSIZ("index.html")
+		}
+		const struct chapter* chapter = chapters + i;
+		printf("chapter %d of ",chapter->num);
+		fwrite(chapter->location.s,chapter->locaton.l,1,stdout);
+		fputc('\n',stdout);
+		if(chapter->num > 0) {
+			// XXX: index.html -> chapter2.html ehh...
+			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapters[i].num+1);
+		}
+		string dest = {
+			.l = LITSIZ("../html/") + chapter->location.l + LITSIZ("/") + htmlname.l
+		};
+		dest.s = malloc(dest.l);
+		memcpy(dest.s,LITLEN("../html/"));
+		mkdir(dest.s,0755); // just in case
+		memcpy(dest.s + LITSIZ("../html/"), chapter->location.s, chapter->location.l);
+		mkdir(dest.s,0755); // just in case
+		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
+		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
+		puts("then create uh");
+		puts(dest);
+	}
 
 	repo_discover_in
 	return 0;
