@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 																			(void*)find_chapter);
 		if(chapter == NULL) {
 			// if timestamp <= the earliest time we last went to...
-			if(nchap > 100) return false;
+			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
 				schap += 0x40;
 				chapters = realloc(chapters,schap*sizeof(*chapters));
@@ -115,10 +115,9 @@ int main(int argc, char *argv[])
 		return true;
 	}
 
-	printf("%d locations found\n",nloc);
-
 	puts("searching...");
 	git_for_chapters(on_chapter);
+	printf("%d locations found\n",nloc);
 	
 	puts("processing...");
 
