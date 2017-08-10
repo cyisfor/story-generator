@@ -1,6 +1,6 @@
 CFLAGS+=-ggdb -fdiagnostics-color=always
 
-all: test_git ddate/ddate.o ddate-stub.o
+all: generderp test_git ddate/ddate.o ddate-stub.o
 
 generderp: o/main.o o/git.o o/repo.o 
 
