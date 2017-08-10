@@ -21,5 +21,6 @@ typedef struct string {
 #define LITSIZ(a) (sizeof(a)-1)
 #define LITLEN(a) a,LITSIZ(a)
 
+#define CSTR(a) *((struct string*)&a)
 
 #endif /* _STRING_H_ */

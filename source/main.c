@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		STRPRINT(location);
 		fputc('\n',stdout);
 		
-		string dest = {
+		mstring dest = {
 			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
 		};
 		size_t dspace = dest.l;
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			}
 			db_with_chapter_title(story,chapter,on_title);
 		}
-		create_contents(location, dest, numchaps, with_title);
+		create_contents(location, CSTR(dest), numchaps, with_title);
 
 		void for_chapter(int chapter, git_time_t timestamp) {
 			char htmlnamebuf[0x100] = "index.html";

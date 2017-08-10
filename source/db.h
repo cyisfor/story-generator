@@ -15,7 +15,8 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp);
 
 typedef int64_t identifier;
 
-identifier db_find_story(const string location, git_time_t timestamp);
+identifier db_find_story(const string location);
+identifier db_find_story_derp(const string location, git_time_t timestamp);
 
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter);
