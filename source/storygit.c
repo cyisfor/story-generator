@@ -14,8 +14,7 @@
 #define LITSIZ(a) (sizeof(a)-1)
 #define LITLEN(a) a,LITSIZ(a)
 
-
-bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
+bool git_for_commits(const git_oid* until, // db_last_seen_commit
 										 bool (*handle)(db_oid commit,
 																		git_time_t timestamp,
 																		git_tree* last,
@@ -28,7 +27,7 @@ bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
 	repo_check(git_revwalk_push_head(walker));
 
 	if(until) {
-		repo_check(git_revwalk_hide(walker,&until));
+		repo_check(git_revwalk_hide(walker,until));
 	}
 	
 	git_commit* commit = NULL;
@@ -36,7 +35,7 @@ bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
 	git_tree* cur = NULL;
 	db_oid commit_oid;
 	for(;;) {
-		if(0!=git_revwalk_next(&last_commit, walker)) return true;
+		if(0!=git_revwalk_next(&commit_oid, walker)) return true;
 		//printf("rev oid %s\n",git_oid_tostr_s(&oid));
 		repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 		git_time_t timestamp = git_commit_time(commit);
