@@ -1,4 +1,4 @@
 typedef struct string {
 	char* s;
-	uint16_t l;
+	unsigned short l;
 } string;
