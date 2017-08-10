@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 		char* internkey;
 		if(testloc == NULL) {
 			if((nloc+1)<<1 >= sloc) {
-				sloc += ((((nloc+1)<<1)>>8+1)<<8);
+				sloc = ((((nloc+1)<<1)>>8+1)<<8);
 				locations = realloc(locations,sizeof(*locations)*sloc);
 			}
 			locations[nloc].s = malloc(loc.l);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
-				schap += ((((nchap+1)<<1)>>8+1)<<8);
+				schap = ((((nchap+1)<<1)>>8+1)<<8);
 				chapters = realloc(chapters,schap*sizeof(*chapters));
 			}
 			chapter = &chapters[nchap];
