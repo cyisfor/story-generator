@@ -175,12 +175,17 @@ int main(int argc, char *argv[])
 		memcpy(src.s,chapter->location.s,chapter->location.l);
 		memcpy(src.s + chapter->location.l,LITLEN("/markup/"));
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
-		
+		free(name.s);
+		free(htmlname.s);
 		fputs("then create uh ",stdout);
 		STRPRINT(src);
 		fputs(" -> ",stdout);
 		STRPRINT(dest);
 		fputc('\n',stdout);
+
+		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
+			 chapters are done. */
+
 	}
 
 	return 0;
