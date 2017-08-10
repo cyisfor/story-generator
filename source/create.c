@@ -45,7 +45,10 @@ void create_setup(void) {
 
 int create_contents(string location, string dest) {
 	// meh, might as well count by walking the directory
-	DIR* d = opendir(location.s);
+	char markup[0x100];
+	memcpy(markup,location.s,location.l);
+	memcpy(markup + location.l, LITLEN("/markup"));
+	DIR* d = opendir(markup);
 	assert(d);
 	struct dirent* dp;
 	int chapters = 0;
