@@ -40,49 +40,72 @@ bool git_for_commits(bool (*handle)(git_time_t timestamp, git_tree* last, git_tr
 		repo_check(git_commit_tree(&cur,commit));
 		if(!handle(timestamp, last, cur)) return false;
 		last = cur;
-		db_saw_commit(timestamp, DB_OID(last_commit));
+		// make this optional so we can parse w/o eliminating commits
+		//db_saw_commit(timestamp, DB_OID(last_commit));
 	}
 }
 
 // note: this is the DIFF not the changes of each commit in between.
 bool git_for_chapters_changed(git_tree* from, git_tree* to,
 															bool (*handle)(long int num,
+																						 bool deleted,
 																						 const string location,
 																						 const string name)) {
+	if(from == NULL) return true;
+	assert(to != NULL);
 	int file_changed(const git_diff_delta *delta,
 									 float progress,
 									 void *payload) {
 		// can't see only directory changes and descend, have to parse >:(
-		// location/markup/chapterN.hish
-		const char* name = delta->new_file.path;
-		size_t nlen = strlen(name);
-		if(nlen < LITSIZ("a/markup/chapterN.hish")) return 0;
-		const char* slash = strchr(name,'/');
-		if(slash == NULL) return 0;
-		const char* markup = slash+1;
-		if(nlen-(markup-name) < LITSIZ("markup/chapterN.hish")) return 0;
-		if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
-		const char* num = markup + LITSIZ("markup/chapter");
-		char* end;
-		long int chapnum = strtol(num,&end,10);
-		if(nlen-(end-name) < LITSIZ(".hish")) return 0;
-		if(0!=memcmp(end,LITLEN(".hish"))) return 0;
-		// got it!
+		/* location/markup/chapterN.hish */
+		
+		/* either deleted, pass old_file, true
+			 renamed, old_file, true, new_file, false
+			 otherwise, new_file, false */
+		bool one_file(const char* path, bool deleted) {
+			const string path = {
+				.s = delta->new_file.path,
+				.l = strlen(delta->new_file.path)
+			};
+			if(path.l < LITSIZ("a/markup/chapterN.hish")) return 0;
+			const char* slash = strchr(path.s,'/');
+			if(slash == NULL) return 0;
+			const char* markup = slash+1;
+			if(nlen-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return 0;
+			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
+			const char* num = markup + LITSIZ("markup/chapter");
+			char* end;
+			long int chapnum = strtol(num,&end,10);
+			if(path.l-(end-path.s) < LITSIZ(".hish")) return 0;
+			if(0!=memcmp(end,LITLEN(".hish"))) return 0;
+			// got it!
 
-		const string location = {
-			.s = name,
-			.l = slash-name
+			const string location = {
+				.s = path.s,
+				.l = slash-path.s
+			};
+
+			return handle(timestamp, chapnum, location, path);
+		}
+		// XXX: todo: handle if unreadable
+		switch(delta->status) {
+		case GIT_DELTA_DELETED:
+			return one_file(delta->old_file,true);
+		case GIT_DELTA_RENAMED:
+			{ bool a = one_file(delta->old_file,true);
+				if(!a) return false;
+			}
+			// fall through
+		case GIT_DELTA_ADDED:
+		case GIT_DELTA_MODIFIED:
+		case GIT_DELTA_COPIED:
+			// note: with copied, the old file didn't change, so disregard it.
+			return one_file(delta->new_file,false);
+		default:
+			error(23,23,"bad delta status %d",delta->status);
 		};
-		const string strname = {
-			.s = markup + LITSIZ("markup/"),
-			.l = (end+LITSIZ(".hish"))-(markup + LITSIZ("markup/"))
-		};
-		// use 0-indexed chapters everywhere we can...
-		if(!handle(timestamp, chapnum-1, location, strname)) return -1;
-		return 0;
 	}
 
-	if(last == NULL) return true;
 	git_diff* diff=NULL;
 	git_diff_options opts = {
 		.version = GIT_DIFF_OPTIONS_VERSION,
@@ -94,11 +117,9 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 		GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS
 	};
 
-	repo_check(git_diff_tree_to_tree(&diff,repo,last,tree,&opts));
+	repo_check(git_diff_tree_to_tree(&diff,repo,from,to,&opts));
 	if(0 == git_diff_foreach(diff,
 													 file_changed,
 													 NULL, NULL, NULL, NULL)) return true;
 	return false;
 }
-
-
