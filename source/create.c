@@ -36,7 +36,7 @@ void create_setup(void) {
 	}
 }
 
-void create_chapter(string src, string dest) {
+void create_chapter(string src, string dest, bool isnext) {
 	int srcfd = open(src.s,O_RDONLY);
 	assert(srcfd >= 0);
 	struct stat srcinfo;
