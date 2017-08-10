@@ -11,3 +11,6 @@ ddate/ddate.o:
 
 ddate-stub.o: source/ddate-stub.c
 	gcc $(CFLAGS) -Iddate -c -o $@ $^
+
+o:
+	mkdir $@
