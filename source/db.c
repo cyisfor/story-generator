@@ -1,8 +1,10 @@
 #include "db.h"
+#include "ensure.h"
 
 #include <sqlite3.h>
 #include <error.h>
 #include <assert.h>
+#include <string.h> // memcpy
 
 
 sqlite3* db = NULL;
@@ -129,7 +131,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		return id;
 	} else {
 		sqlite3_reset(find);
-		sqlite3_bind_blob(insert,1,location.s, location.l);
+		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
 		identifier id = sqlite3_last_insert_rowid(db);
@@ -138,7 +140,8 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	}
 }
 
-void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long int chapnum) {
+void db_saw_chapter(bool deleted, identifier story,
+										git_time_t timestamp, identifier chapter) {
 	if(deleted) {
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
