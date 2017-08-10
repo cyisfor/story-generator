@@ -39,8 +39,9 @@ int main(int argc, char *argv[])
 			db_saw_chapter(deleted,db_find_story(loc),timestamp,chapnum);
 			return true;
 		}
-		git_for_chapters_changed(last,cur,on_chapter);
+		bool ret = git_for_chapters_changed(last,cur,on_chapter);
 		db_saw_commit(timestamp, oid);
+		return ret;
 	}
 
 	puts("searching...");

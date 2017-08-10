@@ -42,7 +42,7 @@ void db_open(const char* filename) {
 sqlite3_stmt** stmts = NULL;
 size_t nstmt = 0;
 static void add_stmt(sqlite3_stmt* stmt) {
-	stmts = realloc(stmts,++nstmt);
+	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
 	stmts[nstmt-1] = stmt;
 }
 
