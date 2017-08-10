@@ -37,7 +37,7 @@ void git_for_chapters(chapter_handler handle) {
 										 void *payload) {
 			// can't see only directory changes and descend, have to parse >:(
 			// location/markup/chapterN.hish
-			const char* name = delta->new_file->path;
+			const char* name = delta->new_file.path;
 			size_t nlen = strlen(name);
 			if(nlen < sizeof("a/markup/chapterN.hish")-1) return 0;
 			const char* slash = strchr(name,'/');
