@@ -15,7 +15,7 @@ void git_for_commits(bool (*handle)(git_commit*)) {
 	// XXX: todo revparse HEAD~10 etc
 	repo_check(git_revwalk_push_head(walker));
 	git_oid oid;
-	git_commit commit;
+	git_commit* commit;
 	for(;;) {
 		if(0!=git_revwalk_next(&oid, walker)) return NULL;
 		repo_check(git_commit_lookup(&commit, repo, &oid));
