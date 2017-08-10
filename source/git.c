@@ -38,7 +38,7 @@ bool git_for_stories(git_tree* root,
 		if(git_tree_entry_type(markup) != GIT_OBJ_TREE) continue;
 		git_tree* contents=NULL;
 		repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
-		if(!handle(git_tree_entry_name(storyent))) return false;
+		if(!handle(git_tree_entry_name(storyent), contents)) return false;
 	}
 	return true;
 }
