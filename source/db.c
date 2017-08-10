@@ -138,22 +138,12 @@ void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long i
 		sqlite3_bind_int64(delete,2,chapnum);
 		db_once(delete);
 	} else {
-		// need a programmatic upsert, because timestamp = max(timestamp,?)
-		// could insert or replace select ...max(...)...
-		
-		DECLARE_STMT(update,"UPDATE STORIES SET timestamp = MAX(timestamp,?) WHERE story = ? AND chapter = ?");
-		begin();
-		sqlite3_bind_int64(update,1,timestamp);
-		sqlite3_bind_int64(update,2,story);
-		sqlite3_bind_int64(update,3,chapter);
-		db_once(update);
-		if(0 == sqlite3_changes(db)) {
-			DECLARE_STMT(insert,"INSERT INTO chapters (story,chapter,timestamp) VALUES (?,?,?)");
-			sqlite3_bind_int64(insert,1,story);
-			sqlite3_bind_int64(insert,2,chapnum);
-			sqlite3_bind_int64(insert,3,timestamp);
-			db_once(insert);
-		}
-		commit();
+		DECLARE_STMT(insert,"INSERT OR REPLACE INTO chapters (story,chapter,timestamp) \n"
+								 "SELECT story,chapter,MAX(timestamp,?) FROM chapters\n"
+								 "WHERE story = ? AND chapter = ?");
+		sqlite3_bind_int64(insert,1,timestamp);
+		sqlite3_bind_int64(insert,2,story);
+		sqlite3_bind_int64(insert,3,chapter);
+		db_once(insert);
 	}
 }
