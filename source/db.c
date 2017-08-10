@@ -196,7 +196,8 @@ void db_for_chapter(identifier story,
 										git_time_t since) {
 	DECLARE_STMT(find,
 							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
-	sqlite3_bind_int64(find,since);
+	sqlite3_bind_int64(find,1,story);
+	sqlite3_bind_int64(find,2,since);
 	int res = sqlite3_step(find);
 	switch(res) {
 	case SQLITE_ROW:
@@ -218,8 +219,8 @@ void db_with_chapter_title(identifier story,
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);
 	int res = sqlite3_step(find);
-	if(res == SQLITE3_ROW) {
-		string title = {
+	if(res == SQLITE_ROW) {
+		const string title = {
 			.s = sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};
@@ -241,9 +242,9 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 	string description = {};
 	string source = {};
 	int res = sqlite3_step(find);
-	if(res == SQLITE3_ROW) {
+	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
-			if(!sqlite3_column_isnull(find,col)) { 
+			if(SQLITE_NULL == sqlite3_column_type(find,col)) { 
 				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
 			}
