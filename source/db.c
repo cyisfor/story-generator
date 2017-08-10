@@ -126,7 +126,7 @@ identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location) VALUES (?)");
 	
-	begin();
+	void intrans(void) {
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -142,6 +142,8 @@ identifier db_find_story(const string location) {
 		commit();
 		return id;
 	}
+	}
+	db_transaction(intrans);
 }
 
 
@@ -150,7 +152,7 @@ identifier db_find_story_derp(const string location, git_time_t timestamp) {
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 	
-	begin();
+	void intrans(void) {
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -170,6 +172,8 @@ identifier db_find_story_derp(const string location, git_time_t timestamp) {
 		commit();
 		return id;
 	}
+	}
+	db_transaction(intrans);
 }
 
 void db_saw_chapter(bool deleted, identifier story,
