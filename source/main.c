@@ -86,10 +86,15 @@ int main(int argc, char *argv[])
 		// now location->s is our interned string key, combine with chapnum to make a unique key
 		// note: this algorithm will process all chapter 1's, then all chapter 2's etc
 
+		/* incidentally, since malloc always returns increasing values if nothing is freed,
+			 the pointer order interned strings will be the order of most recently seen key.
+			 a d b a a a c a b d -> a d b c
+		*/
+
 		int find_chapter(void* ignoredkey, struct chapter* value) {
 			if(chapnum < value->num) return -1;
 			if(chapnum == value->num)
-				if(internkey < value->location.s) // magic
+				if(internkey > value->location.s) // magic
 					return -1;
 				else if(internkey == value->location.s)
 					return 0;
