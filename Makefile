@@ -31,8 +31,7 @@ source/db-sql.gen.c: source/db.sql make-sql
 	./make-sql <$< >$@.temp
 	mv $@.temp $@
 
-N=make-sql
-make-sql: $O
+make-sql: o/make-sql.o
 	$(LINK)
 
 ddate/ddate.o:
@@ -44,7 +43,7 @@ o:
 clean:
 	rm -rf o generderp
 
-htmlish/libhtmlish.a:
+htmlish/libhtmlish.a: always
 	$(MAKE) -C htmlish libhtmlish.a
 
-.PHONY: htmlish/libhtmlish.a
+.PHONY: always
