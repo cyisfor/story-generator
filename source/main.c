@@ -70,9 +70,6 @@ int main(int argc, char *argv[])
 															 (void*)compare_loc);
 		char* internkey;
 		if(testloc == NULL) {
-			printf("CREATE LOCATION ");
-			STRPRINT(loc);
-			putchar('\n');
 			if((nloc+1)<<1 >= sloc) {
 				sloc = ((((nloc+1)>>7)+1)<<8);
 				locations = realloc(locations,sizeof(*locations)*sloc);
@@ -81,6 +78,9 @@ int main(int argc, char *argv[])
 			internkey = locations[nloc].s;
 			locations[nloc].l = loc.l;
 			memcpy(locations[nloc].s, loc.s, loc.l);
+			printf("CREATE LOCATION %p ",locations[nloc].s);
+			STRPRINT(loc);
+			putchar('\n');
 			ensure0(mergesort(locations,++nloc,sizeof(*locations),(void*)compare_loc));
 		} else {
 			internkey = testloc->s;
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
-			printf("CREATE CHAPTER %d ",chapter->num);
+			printf("CREATE CHAPTER %d %p ",chapter->num, internkey);
 			STRPRINT(chapter->location);
 			putchar('\n');
 
