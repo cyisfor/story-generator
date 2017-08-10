@@ -1,8 +1,8 @@
 #include "ensure.h"
 #include "git.h"
 #include "string.h"
-
 #include "repo.h"
+
 #include <stdlib.h> // mergesort, NULL
 #include <string.h> // memcmp, memcpy
 #include <sys/stat.h>
