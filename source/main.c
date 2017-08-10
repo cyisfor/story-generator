@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 																			(void*)find_chapter);
 		if(chapter == NULL) {
 			// if timestamp <= the earliest time we last went to...
-			if(nchap > 20000) return false;
+			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
 				schap = ((((nchap+1)>>7)+1)<<8);
 				chapters = realloc(chapters,schap*sizeof(*chapters));
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 		string dest = {
 			.l = LITSIZ("testnew/") + locations[i].l + LITSIZ("/contents.html\0")
 		};
+		dest.s = alloca(dest.l);
 		memcpy(dest.s,LITLEN("testnew/"));
 		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
 		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
