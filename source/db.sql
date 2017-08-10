@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
+			 committed BOOL NOT NULL DEFAULT 0,
 			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
 -- we can do this... right?

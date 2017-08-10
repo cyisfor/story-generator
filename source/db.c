@@ -95,8 +95,13 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	db_once(insert);
 }
 
+void db_commit_commits(void) {
+	DECLARE_STMT(go,"UPDATE commits SET committed = 1 WHERE NOT committed");
+	db_once(go);
+}
+
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits ORDER BY timestamp DESC LIMIT 1");
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE NOT committed ORDER BY timestamp DESC LIMIT 1");
 
 	int res = sqlite3_step(find);
 	switch(res) {
