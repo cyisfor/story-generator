@@ -1,5 +1,10 @@
 #include "db.h"
 
+#include <sqlite3.h>
+#include <error.h>
+#include <assert.h>
+
+
 sqlite3* db = NULL;
 
 static int db_check(int res) {
@@ -14,7 +19,7 @@ static int db_check(int res) {
 		error(23,0,"no db %d %s",res, sqlite3_errstr(res));
 	}
 	error(42,0,"db error %d(%s) %s",
-				res,sqlite_errstr(res),
+				res,sqlite3_errstr(res),
 				sqlite3_errmsg(db));
 	return res;
 }
