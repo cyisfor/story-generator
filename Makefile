@@ -1,4 +1,4 @@
-CFLAGS+=-ggdb -fdiagnostics-colors=always
+CFLAGS+=-ggdb -fdiagnostics-color=always
 
 all: test_git ddate/ddate.o ddate-stub.o
 
