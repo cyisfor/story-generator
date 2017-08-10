@@ -66,10 +66,16 @@ void git_for_chapters(chapter_handler handle) {
 		repo_check(git_commit_tree(&tree,commit));
 		if(last != NULL) {
 			git_diff* diff=NULL;
-			const git_diff_option_t opts =
+			git_diff_options opts = {
+				.version = GIT_DIFF_OPTIONS_VERSION,
+				.pathspec = {NULL,0}, // all files
+				.ignore_submodules = GIT_SUBMODULE_IGNORE_ALL,
+				.context_lines = 0,
+				.flags =
 				GIT_DIFF_SKIP_BINARY_CHECK ||
-				GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS;
-			
+				GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS
+			};
+
 			repo_check(git_diff_tree_to_tree(&diff,repo,last,tree,&opts));
 			if(0 != git_diff_foreach(diff,
 															 file_changed,
