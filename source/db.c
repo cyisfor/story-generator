@@ -239,12 +239,12 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 																												 const string source)) {
 	DECLARE_STMT(find,"SELECT title,description,source FROM storier WHERE id = ?");
 	sqlite3_bind_int64(find,1,story);
-	cstring title = {};
-	cstring description = {};
-	cstring source = {};
+	string title = {};
+	string description = {};
+	string source = {};
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
-		void CHECK(int col, cstring* str) {
+		void CHECK(int col, string* str) {
 			if(SQLITE_NULL == sqlite3_column_type(find,col)) { 
 				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);

@@ -3,7 +3,7 @@
 
 #include <stdlib.h> // size_t
 
-typedef struct string {
+typedef struct mstring {
 	char* s;
 	size_t l;
 } string;
@@ -11,10 +11,10 @@ typedef struct string {
 /* because C sucks, const string str; str.s has type char* not const char*
 	 and there's no way to conditionally make it const char*
  */
-typedef struct cstring {
+typedef struct string {
 	const char* s;
 	size_t l;
-} string;
+} cstring;
 
 #define STRPRINT(str) fwrite((str).s,(str).l,1,stdout);
 
