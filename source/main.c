@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 															 (void*)compare_loc);
 		char* internkey;
 		if(testloc == NULL) {
-			if(2*(nloc+1) >= sloc) {
-				sloc += 0x80;
+			if((nloc+1)<<1 >= sloc) {
+				sloc += ((((nloc+1)<<1)>>8+1)<<8);
 				locations = realloc(locations,sizeof(*locations)*sloc);
 			}
 			locations[nloc].s = malloc(loc.l);
