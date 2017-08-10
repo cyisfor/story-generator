@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
 		return true;
 	}
 
+	printf("%d locations found\n",nloc);
+
 	puts("searching...");
 	git_for_chapters(on_chapter);
 	
