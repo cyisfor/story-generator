@@ -51,7 +51,7 @@ void git_for_chapters(chapter_handler handle) {
 			size_t i=0;
 			size_t count = git_tree_entrycount(contents);
 			for(;i<count;++i) {
-				const git_tree_entry* chapter = git_tree_entry_byindex(root,i);
+				const git_tree_entry* chapter = git_tree_entry_byindex(contents,i);
 				const char* name = git_tree_entry_name(chapter);
 				size_t len = strlen(name);
 				if(len < sizeof("chapter1.hish")) continue;
