@@ -35,8 +35,7 @@ void create_setup(void) {
 																			HTML_PARSE_COMPACT);
 	}
 }
-
-void create_chapter(string src, string dest, bool isnext) {
+void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
 	assert(srcfd >= 0);
 	struct stat srcinfo;
@@ -68,5 +67,39 @@ void create_chapter(string src, string dest, bool isnext) {
 		xmlUnlinkNode(content);
 		xmlFreeNode(content);
 	}
+
+	// doctype, html, head, body, ...
+	xmlNode* head = doc->children->next->children;
+	xmlNode* links = head->next->children;
+	while(links->next) links = links->next;
+
+	char buf[0x100] = "index.html";
+	if(chapter > 0) {
+		if(chapter > 1) {
+			snprintf(buf,0x100,"chapter%d.html",chapter);
+			//otherwise just use index.html
+		}
+
+		xmlNode* a = xmlNewNode(links->ns,"a");
+		xmlSetProp(a,"href",buf);
+		xmlNodeAddContent(a,"Prev");
+		xmlAddChild(links,a);
+		a = xmlNewNode(body->ns,"link");
+		xmlSetProp(a,"rel","prev");
+		xmlSetProp(a,"href",buf);
+		xmlAddChild(head,a);
+	}
+	if(chapter < chapters-1) {
+		snprintf(buf,0x100,"chapter%d.html",chapter+2);
+		xmlNode* a = xmlNewNode(links->ns,"a");
+		xmlSetProp(a,"href",buf);
+		xmlNodeAddContent(a,"Next");
+		xmlAddChild(links,a);
+		a = xmlNewNode(body->ns,"link");
+		xmlSetProp(a,"rel","next");
+		xmlSetProp(a,"href",buf);
+		xmlAddChild(head,a);
+	}
+
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 }
