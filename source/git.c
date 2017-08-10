@@ -1,30 +1,12 @@
+#include "git.h"
+
 #include <git2/tree.h>
 #include <git2/commit.h>
 #include <git2/revwalk.h>
 
+#define LITLEN(a) a,sizeof(a)-1
 
-/* any of these handlers should return false to abort the perusal or true to continue.
-	 don't need a "skip" option since not recursing */
-
-/* none include a payload, because this is all fast, blocking operations. Should be able to
-	 use inline functions to handle, and keep the state in their local variables, since
-	 you can finish the traversal before finishing the calling function.
-*/
-
-/* chapter handler,
-	 timestamp: time of commit (same for all chapters in a commit)
-	 num: a chapter index starting from 0
-	 name: the filename of the chapter chapter%d.hish
-*/
-
-bool (*chapter_handler)(git_time_t timestamp,
-												long int num,
-												const char* location,
-												const char* name);
-
-
-/* handle gets passed every commit starting from HEAD and going back. */
-void git_for_commits(enum action (*handle)(git_commit*)) {
+void git_for_commits(bool (*handle)(git_commit*)) {
 	check(git_revwalk_new(&swalker, repo));
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
@@ -38,17 +20,9 @@ void git_for_commits(enum action (*handle)(git_commit*)) {
 	}
 }
 
-/*
-	git_for_stories
-	root: the directory containing your stories
-	handle: passed each story
-	  location: the "id" of the story, its subdirectory name
-		contents: the contents of that directory, not filtered for chapters yet
-*/
-
-enum action git_for_stories(git_tree* root,
-								 enum action (*handle)(const char* location,
-																			 const git_tree_entry* contents)) {
+bool git_for_stories(git_tree* root,
+										 bool (*handle)(const char* location,
+																		const git_tree_entry* contents)) {
 	size_t count = git_tree_entrycount(root);
 	size_t i;
 	for(i=0;i<count;++i) {
@@ -60,24 +34,16 @@ enum action git_for_stories(git_tree* root,
 				continue;
 			git_tree* contents=NULL;
 			check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
-			if(ABORT == handle(git_tree_entry_name(story),
-												 contents))
-				return ABORT;
+			if(!handle(git_tree_entry_name(story))) return false;
 		}
 	}
-	return OK;
+	return true;
 }
 
-/* git_for_chapters
-	 handle: passed info on each chapter in order of modification from newest to oldest
-
-	 this kind of puts all the above together.
-*/
-
 void git_for_chapters(chapter_handler handle) {
-	enum action on_commit(git_commit* commit) {
+	bool on_commit(git_commit* commit) {
 		git_time_t timestamp = git_commit_time(commit);
-		enum action on_story(const char* location,
+		bool on_story(const char* location,
 												 const git_tree* contents) {
 			size_t i=0;
 			size_t count = git_tree_entrycount(contents);
@@ -97,7 +63,7 @@ void git_for_chapters(chapter_handler handle) {
 				assert(chapnum>0);
 				// got it!
 				// use 0-indexed chapters everywhere we can...
-				handle(timestamp, chapnum-1, location, name);
+				return handle(timestamp, chapnum-1, location, name);
 			}
 		}
 		git_tree tree;
