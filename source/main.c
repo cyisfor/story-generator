@@ -50,23 +50,19 @@ int main(int argc, char *argv[])
 	} else {
 		git_for_commits(NULL, on_commit);
 	}
-	
-	printf("%d locations found\n",nloc);
 
-	int* chaptotal = malloc(sizeof(int*) * nloc);
-	int i;
-	for(i=0;i<nloc;++i) {
+	void for_story(const string location, int numchaps) {
 		string dest = {
-			.l = LITSIZ("testnew/") + locations[i].l + LITSIZ("/contents.html\0")
+			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
 		};
 		dest.s = alloca(dest.l);
 		memcpy(dest.s,LITLEN("testnew/\0"));
 		mkdir(dest.s,0755); // just in case
-		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
-		dest.s[LITSIZ("testnew/") +  locations[i].l] = '\0';
+		memcpy(dest.s+LITSIZ("testnew/"),location.s,location.l);
+		dest.s[LITSIZ("testnew/") +  location.l] = '\0';
 		mkdir(dest.s,0755); // just in case
-		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
-		locations[i].totalchaps = create_contents(*((string*)locations+i), dest);
+		memcpy(dest.s+LITSIZ("testnew/")+locations.l,LITLEN("/contents.html\0"));
+		create_contents(location, dest, numchaps);
 	}
 	
 	puts("processing...");
