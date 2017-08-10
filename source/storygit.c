@@ -40,8 +40,6 @@ bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
 		repo_check(git_commit_tree(&cur,commit));
 		if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
 		last = cur;
-		// make this optional so we can parse w/o eliminating commits
-		//db_saw_commit(timestamp, DB_OID(last_commit));
 	}
 }
 

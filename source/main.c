@@ -13,55 +13,6 @@
 #include <fcntl.h> // open, O_*
 #include <assert.h>
 
-struct location {
-	char* s;
-	short l;
-	int totalchaps;
-};
-
-struct location* locations = NULL;
-size_t nloc = 0;
-size_t sloc = 0;
-
-/* just to avoid too many strdups, check locations if exists, then use that. otherwise
-	 strdup, insert into locations and sort, then use that.
-
-	 but copy the string structure, so that the pointer .s is in chapter and locations.
-	 then don't delete either until done with chapters. Then mass delete locations .s's
-
-	 since .s is interned, can use the POINTER as a sorting key.
-	 i.e. .s == 0x14554345 is always true for "somestory"
-*/
-
-
-struct chapter {
-	long int num;
-	string location;
-};
-
-struct chapter* chapters = NULL;
-size_t nchap = 0;
-size_t schap = 0;
-
-static int compare_loc(const string* key, const string* test) {
-	// arbitrary sort, go with quick algorithm: size, then strcmp
-	if(key->l < test->l) return -1;
-	if(key->l == test->l)
-		return memcmp(key->s,test->s,key->l);
-	return 1;
-}
-
-static int compare_chap(const struct chapter* key, const struct chapter* test) {
-	// arbitrary sort, go with quick algorithm: num, then interned string pointer
-	if(key->num < test->num) return -1;
-	if(key->num == test->num) 
-		if(key->location.s < test->location.s)
-			return -1;
-		else if(key->location.s == test->location.s)
-			return 0;
-	return 1;
-}
-
 int main(int argc, char *argv[])
 {
 	struct stat info;
@@ -71,7 +22,7 @@ int main(int argc, char *argv[])
 
 	create_setup();
 
-	bool on_commit(git_time_t timestamp, git_tree* last, git_tree* cur) {
+	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		if(last == NULL) return true;
 		
 		bool on_chapter(long int chapnum,
@@ -86,14 +37,18 @@ int main(int argc, char *argv[])
 			return true;
 		}
 		git_for_chapters_changed(last,cur,on_chapter);
+		db_saw_commit(oid);
 	}
 
 	puts("searching...");
-	git_for_commits(on_commit);
 
-
-
-
+	// but not older than the last commit we dealt with
+	git_oid last_commit;
+	if(db_last_seen_commit(DB_OID(last_commit))) {
+		git_for_commits(&last_commit, on_commit);
+	} else {
+		git_for_commits(NULL, on_commit);
+	}
 	
 	printf("%d locations found\n",nloc);
 
