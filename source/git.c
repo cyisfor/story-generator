@@ -58,7 +58,7 @@ void git_for_chapters(chapter_handler handle) {
 				const git_tree_entry* chapter = git_tree_entry_byindex(contents,i);
 				const char* name = git_tree_entry_name(chapter);
 				size_t len = strlen(name);
-				if(len < sizeof("chapter1.hish")) continue;
+				if(len < sizeof("chapter1.hish")-1) continue;
 				if(0!=memcmp(name,LITLEN("chapter"))) continue;
 				// position at the number...
 				char* end = (char*)name + sizeof("chapter")-1;
