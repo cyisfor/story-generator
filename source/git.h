@@ -31,10 +31,10 @@ bool git_for_stories(git_tree* root,
 	 name: the filename of the chapter chapter%d.hish
 */
 
-bool (*chapter_handler)(git_time_t timestamp,
-												long int num,
-												const char* location,
-												const char* name);
+typedef bool (*chapter_handler)(git_time_t timestamp,
+																long int num,
+																const char* location,
+																const char* name);
 
 /* git_for_chapters
 	 handle: passed info on each chapter in order of modification from newest to oldest
