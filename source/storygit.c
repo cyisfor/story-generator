@@ -15,7 +15,8 @@
 #define LITLEN(a) a,LITSIZ(a)
 
 
-bool git_for_commits(bool (*handle)(git_time_t timestamp, git_tree* last, git_tree* cur)) {
+bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
+										 bool (*handle)(db_oid, git_time_t timestamp, git_tree* last, git_tree* cur)) {
 	git_revwalk* walker=NULL;
 	repo_check(git_revwalk_new(&walker, repo));
 
@@ -23,22 +24,21 @@ bool git_for_commits(bool (*handle)(git_time_t timestamp, git_tree* last, git_tr
 	// XXX: todo revparse HEAD~10 etc
 	repo_check(git_revwalk_push_head(walker));
 
-	// but not older than the last commit we dealt with
-	git_oid last_commit;
-	if(db_last_seen_commit(DB_OID(last_commit))) {
-		repo_check(git_revwalk_hide(walker,&last_commit));
+	if(until) {
+		repo_check(git_revwalk_hide(walker,&until));
 	}
 	
 	git_commit* commit = NULL;
 	git_tree* last = NULL;
 	git_tree* cur = NULL;
+	db_oid commit_oid;
 	for(;;) {
 		if(0!=git_revwalk_next(&last_commit, walker)) return true;
 		//printf("rev oid %s\n",git_oid_tostr_s(&oid));
-		repo_check(git_commit_lookup(&commit, repo, &last_commit));
+		repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 		git_time_t timestamp = git_commit_time(commit);
 		repo_check(git_commit_tree(&cur,commit));
-		if(!handle(timestamp, last, cur)) return false;
+		if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
 		last = cur;
 		// make this optional so we can parse w/o eliminating commits
 		//db_saw_commit(timestamp, DB_OID(last_commit));
