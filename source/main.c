@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 		
 			if(chapter > 1) {
 				// XXX: index.html -> chapter2.html ehh...
-				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
+				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter);
 			}
 			// reuse dest, extend if htmlname is longer than contents.html plus nul
 			size_t chap_dlen = storydest.l + htmlname.l + 1;
