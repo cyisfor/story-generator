@@ -14,7 +14,6 @@ const char defaultTemplate[] =
   "<top/><content/><footer/>\n"
   "</body></html>";
 
-
 void create_setup(void) {
 	chapter_template = htmlReadMemory(LITLEN(defaultTemplate),
 																		"","utf-8",
@@ -45,7 +44,8 @@ void create_chapter(string src, string dest) {
 	STRPRINT(dest);
 	fputc('\n',stdout);
 
-	xmlDoc* doc = xmlCopyDoc(template);
-
+	xmlDoc* doc = xmlCopyDoc(template,1);
+	htmlish(doc,srcfd);
 	close(srcfd);
+	htmlDocSaveFileEnc(dest.s,doc,"UTF-8");
 }
