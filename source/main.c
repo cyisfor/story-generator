@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 		git_for_chapters_changed(last,cur,on_chapter);
-		db_saw_commit(oid);
+		db_saw_commit(timestamp, oid);
 	}
 
 	puts("searching...");
