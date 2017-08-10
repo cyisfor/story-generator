@@ -6,9 +6,15 @@ int main(int argc, char *argv[])
 {
 	bool on_chapter(git_time_t timestamp,
 									long int num,
-									const char* location,
-									const char* name) {
-		printf("%d %2d %-20s %s\n",timestamp,num,location,name);
+									string location,
+									string name) {
+		printf("%d %2d ",timestamp,num);
+		int i;
+		for(i=0;i<20-location.l;++i) putchar(' ');
+		STRPRINT(location);
+		putchar(' ');
+		STRPRINT(name);
+		putchar('\n');
 		return true;
 	}
 
