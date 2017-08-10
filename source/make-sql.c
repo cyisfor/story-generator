@@ -1,6 +1,7 @@
 #include <sys/mman.h>
 #include <unistd.h> // write
 #include <sys/stat.h>
+#include <ctype.h> // isspace
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
 		case '\n':
 			PUTLIT("\\n\"\n\t\"");
 			while(i < st.st_size && isspace(sql[++i]));
+			--i; // bleh
 			break;
 		case '\r':
 			PUTLIT("\\r");
