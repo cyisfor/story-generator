@@ -157,13 +157,7 @@ int main(int argc, char *argv[])
 		dest.s[LITSIZ("testnew/") +  locations[i].l] = '\0';
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
-		string hack = {
-			.l = locations[i].l+1,
-			.s = alloca(locations[i].l+1)
-		};
-		memcpy(hack.s,locations[i].s,hack.l-1);
-		hack.s[hack.l-1] = '\0';
-		locations[i].totalchaps = create_contents(hack, dest);
+		locations[i].totalchaps = create_contents(*((string*)locations+i), dest);
 	}
 	
 	puts("processing...");
