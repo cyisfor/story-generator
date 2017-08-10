@@ -20,9 +20,10 @@ void git_for_commits(bool (*handle)(git_commit*));
 	  location: the "id" of the story, its subdirectory name
 		contents: the contents of that directory, not filtered for chapters yet
 */
+
 bool git_for_stories(git_tree* root,
 										 bool (*handle)(const char* location,
-																		const git_tree_entry* contents));
+																		const git_tree* contents));
 
 /* chapter handler,
 	 timestamp: time of commit (same for all chapters in a commit)
