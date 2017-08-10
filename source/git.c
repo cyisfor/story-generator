@@ -71,7 +71,7 @@ void git_for_chapters(chapter_handler handle) {
 				return handle(timestamp, chapnum-1, location, name);
 			}
 		}
-		git_tree tree;
+		git_tree* tree;
 		repo_check(git_commit_tree(&tree,&commit));
 
 		return git_for_stories(tree, on_story);
