@@ -1,5 +1,5 @@
 #include "repo.h"
-#include "git.h"
+#include "storygit.h"
 #include <stdio.h>
 
 int main(int argc, char *argv[])

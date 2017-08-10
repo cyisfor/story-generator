@@ -128,7 +128,6 @@ identifier db_find_story(const string location) {
 	} else {
 		sqlite3_reset(find);
 		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
-		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
 		identifier id = sqlite3_last_insert_rowid(db);
 		commit();
