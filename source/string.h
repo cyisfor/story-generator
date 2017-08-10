@@ -4,3 +4,6 @@ typedef struct string {
 } string;
 
 #define STRPRINT(str) fwrite((str).s,(str).l,1,stdout);
+
+#define LITSIZ(a) (sizeof(a)-1)
+#define LITLEN(a) a,LITSIZ(a)
