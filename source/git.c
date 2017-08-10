@@ -43,7 +43,7 @@ void git_for_chapters(chapter_handler handle) {
 			if(nlen < sizeof("a/markup/chapterN.hish")-1) return 0;
 			const char* slash = strchr(name,'/');
 			if(slash == NULL) return 0;
-			const char* markup = slash+1
+			const char* markup = slash+1;
 			if(nlen-(markup-name) < sizeof("markup/chapterN.hish")-1) return 0;
 			if(0!=memmem(markup,LITLEN("markup/chapter"))) return 0;
 			const char* num = markup + sizeof("markup/chapter")-1;
