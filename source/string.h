@@ -1,9 +1,11 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
+#include <stdlib.h> // size_t
+
 typedef struct string {
 	char* s;
-	unsigned short l;
+	size_t l;
 } string;
 
 #define STRPRINT(str) fwrite((str).s,(str).l,1,stdout);
