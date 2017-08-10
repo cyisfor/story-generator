@@ -43,27 +43,11 @@ void create_setup(void) {
 	}
 }
 
-int create_contents(string location, string dest) {
-	// meh, might as well count by walking the directory
-	char markup[0x100];
-	memcpy(markup,location.s,location.l);
-	memcpy(markup + location.l, LITLEN("/markup\0"));
-	DIR* d = opendir(markup);
-	if(!d) return 0;
-	struct dirent* dp;
-	int chapters = 0;
-	while((dp = readdir(d))) {
-		size_t len = strlen(dp->d_name);
-		if(len < LITSIZ("chapter1.hish")) continue;
-		if(0!=memcmp(dp->d_name+len-5,".hish",5)) continue;
-		if(0!=memcmp(dp->d_name,LITLEN("chapter"))) continue;
-		++chapters;
-	}
-	closedir(d);
-
-	// somehow get contents template per story here...
-	// and return per-story chapter template?
-
+int create_contents(const string location,
+										const string dest,
+										size_t chapters,
+										void (*get_title)(string* title, size_t chapter)) {
+	
 	xmlDoc* doc = xmlCopyDoc(contents_template,1);
 	// root, doctype, html, text prefix, head
 	xmlNode* head = doc->children->next->children->next;
@@ -94,9 +78,9 @@ int create_contents(string location, string dest) {
 	}
 	assert(toc);
 	
-	int i;
+	size_t i;
+	string title = {};
 	for(i=0;i<chapters;++i) {
-		// find titles... somehow...
 		xmlNode* li = xmlNewNode(toc->ns,"li");
 		xmlNode* a = xmlNewNode(li->ns,"a");
 		xmlAddChild(li,a);
@@ -106,9 +90,10 @@ int create_contents(string location, string dest) {
 			snprintf(buf,0x100,"chapter%d.html",i);
 		}
 		xmlSetProp(a,"href",buf);
-		snprintf(buf,0x100,"Chapter %d",i+1);
-		xmlNodeAddContent(a,buf);
+		get_title(&title, i);
+		xmlNodeAddContentLen(a,title.s,title.l);
 	}
+	free(title.s);
 
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
