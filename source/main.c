@@ -102,8 +102,6 @@ int main(int argc, char *argv[])
 				.l = LITSIZ("index.html")
 			};
 			printf("chapter %d\n", chapter);
-			STRPRINT(chapter->location);
-			fputc('\n',stdout);
 		
 			if(chapter > 1) {
 				// XXX: index.html -> chapter2.html ehh...
