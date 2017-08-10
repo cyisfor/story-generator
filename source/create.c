@@ -63,6 +63,7 @@ int create_contents(string location, string dest) {
 	xmlNode* head = doc->children->next->children->next;
 	xmlNode* body = head->next->next;
 	xmlNode* find_toc(xmlNode* cur) {
+		if(!cur) return NULL;
 		if(cur->type == XML_ELEMENT_NODE) {
 			if(0==strcmp(cur->name,"ol")) {
 				if(xmlHasProp(cur,"id")) {
@@ -82,7 +83,11 @@ int create_contents(string location, string dest) {
 	}
 
 	xmlNode* toc = find_toc(body);
+	if(!toc) {
+		htmlDocDump(stdout,doc);
+	}
 	assert(toc);
+	
 	int i;
 	for(i=0;i<chapters;++i) {
 		// find titles... somehow...
