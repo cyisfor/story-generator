@@ -200,6 +200,8 @@ int main(int argc, char *argv[])
 					fputc('\n',stdout);
 		}
 		close(srcfd);
+		free(src.s);
+		free(dest.s);
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
