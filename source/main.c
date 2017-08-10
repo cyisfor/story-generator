@@ -55,6 +55,9 @@ int main(int argc, char *argv[])
 									const string loc,
 									const char* name) {
 
+		printf("saw %d of",chapnum);
+		STRPRINT(loc);
+		fputc('\n',stdout);
 		// lookup location
 		string* location = bsearch(location,locations,nloc,sizeof(*locations),
 															 &compare_loc);
@@ -103,6 +106,11 @@ int main(int argc, char *argv[])
 		return true;
 	}
 
+	puts("searching...");
+	git_for_chapters(on_chapter);
+	
+	puts("processing...");
+
 	size_t i;
 	for(i=0;i<nchap;++i) {
 		printf("chapter %d of %d (allstories)\n",i,nchap);
@@ -113,8 +121,9 @@ int main(int argc, char *argv[])
 		}
 		const struct chapter* chapter = chapters + i;
 		printf("chapter %d of ",chapter->num);
-		fwrite(chapter->location.s,chapter->locaton.l,1,stdout);
+		STRPRINT(chapter->location);
 		fputc('\n',stdout);
+		
 		if(chapter->num > 0) {
 			// XXX: index.html -> chapter2.html ehh...
 			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapters[i].num+1);
@@ -130,9 +139,9 @@ int main(int argc, char *argv[])
 		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
 		puts("then create uh");
-		puts(dest);
+		STRPRINT(dest);
+		fputc('\n',stdout);
 	}
 
-	repo_discover_in
 	return 0;
 }
