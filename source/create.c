@@ -69,8 +69,9 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlFreeNode(content);
 	}
 
-	// html, head
-	xmlNode* head = doc->children->children->next;
+	// root, doctype, html, text prefix, head
+	xmlNode* head = doc->children->next->children->next;
+	// text suffix, body, last e in body
 	xmlNode* links = head->next->next->last;
 	while(links->type != XML_ELEMENT_NODE) {
 		links = links->prev;
