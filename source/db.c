@@ -35,7 +35,7 @@ void db_open(const char* filename) {
 
 /* since sqlite sucks, have to malloc copies of pointers to all statements,
 	 since the database won't close until we finalize them all. */
-sqlite3_statement** stmts = NULL;
+sqlite3_stmt** stmts = NULL;
 size_t nstmt = 0;
 static void add_stmt(sqlite3_stmt* stmt) {
 	stmts = realloc(stmts,++nstmt);
@@ -86,7 +86,7 @@ DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	DECLARE_STMT(insert,"INSERT OR REPLACE INTO commits (oid,timestamp) VALUES (?,?)");
-	sqlite3_bind_blob(insert, 1, commit, sizeof(commit), NULL);
+	sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert, 2, timestamp);
 	db_once(insert);
 }
@@ -101,7 +101,7 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 		return false;
 	case SQLITE_ROW:
 		assert(sizeof(git_oid) == sqlite3_column_bytes(find,0));
-		ensure0(memcpy(oid, sqlite3_column_blob(find, 0), len));
+		ensure0(memcpy(commit, sqlite3_column_blob(find, 0), sizeof(db_oid)));
 		*timestamp = sqlite3_column_int64(find,1);
 		sqlite3_reset(find);
 		return true;
