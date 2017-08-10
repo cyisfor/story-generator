@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 									const char* location,
 									const char* name) {
 		printf("%d %d %s %s\n",timestamp,num,location,name);
+		return true;
 	}
 
 	repo_discover_init(".",1);
