@@ -71,7 +71,7 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 			const char* slash = strchr(path.s,'/');
 			if(slash == NULL) return 0;
 			const char* markup = slash+1;
-			if(nlen-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return 0;
+			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return 0;
 			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
 			const char* num = markup + LITSIZ("markup/chapter");
 			char* end;
