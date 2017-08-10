@@ -7,11 +7,11 @@ CFLAGS+=-Ihtmlish/src -Ihtmlish/html_when/source -Ihtmlish/html_when/libxml2/inc
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
-all: generderp test_git ddate/ddate.o ddate-stub.o
+all: generderp test_git 
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-O=$(patsubst %,o/%.o,$N) htmlish/libhtmlish.a
+O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
 S=$(patsubst %,source/%.c,$N)
 
 N=main git repo create
@@ -27,9 +27,6 @@ o/%.o: source/%.c | o
 
 ddate/ddate.o:
 	$(MAKE) -C ddate ddate.o
-
-ddate-stub.o: source/ddate-stub.c
-	gcc $(CFLAGS) -Iddate -c -o $@ $^
 
 o:
 	mkdir $@
