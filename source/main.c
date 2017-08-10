@@ -82,10 +82,14 @@ int main(int argc, char *argv[])
 			void on_title(const string title) {
 				if(title.s == NULL) {
 					char buf[0x100];
-					title.s = buf;
-					title.l = sprintf(title.s,"Chapter %lu",chapter);
+					string fallback = {
+						.s = buf,
+						.l = snprintf(buf,0x100,"Chapter %lu",chapter);
+					};
+					handle(fallback);
+				} else {
+					handle(title);
 				}
-				handle(title);
 			}
 			db_with_chapter_title(story,chapter,on_title);
 		}
