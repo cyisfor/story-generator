@@ -6,6 +6,8 @@
 #include <unistd.h> // close
 #include <assert.h>
 #include <sys/stat.h>
+#include <dirent.h> // opendir, DIR, readdir, dirent
+#include <string.h> // 
 
 static bool AISOLDER(struct stat a, struct stat b) {
 	if(a.st_mtime < b.st_mtime) return true;
@@ -15,6 +17,7 @@ static bool AISOLDER(struct stat a, struct stat b) {
 
 
 xmlDoc* chapter_template = NULL;
+xmlDoc* contents_template = NULL;
 
 const char defaultTemplate[] =
   "<!DOCTYPE html>\n"
@@ -33,6 +36,10 @@ void create_setup(void) {
 																			HTML_PARSE_RECOVER |
 																			HTML_PARSE_NOBLANKS |
 																			HTML_PARSE_COMPACT);
+	}
+	contents_template = htmlParseFile("template/contents.html","UTF-8");
+	if(!contents_template) {
+		contents_template = chapter_template;
 	}
 }
 
