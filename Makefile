@@ -1,6 +1,6 @@
 all: test_git ddate/ddate.o ddate-stub.o
 
-test_git: o/git.o o/test_git.o
+test_git: o/test_git.o o/git.o o/repo.o 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS) -lgit2
 
 o/%.o: source/%.c | o
