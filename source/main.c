@@ -70,6 +70,9 @@ int main(int argc, char *argv[])
 															 (void*)compare_loc);
 		char* internkey;
 		if(testloc == NULL) {
+			printf("CREATE LOCATION ");
+			STRPRINT(loc);
+			putchar('\n');
 			if((nloc+1)<<1 >= sloc) {
 				sloc = ((((nloc+1)>>7)+1)<<8);
 				locations = realloc(locations,sizeof(*locations)*sloc);
@@ -104,6 +107,9 @@ int main(int argc, char *argv[])
 		struct chapter* chapter = bsearch(NULL,chapters,nchap,sizeof(*chapters),
 																			(void*)find_chapter);
 		if(chapter == NULL) {
+			printf("CREATE CHAPTER %d ",chapter->num);
+			STRPRINT(loc);
+			putchar('\n');
 			// if timestamp <= the earliest time we last went to...
 			if(nchap > 20) return false;
 			if(nchap+1 >= schap) {
