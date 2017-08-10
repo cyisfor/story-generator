@@ -59,11 +59,11 @@ void create_chapter(string src, string dest) {
 	bool as_child = false;
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 	htmlish(content,srcfd,as_child);
+	close(srcfd);
 	if(!as_child) {
 		// throw away placeholder node
 		xmlUnlinkNode(content);
 		xmlFreeNode(content);
 	}
-	close(srcfd);
-	htmlDocSaveFileEnc(dest.s,doc,"UTF-8");
+	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 }
