@@ -327,3 +327,8 @@ void db_transaction(void (*run)(void)) {
 	run();
 	commit();
 }
+
+void db_retransaction(void) {
+	commit();
+	begin();
+}

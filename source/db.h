@@ -62,3 +62,4 @@ void db_set_story_info(identifier story,
 											 const string source);
 
 void db_transaction(void (*run)(void));
+void db_retransaction(void);

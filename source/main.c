@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 
 	create_setup();
 
+	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		if(last == NULL) return true;
 
@@ -32,7 +33,7 @@ int main(int argc, char *argv[])
 										bool deleted,
 										const string loc,
 										const string src) {
-
+			if(++num % 100 == 0) db_retransaction();
 			printf("saw %d of ",chapnum);
 			STRPRINT(loc);
 			fputc('\n',stdout);
@@ -41,7 +42,6 @@ int main(int argc, char *argv[])
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
 		db_saw_commit(timestamp, oid);
-		db_retransaction();
 		return ret;
 	}
 
