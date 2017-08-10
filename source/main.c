@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
 		}
 		string dest = {
-			.l = LITSIZ("../html/") + chapter->location.l + LITSIZ("/") + htmlname.l
+			.l = LITSIZ("../html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
 		};
 		dest.s = malloc(dest.l);
 		memcpy(dest.s,LITLEN("../html/"));
@@ -162,6 +162,7 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
+		dest.s[LITSIZ("../html/")+chapter->location.l+1 + htmlname.l] = '\0';
 
 		char namebuf[0x100];
 		string name = {
@@ -170,18 +171,23 @@ int main(int argc, char *argv[])
 		name.l = snprintf(name.s,0x100,"chapter%d.hish",chapter->num+1);
 
 		string src = {
-			.l = chapter->location.l + LITSIZ("/markup/") + name.l
+			.l = chapter->location.l + LITSIZ("/markup/") + name.l + 1
 		};
+		// src/dest must be null terminated because open and stat both SUCK
 		src.s = malloc(src.l);
 		memcpy(src.s,chapter->location.s,chapter->location.l);
 		memcpy(src.s + chapter->location.l,LITLEN("/markup/"));
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
-
+		src.s[chapter->location.l + LITSIZ("/markup/") + name.l] = '\0';
+		
 		fputs("then create uh ",stdout);
 		STRPRINT(src);
 		fputs(" -> ",stdout);
 		STRPRINT(dest);
 		fputc('\n',stdout);
+
+		struct stat srcinfo;
+		assert(0==stat(src.
 
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
