@@ -1,3 +1,4 @@
+#include "ensure.h"
 #include "git.h"
 #include "repo.h"
 #include <stdlib.h> // mergesort, NULL
@@ -63,19 +64,22 @@ int main(int argc, char *argv[])
 		STRPRINT(loc);
 		fputc('\n',stdout);
 		// lookup location
-		string* location = bsearch(location,locations,nloc,sizeof(*locations),
+		string* testloc = bsearch(location,locations,nloc,sizeof(*locations),
 															 (void*)&compare_loc);
-		if(location == NULL) {
+		const char* internkey;
+		if(testloc == NULL) {
 			if(nloc+1 >= sloc) {
 				sloc += 0x80;
 				locations = realloc(locations,sizeof(*locations)*sloc);
 			}
-			location = malloc(sizeof(string));
-			location->s = malloc(loc.l);
-			location->l = loc.l;
-			memcpy(location->s, loc.s, loc.l);
-			locations[nloc++] = location;
+			location = &locations[nloc];
+			locations[nloc].s = malloc(loc.l);
+			internkey = locations[nloc].s;
+			locations[nloc].l = loc.l;
+			memcpy(locations[nloc].s, loc.s, loc.l);
 			ensure0(mergesort(locations,nloc,sizeof(*locations),(void*)&compare_loc));
+		} else {
+			internkey = testloc->s;
 		}
 
 		// now location->s is our interned string key, combine with chapnum to make a unique key
@@ -84,9 +88,9 @@ int main(int argc, char *argv[])
 		int find_chapter(void* ignoredkey, struct chapter* value) {
 			if(chapnum < value->num) return -1;
 			if(chapnum == value->num)
-				if(location->s < value->location.s) // magic
+				if(internkey < value->location.s) // magic
 					return -1;
-				else if(location->s == value->location.s)
+				else if(internkey == value->location.s)
 					return 0;
 			return 1;
 		}
@@ -102,7 +106,7 @@ int main(int argc, char *argv[])
 			}
 			chapter = &chapters[nchap++];
 			chapter->num = chapnum;
-			chapter->location.s = location->s; // NOT loc.s
+			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.s = loc.l; // ...fine
 			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),(void*)&compare_chap));
 		}
