@@ -71,8 +71,11 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 	// doctype, html, head, body, ...
 	xmlNode* head = doc->children->next->children;
-	xmlNode* links = head->next->children;
-	while(links->next) links = links->next;
+	xmlNode* links = head->next->last;
+	while(links->type != XML_ELEMENT_NODE) {
+		links = links->prev;
+		assert(links);
+	}
 
 	char buf[0x100] = "index.html";
 	if(chapter > 0) {
