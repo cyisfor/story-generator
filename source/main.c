@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
-		fputs("then create uh",stdout);
+		fputs("then create uh ",stdout);
 		STRPRINT(dest);
 		fputc('\n',stdout);
 	}
