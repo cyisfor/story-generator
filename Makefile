@@ -14,7 +14,7 @@ LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
 S=$(patsubst %,source/%.c,$N)
 
-N=main git repo create
+N=main git repo create db
 generderp: $O
 	$(LINK)
 

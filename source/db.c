@@ -1,3 +1,5 @@
+#include "db.h"
+
 sqlite3* db = NULL;
 
 static int db_check(int res) {
@@ -20,6 +22,9 @@ static int db_check(int res) {
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
+#include "db-sql.gen.c"
+	const char* err = NULL;
+	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 }
 
 void db_close_and_exit(void) {
@@ -37,7 +42,7 @@ void db_close_and_exit(void) {
 	exit(0);
 }
 
-void db_once(sqlite3_stmt* stmt) {
+static void db_once(sqlite3_stmt* stmt) {
 	int res = sqlite3_step(stmt);
 	sqlite3_reset(stmt);
 	db_check(res);
@@ -72,16 +77,6 @@ DECLARE_DB_FUNC(begin, "BEGIN");
 DECLARE_DB_FUNC(commit, "COMMIT");
 DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
-void db_setup(void) {
-#include "db-sql.gen.c"
-	const char* err = NULL;
-	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
-}
-	
-  
-#define DB_OID(o) o.id
-typedef unsigned char db_oid[GIT_OID_RAWSZ]; // to .h
-
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	DECLARE_STMT(insert,"INSERT OR REPLACE INTO commits (oid,timestamp) VALUES (?,?)");
 	sqlite3_bind_blob(insert, 1, commit, sizeof(commit), NULL);
@@ -107,8 +102,6 @@ bool db_last_seen_commit(db_oid commit) {
 		abort();
 	};
 }
-
-typedef sqlite3_int64 identifier;
 
 identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
