@@ -104,8 +104,10 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 		sqlite3_reset(find);
 		return false;
 	case SQLITE_ROW:
-		assert(sizeof(git_oid) == sqlite3_column_bytes(find,0));
-		ensure0(memcpy(commit, sqlite3_column_blob(find, 0), sizeof(db_oid)));
+		assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
+		const char* blob = sqlite3_column_blob(find, 0);
+		assert(blob != NULL);
+		ensure0(memcpy(commit, blob, sizeof(db_oid)));
 		*timestamp = sqlite3_column_int64(find,1);
 		sqlite3_reset(find);
 		return true;
