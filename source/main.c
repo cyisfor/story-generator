@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
 				sloc += 0x80;
 				locations = realloc(locations,sizeof(*locations)*sloc);
 			}
-			location = &locations[nloc];
 			locations[nloc].s = malloc(loc.l);
 			internkey = locations[nloc].s;
 			locations[nloc].l = loc.l;
