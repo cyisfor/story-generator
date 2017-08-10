@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	struct stat info;
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
-	repo_init(".");
+	repo_check(repo_init("."));
 
 	bool on_chapter(git_time_t timestamp,
 									long int chapnum,
