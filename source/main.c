@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 					char buf[0x100];
 					string fallback = {
 						.s = buf,
-						.l = snprintf(buf,0x100,"Chapter %lu",chapter);
+						.l = snprintf(buf,0x100,"Chapter %lu",chapter)
 					};
 					handle(fallback);
 				} else {
