@@ -1,4 +1,6 @@
 #include "git.h"
+#include "repo.h"
+
 
 #include <git2/tree.h>
 #include <git2/commit.h>
@@ -7,15 +9,15 @@
 #define LITLEN(a) a,sizeof(a)-1
 
 void git_for_commits(bool (*handle)(git_commit*)) {
-	check(git_revwalk_new(&swalker, repo));
+	repo_check(git_revwalk_new(&swalker, repo));
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
-	check(git_revwalk_push_head(swalker));
+	repo_check(git_revwalk_push_head(swalker));
 	git_oid oid;
 	git_commit commit;
 	for(;;) {
 		if(0!=git_revwalk_next(&oid, walker)) return NULL;
-		check(git_commit_lookup(&commit, repo, &oid));
+		repo_check(git_commit_lookup(&commit, repo, &oid));
 		if(!handle(commit, payload)) break;
 	}
 }
@@ -33,7 +35,7 @@ bool git_for_stories(git_tree* root,
 			if(git_tree_entry_type(markup) != GIT_OBJ_TREE)
 				continue;
 			git_tree* contents=NULL;
-			check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
+			repo_check(git_tree_lookup(&contents, repo, git_tree_entry_id(markup)));
 			if(!handle(git_tree_entry_name(story))) return false;
 		}
 	}
@@ -67,7 +69,7 @@ void git_for_chapters(chapter_handler handle) {
 			}
 		}
 		git_tree tree;
-		check(git_commit_tree(&tree,&commit));
+		repo_check(git_commit_tree(&tree,&commit));
 
 		return git_for_stories(tree, on_story);
 	}
