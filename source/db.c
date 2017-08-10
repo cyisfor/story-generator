@@ -170,8 +170,8 @@ void db_for_story(void (*handle)(identifier story,
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW: {
-			const string location = {
-				.s = (char*) sqlite3_column_blob(find,1),
+			const cstring location = {
+				.s = sqlite3_column_blob(find,1),
 				.l = sqlite3_column_bytes(find,1)
 			};
 			handle(sqlite3_column_int64(find,0),
@@ -221,8 +221,8 @@ void db_with_chapter_title(identifier story,
 	sqlite3_bind_int64(find,2,chapter);
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
-		const string title = {
-			.s = (char*) sqlite3_column_blob(find,0),
+		const cstring title = {
+			.s = sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};
 		handle(title);
@@ -239,14 +239,14 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 																												 const string source)) {
 	DECLARE_STMT(find,"SELECT title,description,source FROM storier WHERE id = ?");
 	sqlite3_bind_int64(find,1,story);
-	string title = {};
-	string description = {};
-	string source = {};
+	cstring title = {};
+	cstring description = {};
+	cstring source = {};
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
-		void CHECK(int col, string* str) {
+		void CHECK(int col, cstring* str) {
 			if(SQLITE_NULL == sqlite3_column_type(find,col)) { 
-				str->s = (char*) sqlite3_column_blob(find,col); 
+				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
 			}
 		}
