@@ -66,7 +66,7 @@ int create_contents(string location, string dest) {
 		if(cur->type == XML_ELEMENT_NODE) {
 			if(0==strcmp(cur->name,"ol")) {
 				if(xmlHasProp(cur,"id")) {
-					xmlChar* val = xmlGetPrep(cur,"id");
+					xmlChar* val = xmlGetProp(cur,"id");
 					bool yes = 0 == strcmp(val,"toc");
 					xmlFree(val);
 					if(yes) {
@@ -83,7 +83,7 @@ int create_contents(string location, string dest) {
 
 	xmlNode* toc = find_toc(body);
 	assert(toc);
-
+	int i;
 	for(i=0;i<chapters;++i) {
 		// find titles... somehow...
 		xmlNode* li = xmlNewNode(toc->ns,"li");
