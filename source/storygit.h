@@ -35,6 +35,6 @@ bool git_for_commits(bool (*handle)(git_time_t timestamp, git_tree* last, git_tr
 */
 bool git_for_chapters_changed(git_tree* from, git_tree* to,
 															bool (*handle)(long int num,
-																						 git_time_t timestamp,
+																						 bool deleted,
 																						 const string location,
 																						 const string path));
