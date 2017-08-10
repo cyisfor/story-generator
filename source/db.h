@@ -56,4 +56,4 @@ void db_set_chapter_title(const string title, identifier story, identifier chapt
 void db_set_story_info(identifier story,
 											 const string title,
 											 const string description,
-											 const string source, 
+											 const string source);
