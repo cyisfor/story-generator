@@ -153,12 +153,11 @@ int main(int argc, char *argv[])
 		memcpy(dest.s,LITLEN("testnew/"));
 		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
 		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
-		locations[i].numchaps = create_contents(locations[i], dest);
+		locations[i].totalchaps = create_contents(*((string*)&locations[i]), dest);
 	}
 	
 	puts("processing...");
 
-	size_t i;
 	for(i=0;i<nchap;++i) {
 		printf("chapter %d of %d (allstories)\n",i,nchap);
 		char htmlnamebuf[0x100] = "index.html";
