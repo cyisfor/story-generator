@@ -161,9 +161,10 @@ int main(int argc, char *argv[])
 			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
 		};
 		dest.s = alloca(dest.l);
-		memcpy(dest.s,LITLEN("testnew/"));
+		memcpy(dest.s,LITLEN("testnew/\0"));
 		mkdir(dest.s,0755); // just in case
 		memcpy(dest.s + LITSIZ("testnew/"), chapter->location.s, chapter->location.l);
+		dest.s[LITSIZ("testnew/") +  chapter->location.l] = '\0';
 		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("testnew/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("testnew/")+chapter->location.l+1,htmlname.s,htmlname.l);
