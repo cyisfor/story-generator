@@ -15,7 +15,8 @@ N=main git repo create
 generderp: $O
 	$(LINK)
 
-test_git: o/test_git.o o/git.o o/repo.o 
+N=test_git git repo
+test_git: $O
 	$(LINK)
 
 o/%.o: source/%.c | o
