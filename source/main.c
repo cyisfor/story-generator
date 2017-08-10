@@ -3,6 +3,8 @@
 #include <stdlib.h> // mergesort, NULL
 #include <string.h> // memcmp, memcpy
 #include <sys/stat.h>
+#include <unistd.h> // chdir, mkdir
+#include <stdio.h>
 
 string* locations = NULL;
 size_t nloc = 0;
