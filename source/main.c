@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 				schap += 0x40;
 				chapters = realloc(chapters,schap*sizeof(*chapters));
 			}
-			chapter = &chapters[nchap;
+			chapter = &chapters[nchap];
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
