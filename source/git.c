@@ -20,6 +20,7 @@ void git_for_commits(bool (*handle)(git_commit*)) {
 	git_commit* commit;
 	for(;;) {
 		if(0!=git_revwalk_next(&oid, walker)) return;
+		printf("rev oid %s\n",git_oid_tostr_s(&oid));
 		repo_check(git_commit_lookup(&commit, repo, &oid));
 		if(!handle(commit)) break;
 	}
