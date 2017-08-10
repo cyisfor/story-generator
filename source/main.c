@@ -44,7 +44,8 @@ int main(int argc, char *argv[])
 
 	// but not older than the last commit we dealt with
 	git_oid last_commit;
-	if(db_last_seen_commit(DB_OID(last_commit))) {
+	git_time_t timestamp = 0;
+	if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
 		git_for_commits(&last_commit, on_commit);
 	} else {
 		git_for_commits(NULL, on_commit);
