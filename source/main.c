@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		if(last == NULL) return true;
+
+		printf("timestamp %d\n",timestamp);
 		
 		bool on_chapter(long int chapnum,
 										bool deleted,
