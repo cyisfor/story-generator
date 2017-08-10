@@ -3,9 +3,10 @@ PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
+CFLAGS+=-Ihtmlish/src
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
-LDLIBS+=$(patsubst %, htmlish/%, $(patsubst %, html_when/%, libxml2.a libhtmlwhen.a) 
-html_when/libxml2/.libs/libxml2.a html_when/libhtmlwhen.a 
+LDLIBS+=htmlish/libhtmlish.a
+
 all: generderp test_git ddate/ddate.o ddate-stub.o
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
