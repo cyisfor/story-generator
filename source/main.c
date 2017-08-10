@@ -74,13 +74,14 @@ int main(int argc, char *argv[])
 		if(last == NULL) return true;
 		
 		bool on_chapter(long int chapnum,
+										bool deleted,
 										const string loc,
 										const string src) {
 
 			printf("saw %d of ",chapnum);
 			STRPRINT(loc);
 			fputc('\n',stdout);
-			db_saw_chapter(loc,chapnum);
+			db_saw_chapter(deleted,loc,chapnum);
 			return true;
 		}
 		git_for_chapters_changed(last,cur,on_chapter);

@@ -11,20 +11,21 @@
 
 sqlite3* db = NULL;
 
-static void db_check(int res) {
+static int db_check(int res) {
 	switch(res) {
 	case SQLITE_OK:
 	case SQLITE_DONE:
 	case SQLITE_ROW:
-		return;
+		return res;
 	};
-	
+
 	if(!db) {
 		error(23,0,"no db %d %s",res, sqlite3_errstr(res));
 	}
 	error(42,0,"db error %d(%s) %s",
 				res,sqlite_errstr(res),
 				sqlite3_errmsg(db));
+	return res;
 }
 
 void db_open(const char* filename) {
@@ -54,10 +55,20 @@ static sqlite3_stmt* rollback(void) {
 	return stmt;
 }
 
-void db_close(void) {
+void db_close_and_exit(void) {
 	size_t i;
 	for(i=0;i<nstmt;++i) {
 		db_check(sqlite3_finalize(stmts[i]));
+	}
+	db_check(sqlite3_close(db));
+	/* if we do any DB thing after this, it will die horribly.
+		 if we need to continue past this, and reopen the db, have to:
+		 1) preserve a copy of each SQL statement, before finalizing, via sqlite3_expanded_sql
+		 2) when reopening, iterate to nstmt, re-preparing each one, then freeing the SQL string
+		 3) change all use of statements to be stmts[stmt] where stmt is an index into stmts
+	*/
+	exit(0);
+}
 
 #define DB_OID(o) o.id
 typedef unsigned char db_oid[GIT_OID_RAWSZ]; // to .h
@@ -72,7 +83,7 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 
 bool db_last_seen_commit(db_oid commit) {
 	DECLARE_STMT(find,"SELECT oid FROM commits ORDER BY timestamp DESC LIMIT 1");
-	
+
 	int res = sqlite3_step(find);
 	switch(res) {
 	case SQLITE_DONE:
@@ -88,8 +99,19 @@ bool db_last_seen_commit(db_oid commit) {
 		abort();
 	};
 }
-	
-void db_saw_chapter(bool deleted, string location, long int chapnum) {
+
+typedef sqlite3_int64 identifier;
+
+identifier db_find_story(const string location, git_time_t timestamp) {
+	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
+	DECLARE_STMT(insert,"INSERT INTO STORIES (location,timestamp) VALUES (?,?)");
+	DECLARE_STMT(update,"UPDATE STORIES set timestamp = ? WHERE id = ?");
+
+	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
+	int res = db_check(sqlite3_step(find));
+
+
+void db_saw_chapter(bool deleted, identifier story, long int chapnum) {
 	identifier story = db_find_story(location);
 	if(deleted) {
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
@@ -102,3 +124,4 @@ void db_saw_chapter(bool deleted, string location, long int chapnum) {
 		sqlite3_bind_int64(insert,2,chapnum);
 		db_once(insert);
 	}
+}
