@@ -66,7 +66,7 @@ void git_for_chapters(chapter_handler handle) {
 		repo_check(git_commit_tree(&tree,commit));
 		if(last != NULL) {
 			git_diff* diff=NULL;
-			git_diff_option_t opts =
+			const git_diff_option_t opts =
 				GIT_DIFF_SKIP_BINARY_CHECK ||
 				GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS;
 			
