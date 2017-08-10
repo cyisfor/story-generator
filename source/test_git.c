@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 									long int num,
 									const char* location,
 									const char* name) {
-		printf("%d %2d %-15s %s\n",timestamp,num,location,name);
+		printf("%d %2d %-20s %s\n",timestamp,num,location,name);
 		return true;
 	}
 
