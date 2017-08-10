@@ -11,12 +11,6 @@
 #include <fcntl.h> // open, O_*
 #include <assert.h>
 
-static bool AISOLDER(struct stat a, struct stat b) {
-	if(a.st_mtime < b.st_mtime) return true;
-	if(a.st_mtime == b.st_mtime) return false;
-	return a.st_mtim.tv_nsec < b.st_mtim.tv_nsec;
-}
-
 string* locations = NULL;
 size_t nloc = 0;
 size_t sloc = 0;

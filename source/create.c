@@ -5,6 +5,14 @@
 #include <fcntl.h> // open
 #include <unistd.h> // close
 #include <assert.h>
+#include <sys/stat.h>
+
+static bool AISOLDER(struct stat a, struct stat b) {
+	if(a.st_mtime < b.st_mtime) return true;
+	if(a.st_mtime == b.st_mtime) return false;
+	return a.st_mtim.tv_nsec < b.st_mtim.tv_nsec;
+}
+
 
 xmlDoc* chapter_template = NULL;
 
