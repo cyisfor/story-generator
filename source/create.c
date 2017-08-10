@@ -47,7 +47,7 @@ int create_contents(string location, string dest) {
 	// meh, might as well count by walking the directory
 	char markup[0x100];
 	memcpy(markup,location.s,location.l);
-	memcpy(markup + location.l, LITLEN("/markup"));
+	memcpy(markup + location.l, LITLEN("/markup\0"));
 	DIR* d = opendir(markup);
 	assert(d);
 	struct dirent* dp;
