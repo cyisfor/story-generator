@@ -23,3 +23,6 @@ ddate-stub.o: source/ddate-stub.c
 
 o:
 	mkdir $@
+
+clean:
+	rm -rf o generderp
