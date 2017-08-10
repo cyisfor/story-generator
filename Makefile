@@ -8,8 +8,13 @@ all: generderp test_git ddate/ddate.o ddate-stub.o
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-generderp: o/main.o o/git.o o/repo.o 
+O=$(patsubst %,o/%.o,$N)
+S=$(patsubst %,source/%.c,$N)
+
+N=main git repo create
+generderp: $O
 	$(LINK)
+
 test_git: o/test_git.o o/git.o o/repo.o 
 	$(LINK)
 
