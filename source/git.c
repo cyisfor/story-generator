@@ -83,6 +83,7 @@ void git_for_chapters(chapter_handler handle) {
 		}
 
 		last = tree;
+		return true;
 	}
 	return git_for_commits(on_commit);
 }
