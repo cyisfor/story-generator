@@ -7,6 +7,8 @@
 #include <git2/revwalk.h>
 #include <git2/diff.h>
 
+#include <error.h>
+
 #include <string.h> // strlen, memcmp
 #include <assert.h>
 #include <stdio.h>
@@ -85,14 +87,14 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 				.l = slash-path.s
 			};
 
-			return handle(timestamp, chapnum, location, path);
+			return handle(chapnum, deleted, location, path);
 		}
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {
 		case GIT_DELTA_DELETED:
-			return one_file(delta->old_file,true);
+			return one_file(delta->old_file.path,true);
 		case GIT_DELTA_RENAMED:
-			{ bool a = one_file(delta->old_file,true);
+			{ bool a = one_file(delta->old_file.path,true);
 				if(!a) return false;
 			}
 			// fall through
@@ -100,7 +102,7 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 		case GIT_DELTA_MODIFIED:
 		case GIT_DELTA_COPIED:
 			// note: with copied, the old file didn't change, so disregard it.
-			return one_file(delta->new_file,false);
+			return one_file(delta->new_file.path,false);
 		default:
 			error(23,23,"bad delta status %d",delta->status);
 		};
