@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
 		return true;
 	}
 
+	puts("timestamp chapter location name");
+
 	repo_discover_init(".",1);
 	git_for_chapters(on_chapter);
 
