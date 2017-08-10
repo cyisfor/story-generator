@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		STRPRINT(loc);
 		fputc('\n',stdout);
 		// lookup location
-		string* testloc = bsearch(location,locations,nloc,sizeof(*locations),
+		string* testloc = bsearch(&loc,locations,nloc,sizeof(*locations),
 															 (void*)&compare_loc);
 		const char* internkey;
 		if(testloc == NULL) {
