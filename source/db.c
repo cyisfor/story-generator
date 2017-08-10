@@ -145,7 +145,7 @@ void db_saw_chapter(bool deleted, identifier story,
 	if(deleted) {
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
-		sqlite3_bind_int64(delete,2,chapnum);
+		sqlite3_bind_int64(delete,2,chapter);
 		db_once(delete);
 	} else {
 		DECLARE_STMT(insert,"INSERT OR REPLACE INTO chapters (story,chapter,timestamp) \n"
@@ -165,18 +165,17 @@ void db_for_story(void (*handle)(identifier story,
 																 git_time_t timestamp),
 									git_time_t since) {
 	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp > ?");
-	sqlite3_bind_int64(find,since);
+	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW: {
-			string location = {
-				.s = sqlite3_column_blob(find,1),
+			const string location = {
+				.s = (char*) sqlite3_column_blob(find,1),
 				.l = sqlite3_column_bytes(find,1)
 			};
 			handle(sqlite3_column_int64(find,0),
 						 location,
-						 sqlite3_column_int64(find,1),
 						 sqlite3_column_int64(find,2),
 						 sqlite3_column_int64(find,3));
 			continue;
@@ -221,7 +220,7 @@ void db_with_chapter_title(identifier story,
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		const string title = {
-			.s = sqlite3_column_blob(find,0),
+			.s = (char*) sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};
 		handle(title);
