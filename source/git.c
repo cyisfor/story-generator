@@ -1,10 +1,12 @@
 #include "git.h"
 #include "repo.h"
 
-
 #include <git2/tree.h>
 #include <git2/commit.h>
 #include <git2/revwalk.h>
+
+#include <string.h> // strlen, memcmp
+
 
 #define LITLEN(a) a,sizeof(a)-1
 
