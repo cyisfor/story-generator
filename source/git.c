@@ -72,6 +72,7 @@ void git_for_chapters(chapter_handler handle) {
 				// use 0-indexed chapters everywhere we can...
 				return handle(timestamp, chapnum-1, location, name);
 			}
+			return true;
 		}
 		git_tree* tree;
 		repo_check(git_commit_tree(&tree,commit));
