@@ -20,9 +20,9 @@ const char defaultTemplate[] =
   "<!DOCTYPE html>\n"
   "<html>\n"
   "<head><meta charset=\"utf-8\"/>\n"
-  "<title/><header/></head>\n"
-  "<body><h1><intitle/></h1>\n"
-  "<top/><content/><footer/>\n"
+  "<title/></head>\n"
+  "<body>\n"
+  "<content/>\n"
   "</body></html>";
 
 void create_setup(void) {
