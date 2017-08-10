@@ -35,6 +35,7 @@ void create_setup(void) {
 																			HTML_PARSE_COMPACT);
 	}
 }
+
 void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
 	assert(srcfd >= 0);
@@ -84,7 +85,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlSetProp(a,"href",buf);
 		xmlNodeAddContent(a,"Prev");
 		xmlAddChild(links,a);
-		a = xmlNewNode(body->ns,"link");
+		a = xmlNewNode(head->ns,"link");
 		xmlSetProp(a,"rel","prev");
 		xmlSetProp(a,"href",buf);
 		xmlAddChild(head,a);
@@ -95,7 +96,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlSetProp(a,"href",buf);
 		xmlNodeAddContent(a,"Next");
 		xmlAddChild(links,a);
-		a = xmlNewNode(body->ns,"link");
+		a = xmlNewNode(head->ns,"link");
 		xmlSetProp(a,"rel","next");
 		xmlSetProp(a,"href",buf);
 		xmlAddChild(head,a);

@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
 		src.s[chapter->location.l + LITSIZ("/markup/") + name.l] = '\0';
 
-		create_chapter(src,dest,chapter->num,true);
+		create_chapter(src,dest,chapter->num,9000);
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
