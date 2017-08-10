@@ -15,7 +15,7 @@
 
 
 void git_for_commits(bool (*handle)(git_commit*)) {
-	git_revwalk* walker;
+	git_revwalk* walker=NULL;
 	repo_check(git_revwalk_new(&walker, repo));
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
