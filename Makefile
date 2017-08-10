@@ -1,8 +1,8 @@
 P=libgit2
 export PKG_CONFIG_PATH=/custom/libgit2/lib/pkgconfig
 
-CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $P)
-LDLIBS+=-lbsd $(shell pkg-config --libs $P)
+CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
+LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 all: generderp test_git ddate/ddate.o ddate-stub.o
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
