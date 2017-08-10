@@ -20,7 +20,7 @@
 	 as well as a tree of the previous commit (which will be NULL for the first commit)
 	 commits are received in default order, which is ordered by time.
 */
-bool git_for_commits(const git_oid* until = NULL, // db_last_seen_commit
+bool git_for_commits(const git_oid* until, // db_last_seen_commit
 										 bool (*handle)(db_oid commit,
 																		git_time_t timestamp,
 																		git_tree* last,
