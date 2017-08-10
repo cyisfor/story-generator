@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
+	db_open("generderp.sqlite");
 
 	create_setup();
 
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 		}
 		create_contents(location, CSTR(dest), numchaps, with_title);
 
-		void for_chapter(int chapter, git_time_t timestamp) {
+		void for_chapter(identifier chapter, git_time_t timestamp) {
 			char htmlnamebuf[0x100] = "index.html";
 			mstring htmlname = {
 				.s = htmlnamebuf,

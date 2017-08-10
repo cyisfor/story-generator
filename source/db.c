@@ -18,11 +18,13 @@ static int db_check(int res) {
 	};
 
 	if(!db) {
-		error(23,0,"no db %d %s",res, sqlite3_errstr(res));
+		error(0,0,"no db %d %s",res, sqlite3_errstr(res));
+		abort();
 	}
-	error(42,0,"db error %d(%s) %s",
+	error(0,0,"db error %d(%s) %s",
 				res,sqlite3_errstr(res),
 				sqlite3_errmsg(db));
+	abort();
 	return res;
 }
 
