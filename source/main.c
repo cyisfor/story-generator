@@ -203,6 +203,10 @@ int main(int argc, char *argv[])
 			fputs(" -> ",stdout);
 			STRPRINT(dest);
 			fputc('\n',stdout);
+		} else {
+			fputs("skip ",stdout);
+			STRPRINT(src);
+			fputc('\n',stdout);
 		}
 		close(srcfd);
 		free(src.s);
