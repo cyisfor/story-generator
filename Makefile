@@ -1,4 +1,4 @@
-P=libgit2
+P=libgit2 sqlite3
 PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 

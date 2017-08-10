@@ -12,7 +12,7 @@ typedef struct mstring {
 	 and there's no way to conditionally make it const char*
  */
 typedef struct string {
-	const char* const s;
+	const char* s;
 	size_t l;
 } string;
 

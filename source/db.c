@@ -276,12 +276,12 @@ void db_set_story_info(identifier story,
 							 "source = COALESCE(?,source) "
 							 "WHERE id = ?");
 	void one(int col, const string thing) {
-		if(name.l == 0 || name.s == NULL) {
+		if(thing.l == 0 || thing.s == NULL) {
 			sqlite3_bind_null(update,col);
 		} else {
 			sqlite3_bind_blob(update,col,thing.s,thing.l,NULL);
 		}
-		sqlite3_once(update);
+		db_once(update);
 	}
 	one(1,title);
 	one(2,description);
