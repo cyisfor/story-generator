@@ -9,6 +9,12 @@
 #include <unistd.h> // chdir, mkdir
 #include <stdio.h>
 
+static bool AISOLDER(struct stat a, struct stat b) {
+	if(a.st_mtime < b.st_mtime) return true;
+	if(a.st_mtime == b.st_mtime) return false;
+	return a.st_mtim.tv_nsec < b.st_mtim.tv_nsec;
+}
+
 string* locations = NULL;
 size_t nloc = 0;
 size_t sloc = 0;
@@ -180,15 +186,18 @@ int main(int argc, char *argv[])
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
 		src.s[chapter->location.l + LITSIZ("/markup/") + name.l] = '\0';
 		
-		fputs("then create uh ",stdout);
-		STRPRINT(src);
-		fputs(" -> ",stdout);
-		STRPRINT(dest);
-		fputc('\n',stdout);
-
+		int srcfd = open(src.s,O_RDONLY);
+		assert(srcfd >= 0);
 		struct stat srcinfo;
-		assert(0==stat(src.
-
+		assert(0==fstat(srcfd,&srcinfo));
+		struct stat destinfo;
+		if(0!=stat(dest.s,&destinfo) || AISOLDER(destinfo,srcinfo)) {
+					fputs("then create uh ",stdout);
+					STRPRINT(src);
+					fputs(" -> ",stdout);
+					STRPRINT(dest);
+					fputc('\n',stdout);
+		}
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
