@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	bool on_chapter(git_time_t timestamp,
 									long int chapnum,
 									const string loc,
-									const char* name) {
+									const string name) {
 
 		printf("saw %d of",chapnum);
 		STRPRINT(loc);
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 			chapter->num = chapnum;
 			chapter->location.s = internkey; // NOT loc.s
 			chapter->location.l = loc.l; // ...fine
-			ensure0(mergesort(chapters,nchap,sizeof(*chaptres),(void*)&compare_chap));
+			ensure0(mergesort(chapters,nchap,sizeof(*chapters),(void*)&compare_chap));
 		}
 		
 		return true;
