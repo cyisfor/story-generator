@@ -163,14 +163,14 @@ int main(int argc, char *argv[])
 		string dest = {
 			.l = LITSIZ("html/") + chapter->location.l + LITSIZ("/") + htmlname.l + 1
 		};
-		dest.s = malloc(dest.l);
-		memcpy(dest.s,LITLEN("html/"));
+		dest.s = alloca(dest.l);
+		memcpy(dest.s,LITLEN("testnew/"));
 		mkdir(dest.s,0755); // just in case
-		memcpy(dest.s + LITSIZ("html/"), chapter->location.s, chapter->location.l);
+		memcpy(dest.s + LITSIZ("testnew/"), chapter->location.s, chapter->location.l);
 		mkdir(dest.s,0755); // just in case
-		dest.s[LITSIZ("html/")+chapter->location.l] = '/';
-		memcpy(dest.s+LITSIZ("html/")+chapter->location.l+1,htmlname.s,htmlname.l);
-		dest.s[LITSIZ("html/")+chapter->location.l+1 + htmlname.l] = '\0';
+		dest.s[LITSIZ("testnew/")+chapter->location.l] = '/';
+		memcpy(dest.s+LITSIZ("testnew/")+chapter->location.l+1,htmlname.s,htmlname.l);
+		dest.s[LITSIZ("testnew/")+chapter->location.l+1 + htmlname.l] = '\0';
 
 		char namebuf[0x100];
 		string name = {
@@ -182,35 +182,13 @@ int main(int argc, char *argv[])
 			.l = chapter->location.l + LITSIZ("/markup/") + name.l + 1
 		};
 		// src/dest must be null terminated because open and stat both SUCK
-		src.s = malloc(src.l);
+		src.s = alloca(src.l);
 		memcpy(src.s,chapter->location.s,chapter->location.l);
 		memcpy(src.s + chapter->location.l,LITLEN("/markup/"));
 		memcpy(src.s + chapter->location.l + LITSIZ("/markup/"), name.s, name.l);
 		src.s[chapter->location.l + LITSIZ("/markup/") + name.l] = '\0';
-		
-		int srcfd = open(src.s,O_RDONLY);
-		assert(srcfd >= 0);
-		struct stat srcinfo;
-		assert(0==fstat(srcfd,&srcinfo));
-		struct stat destinfo;
-		bool dest_exists = 0==stat(dest.s,&destinfo);
-		if(!dest_exists || AISOLDER(destinfo,srcinfo)) {
-			if(!dest_exists) {
-				puts("warning dest no exist!");
-			}
-			fputs("then create uh ",stdout);
-			STRPRINT(src);
-			fputs(" -> ",stdout);
-			STRPRINT(dest);
-			fputc('\n',stdout);
-		} else {
-			fputs("skip ",stdout);
-			STRPRINT(src);
-			fputc('\n',stdout);
-		}
-		close(srcfd);
-		free(src.s);
-		free(dest.s);
+
+		create_chapter(src,dest);
 		/* do NOT free(chapter->location.s); because it's interned. only free after ALL
 			 chapters are done. */
 
