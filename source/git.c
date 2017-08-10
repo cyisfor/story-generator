@@ -59,7 +59,7 @@ void git_for_chapters(chapter_handler handle) {
 				if(len < sizeof("chapter1.hish")) continue;
 				if(0!=memcmp(name,LITLEN("chapter"))) continue;
 				// position at the number...
-				const char* end = name + sizeof("chapter")-1;
+				char* end = (char*)name + sizeof("chapter")-1;
 				// parse the number
 				long int chapnum = strtol(end, &end, 10);
 				// now end points to the .hish part... make sure of this
