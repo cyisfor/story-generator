@@ -92,9 +92,7 @@ int create_contents(string location, string dest) {
 		xmlNodeAddContent(a,buf);
 	}
 
-	char buf[0x100];
-	snprintf(buf,0x100,"%s/contents.html",location.s);
-	htmlSaveFileEnc(buf,doc,"UTF-8");
+	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
 	return chapters;
 }

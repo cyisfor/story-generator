@@ -145,13 +145,14 @@ int main(int argc, char *argv[])
 	printf("%d locations found\n",nloc);
 
 	int* chaptotal = malloc(sizeof(int*) * nloc);
+	int i;
 	for(i=0;i<nloc;++i) {
 		string dest = {
 			.l = LITSIZ("testnew/") + locations[i].l + LITSIZ("/contents.html\0")
 		};
-		memcpy(dest,LITLEN("testnew/"));
-		memcpy(dest+LITSIZ("testnew/"),locations[i].s,locations[i].l);
-		memcpy(dest+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
+		memcpy(dest.s,LITLEN("testnew/"));
+		memcpy(dest.s+LITSIZ("testnew/"),locations[i].s,locations[i].l);
+		memcpy(dest.s+LITSIZ("testnew/")+locations[i].l,LITLEN("/contents.html\0"));
 		locations[i].numchaps = create_contents(locations[i], dest);
 	}
 	
