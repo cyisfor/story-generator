@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 		char* internkey;
 		if(testloc == NULL) {
 			if((nloc+1)<<1 >= sloc) {
-				sloc = ((((nloc+1)<<1)>>8+1)<<8);
+				sloc = ((((nloc+1)>>7)+1)<<8);
 				locations = realloc(locations,sizeof(*locations)*sloc);
 			}
 			locations[nloc].s = malloc(loc.l);
