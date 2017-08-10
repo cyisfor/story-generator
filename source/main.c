@@ -195,7 +195,9 @@ int main(int argc, char *argv[])
 		struct stat destinfo;
 		bool dest_exists = 0==stat(dest.s,&destinfo);
 		if(!dest_exists || AISOLDER(destinfo,srcinfo)) {
-			
+			if(!dest_exists) {
+				puts("warning dest no exist!");
+			}
 			fputs("then create uh ",stdout);
 			STRPRINT(src);
 			fputs(" -> ",stdout);
