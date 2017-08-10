@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
 	size_t i;
 	for(i=0;i<st.st_size;++i) {
-		switch(buf[i]) {
+		switch(sql[i]) {
 		case '\n':
 			PUTLIT("\\n");
 		case '\r':
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 		case '"':
 			PUTLIT("\\\"");
 		default:
-			write(1,buf+i,1);
+			write(1,sql+i,1);
 		};
 	}
 	PUTLIT("\";\n");
