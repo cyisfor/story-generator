@@ -49,7 +49,7 @@ int create_contents(string location, string dest) {
 	memcpy(markup,location.s,location.l);
 	memcpy(markup + location.l, LITLEN("/markup\0"));
 	DIR* d = opendir(markup);
-	assert(d);
+	if(!d) return 0;
 	struct dirent* dp;
 	int chapters = 0;
 	while((dp = readdir(d))) {
