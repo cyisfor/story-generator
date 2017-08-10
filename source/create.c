@@ -55,7 +55,7 @@ int create_contents(string location, string dest) {
 	while((dp = readdir(d))) {
 		size_t len = strlen(dp->d_name);
 		if(len < LITSIZ("chapter1.hish")) continue;
-		if(0!=memcmp(dp->d_name-5,".hish",5)) continue;
+		if(0!=memcmp(dp->d_name+len-5,".hish",5)) continue;
 		if(0!=memcmp(dp->d_name,LITLEN("chapter"))) continue;
 		++chapters;
 	}
