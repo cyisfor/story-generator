@@ -13,18 +13,6 @@
 /* handle gets passed every commit starting from HEAD and going back. */
 void git_for_commits(bool (*handle)(git_commit*));
 
-/*
-	git_for_stories
-	root: the directory containing your stories
-	handle: passed each story
-	  location: the "id" of the story, its subdirectory name
-		contents: the contents of that directory, not filtered for chapters yet
-*/
-
-bool git_for_stories(git_tree* root,
-										 bool (*handle)(const char* location,
-																		const git_tree* contents));
-
 /* chapter handler,
 	 timestamp: time of commit (same for all chapters in a commit)
 	 num: a chapter index starting from 0
@@ -40,7 +28,8 @@ typedef bool (*chapter_handler)(git_time_t timestamp,
 /* git_for_chapters
 	 handle: passed info on each chapter in order of modification from newest to oldest
 
-	 this kind of puts all the above together.
+	 the same timestamp for a given commit, it doesn't really distinguish between commits,
+	 treating it like a sequence of file changes. chapters can and will repeat!
 */
 
 void git_for_chapters(chapter_handler handle);
