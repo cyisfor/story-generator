@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // memmem
 #include "git.h"
 #include "repo.h"
 
