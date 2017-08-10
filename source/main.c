@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 		// lookup location
 		string* testloc = bsearch(&loc,locations,nloc,sizeof(*locations),
 															 (void*)&compare_loc);
-		const char* internkey;
+		char* internkey;
 		if(testloc == NULL) {
 			if(nloc+1 >= sloc) {
 				sloc += 0x80;
