@@ -1,5 +1,6 @@
 P=libgit2
-export PKG_CONFIG_PATH=/custom/libgit2/lib/pkgconfig
+PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
+export PKG_CONFIG_PATH
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
