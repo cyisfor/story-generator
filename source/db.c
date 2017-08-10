@@ -1,14 +1,3 @@
-#define PREPARE(name,stmt) {																	 \
-	db_check(sqlite3_prepare_v2(db, LITLEN(stmt), &name, NULL)); \
-	add_stmt(name);																							 \
-	}
-
-#define DECLARE_STMT(name,stmt)																		\
-	static sqlite3_stmt* name = NULL;																\
-	if(name == NULL) {																							\
-		PREPARE(name, stmt);																					\
-	}
-
 sqlite3* db = NULL;
 
 static int db_check(int res) {
@@ -33,28 +22,6 @@ void db_open(const char* filename) {
 	assert(db != NULL);
 }
 
-/* since sqlite sucks, have to malloc copies of pointers to all statements,
-	 since the database won't close until we finalize them all. */
-sqlite3_statement** stmts = NULL;
-size_t nstmt = 0;
-static void add_stmt(sqlite3_stmt* stmt) {
-	stmts = realloc(stmts,++nstmt);
-	stmts[nstmt-1] = stmt;
-}
-
-static sqlite3_stmt* begin(void) {
-	DECLARE_STMT(stmt,"BEGIN");
-	return stmt;
-}
-static sqlite3_stmt* commit(void) {
-	DECLARE_STMT(stmt,"COMMIT");
-	return stmt;
-}
-static sqlite3_stmt* rollback(void) {
-	DECLARE_STMT(stmt,"ROLLBACK");
-	return stmt;
-}
-
 void db_close_and_exit(void) {
 	size_t i;
 	for(i=0;i<nstmt;++i) {
@@ -70,6 +37,48 @@ void db_close_and_exit(void) {
 	exit(0);
 }
 
+void db_once(sqlite3_stmt* stmt) {
+	int res = sqlite3_step(stmt);
+	sqlite3_reset(stmt);
+	db_check(res);
+}
+
+/* since sqlite sucks, have to malloc copies of pointers to all statements,
+	 since the database won't close until we finalize them all. */
+sqlite3_statement** stmts = NULL;
+size_t nstmt = 0;
+static void add_stmt(sqlite3_stmt* stmt) {
+	stmts = realloc(stmts,++nstmt);
+	stmts[nstmt-1] = stmt;
+}
+
+#define PREPARE(name,stmt) {																	 \
+	db_check(sqlite3_prepare_v2(db, LITLEN(stmt), &name, NULL)); \
+	add_stmt(name);																							 \
+	}
+
+#define DECLARE_STMT(name,stmt)																		\
+	static sqlite3_stmt* name = NULL;																\
+	if(name == NULL) {																							\
+		PREPARE(name, stmt);																					\
+	}
+
+#define DECLARE_DB_FUNC(name,sql) static void name(void) { \
+	DECLARE_STMT(stmt, sql);																 \
+	db_once(stmt);																					 \
+	}
+
+DECLARE_DB_FUNC(begin, "BEGIN");
+DECLARE_DB_FUNC(commit, "COMMIT");
+DECLARE_DB_FUNC(rollback, "ROLLBACK");
+
+void db_setup(void) {
+#include "db-sql.gen.c"
+	const char* err = NULL;
+	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+}
+	
+  
 #define DB_OID(o) o.id
 typedef unsigned char db_oid[GIT_OID_RAWSZ]; // to .h
 
@@ -79,7 +88,6 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	sqlite3_bind_int(insert, 2, timestamp);
 	db_once(insert);
 }
-
 
 bool db_last_seen_commit(db_oid commit) {
 	DECLARE_STMT(find,"SELECT oid FROM commits ORDER BY timestamp DESC LIMIT 1");
@@ -102,26 +110,37 @@ bool db_last_seen_commit(db_oid commit) {
 
 typedef sqlite3_int64 identifier;
 
-identifier db_find_story(const string location, git_time_t timestamp) {
+identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM STORIES WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO STORIES (location,timestamp) VALUES (?,?)");
-	DECLARE_STMT(update,"UPDATE STORIES set timestamp = ? WHERE id = ?");
+	DECLARE_STMT(insert,"INSERT OR IGNORE INTO STORIES (location) VALUES (?)");
 
+	begin();
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
+	if(res == SQLITE_ROW) {
+		identifier id = sqlite3_column_int64(find,0);
+		sqlite3_reset(find);
+		return id;
+	} else {
+		sqlite3_reset(find);
+		sqlite3_bind_blob(insert,1,location.s, location.l);
+		sqlite3_bind_int64(insert,2,timestamp);
+		db_once(insert);
+		return sqlite3_last_insert_rowid(db);
+	}
+}
 
-
-void db_saw_chapter(bool deleted, identifier story, long int chapnum) {
-	identifier story = db_find_story(location);
+void db_saw_chapter(bool deleted, identifier story, git_time_t timestamp, long int chapnum) {
 	if(deleted) {
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapnum);
 		db_once(delete);
 	} else {
-		DECLARE_STMT(insert, "INSERT INTO chapters WHERE story = ? AND chapter = ?");
+		DECLARE_STMT(insert, "INSERT OR REPLACE INTO chapters (story,chapter,timestamp) VALUES (?,?,?)");
 		sqlite3_bind_int64(insert,1,story);
 		sqlite3_bind_int64(insert,2,chapnum);
+		sqlite3_bind_int64(insert,3,timestamp);
 		db_once(insert);
 	}
 }
