@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB PRIMARY KEY,
 			 timestamp INTEGER NOT NULL);
 
-CREATE INDEX IF NOT EXISTS bytimestamp ON commits(timestamp);
+CREATE UNIQUE INDEX IF NOT EXISTS bytimestamp ON commits(timestamp);
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
