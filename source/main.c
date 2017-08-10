@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 		
 		if(chapter->num > 0) {
 			// XXX: index.html -> chapter2.html ehh...
-			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapters[i].num+1);
+			htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter->num+1);
 		}
 		string dest = {
 			.l = LITSIZ("../html/") + chapter->location.l + LITSIZ("/") + htmlname.l
@@ -162,6 +162,11 @@ int main(int argc, char *argv[])
 		mkdir(dest.s,0755); // just in case
 		dest.s[LITSIZ("../html/")+chapter->location.l] = '/';
 		memcpy(dest.s+LITSIZ("../html/")+chapter->location.l+1,htmlname.s,htmlname.l);
+
+		string name = {
+			.s = namebuf,
+		};
+		name.l = snprintf(name.s,0x100,"chapter%d.hish",chapter->num+1);
 
 		string src = {
 			.l = chapter->location.l + LITSIZ("/markup/") + name.l
