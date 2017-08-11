@@ -193,7 +193,7 @@ int create_contents(identifier story,
 		}
 	
 		if(newtitle || newsource || newdesc) {
-			db_set_story_INFO(story,title,description,source);
+			db_set_story_info(story,title,description,source);
 		}
 		// if STILL no title, just use location on a temporary unstored basis
 		if(!title.s) {
@@ -299,7 +299,7 @@ int create_contents(identifier story,
 			munmap((char*)description.s,description.l);
 		}
 	}
-	db_with_story_INFO(story, got_info);
+	db_with_story_info(story, got_info);
 
 	unsetenv("titlehead");
 
