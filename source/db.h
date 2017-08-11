@@ -7,7 +7,7 @@
 #define DB_OID(o) o.id
 typedef unsigned char db_oid[GIT_OID_RAWSZ];
 
-char* db_oid_str(db_oid oid);
+const char* db_oid_str(db_oid oid);
 
 void db_open(const char* filename);
 void db_close_and_exit(void);
