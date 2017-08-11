@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
 			.id = "deadbeefdeadbeef"
 		};
 		void doit(db_oid res) {
-			if(&test != res) same = false;
+			if((void*)&test != (void*)res) same = false;
+			else if(&test != res) same = false;
 			else if(&test != ((git_oid*)res)) same = false;
 			else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
 		}
