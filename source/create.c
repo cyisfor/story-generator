@@ -157,6 +157,8 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 	xmlNode* title = get_title(doc->children);
 	assert(title);
+	puts("title:");
+	htmlNodeDumpFile(stdout,doc, title);
 
 
 	close(srcfd);
