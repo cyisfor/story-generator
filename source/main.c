@@ -144,13 +144,9 @@ int main(int argc, char *argv[])
 				return;
 			}
 
-			char htmlnamebuf[0x100] = "index.html";
-			mstring htmlname = {
-				.s = htmlnamebuf,
-				.l = LITSIZ("index.html")
-			};
-		
-			if(chapter > 1) {
+			if(chapter == 1) {
+				dextend(LITLEN("index.html"));
+			} else {
 				// XXX: index.html -> chapter2.html ehh...
 				for(;;) {
 					int amt = snprintf(dest.s+storydest.l,
@@ -165,8 +161,6 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
-			// reuse dest, extend if htmlname is longer than contents.html plus nul
-			dextend(htmlname.s,htmlname.l);
 			mstring src = {
 				.l = location.l + LITSIZ("/markup/chapterXXXXX.hish")
 			};
