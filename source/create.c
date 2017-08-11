@@ -155,12 +155,6 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 	htmlish(content,srcfd,as_child);
 
-	xmlNode* title = get_title(doc->children);
-	assert(title);
-	puts("title:");
-	htmlNodeDumpFile(stdout,doc, title);
-
-
 	close(srcfd);
 	if(!as_child) {
 		// throw away placeholder node
