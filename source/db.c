@@ -284,9 +284,9 @@ void db_with_chapter_title(identifier story,
 	sqlite3_reset(find);
 }
 
-void db_with_story_info(identifier story, void (*handle)(const string title,
-																												 const string description,
-																												 const string source)) {
+void db_with_story_info(identifier story, void (*handle)(string title,
+																												 string description,
+																												 string source)) {
 	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ? AND ("
 		"title IS NOT NULL OR "
 		"description IS NOT NULL OR "
@@ -304,6 +304,11 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 			} else {
 				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
+				// testing
+				char* s = malloc(str->l+1);
+				memcpy(s,str->s,str->l);
+				s[str->l] = '\0';
+				str->s = s;
 			}
 		}
 		CHECK(0,&title);
