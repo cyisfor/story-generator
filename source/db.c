@@ -157,7 +157,7 @@ void db_last_seen_commit(struct bad* out,
 			const char* blob = sqlite3_column_blob(find, 0);
 			assert(blob != NULL);
 			memcpy(dest, blob, sizeof(db_oid));
-			*timestamp = sqlite3_column_int64(find,1);
+			if(kind == LAST) *timestamp = sqlite3_column_int64(find,1);
 			sqlite3_reset(find);
 			return true;
 		default:
