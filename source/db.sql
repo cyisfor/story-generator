@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS last_commit (
-       id INTEGER PRIMARY KEY,
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
-			 committed BOOL NOT NULL DEFAULT 0,
-			 sentinel BOOL NOT NULL DEFAULT 0,
-			 UNIQUE(sentinel));
+			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
+
+-- we can do this... right?
+CREATE UNIQUE INDEX IF NOT EXISTS committime ON commits(timestamp);
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
