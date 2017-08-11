@@ -109,6 +109,14 @@ int main(int argc, char *argv[])
 		}
 		create_contents(location, CSTR(dest), numchaps, with_title);
 
+		void setupthead(const string title) {
+			char buf[0x100];
+			memcpy(buf,title.s,title.l);
+			memcpy(buf+title.l,LITLEN(" - "));
+			setenv("titlehead",buf,1);
+		}
+		db_with_story_title(story,setupthead);
+
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			char htmlnamebuf[0x100] = "index.html";
 			mstring htmlname = {
