@@ -78,6 +78,7 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 			const char* num = markup + LITSIZ("markup/chapter");
 			char* end;
 			long int chapnum = strtol(num,&end,10);
+			assert(chapnum != 0);
 			if(path.l-(end-path.s) < LITSIZ(".hish")) return 0;
 			if(0!=memcmp(end,LITLEN(".hish"))) return 0;
 			// got it!

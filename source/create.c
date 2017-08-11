@@ -170,39 +170,25 @@ int create_contents(identifier story,
 				source.l = len;
 			}
 		}
-
-		// we process many stories, so using one title for all of them is stupid...
-		const char* tenv = getenv("title");
-		if(tenv) {
-			size_t len = strlen(tenv);
-			if(title.s &&
-				 len == title.l &&
-				 0 == memcmp(title.s,tenv,len)) {
-				// title unmodified
-			} else {
+		
+		// title is sometimes a file
+		// .../description => .../title
+		memcpy(path+location.l+1,LITLEN("title\0"));
+		int tf = open(path,O_RDONLY);
+		if(tf > 0) {
+			// eh, should be sorta limited, also saves a stat
+			newtitle = true;
+			char buf[0x100];
+			ssize_t amt = read(tf,buf,0x100);
+			if(amt >= 0) {
+				buf[amt] = '\0';
+				title.s = buf; // goes out of scope when FUNCTION exits
+				title.l = amt;
 				newtitle = true;
-				title.s = tenv;
-				title.l = len;
 			}
-		} else {
-			// title is sometimes a file
-			// .../description => .../title
-			memcpy(path+location.l+1,LITLEN("title\0"));
-			int tf = open(path,O_RDONLY);
-			if(tf > 0) {
-				// eh, should be sorta limited, also saves a stat
-				newtitle = true;
-				char buf[0x100];
-				ssize_t amt = read(tf,buf,0x100);
-				if(amt >= 0) {
-					buf[amt] = '\0';
-					title.s = buf; // goes out of scope when FUNCTION exits
-					title.l = amt;
-					newtitle = true;
-				}
-				close(tf);
-			}
+			close(tf);
 		}
+	
 
 		if(newtitle || newsource || newdesc) {
 			db_set_story_info(story,title,description,source);
@@ -313,6 +299,8 @@ int create_contents(identifier story,
 		}
 	}
 	db_with_story_info(story, got_info);
+
+	unsetenv("titlehead");
 
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
