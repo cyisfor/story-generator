@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		if(last == NULL) {
-			db_saw_commit(timestamp, oid);			
+			db_saw_commit(timestamp, oid);
 			return true;
 		}
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	void for_story(identifier story,
 								 const string location,
 								 size_t numchaps,
-								 git_time_t timestamp) {
+								 git_time_t story_timestamp) {
 		printf("story %lu ",numchaps);
 		STRPRINT(location);
 		fputc('\n',stdout);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 		}
 		create_contents(location, CSTR(dest), numchaps, with_title);
 
-		void for_chapter(identifier chapter, git_time_t timestamp) {
+		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			char htmlnamebuf[0x100] = "index.html";
 			mstring htmlname = {
 				.s = htmlnamebuf,
@@ -143,6 +143,7 @@ int main(int argc, char *argv[])
 			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps);
 		}
 
+		// NOT story_timestamp
 		db_for_chapters(story, for_chapter, timestamp);
 		
 		free(dest.s);
