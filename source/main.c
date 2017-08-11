@@ -23,8 +23,6 @@ int main(int argc, char *argv[])
 
 	create_setup();
 
-	short derp = 0;
-	
 	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		db_saw_commit(timestamp, oid);
@@ -38,11 +36,6 @@ int main(int argc, char *argv[])
 										bool deleted,
 										const string loc,
 										const string src) {
-			if(++derp > 100) {
-				db_retransaction();
-				exit(23);
-			}
-
 			if(++num % 100 == 0) db_retransaction();
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);

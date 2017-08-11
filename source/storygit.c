@@ -28,14 +28,14 @@ bool git_for_commits(const db_oid until,
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
 	if(since) {
-		printf("since %s\n",db_oid_str(since));
+//		printf("since %s\n",db_oid_str(since));
 		repo_check(git_revwalk_push(walker,GIT_OID(since)));
 	} else {
 		repo_check(git_revwalk_push_head(walker));
 	}
 
 	if(until) {
-		printf("until %s\n",db_oid_str(until));
+//		printf("until %s\n",db_oid_str(until));
 		repo_check(git_revwalk_hide(walker,GIT_OID(until)));
 	}
 	
