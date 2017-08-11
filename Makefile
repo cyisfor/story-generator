@@ -25,25 +25,25 @@ test_git: $O
 o/%.o: source/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-o/db.o: source/db-sql.gen.c
+o/db.o: source/db-sql.gen.c source/db_oid/gen.h
 
 source/db-sql.gen.c: source/db.sql o/make-sql
 	./o/make-sql <$< >$@.temp
 	mv $@.temp $@
 
-source/db-oid/gen.h: source/db-oid/base.h source/db-oid/same.h source/db-oid/custom.h o/make-db-oid
-	./o/make-db-oid >$@.temp
+source/db_oid/gen.h: source/db_oid/base.h source/db_oid/same.h source/db_oid/custom.h o/make-db_oid
+	./o/make-db_oid >$@.temp
 	mv $@.temp $@
 
-o/make-db-oid: o/db-oid/make.o
-o/db-oid/make.o: o/db-oid
+o/make-db_oid: o/db_oid/make.o
+o/db_oid/make.o: o/db_oid
 o/make-sql: o/make-sql.o
 	$(LINK)
 
 ddate/ddate.o:
 	$(MAKE) -C ddate ddate.o
 
-o o/db-oid:
+o o/db_oid:
 	mkdir $@
 
 clean:
