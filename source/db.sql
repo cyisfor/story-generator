@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS last_commit (
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
-			 timestamp INTEGER NOT NULL DEFAULT 0,
+			 timestamp INTEGER NOT NULL,
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);

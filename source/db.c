@@ -149,31 +149,7 @@ bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
 	};
 }
 
-identifier db_find_story(const string location) {
-	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO stories (location) VALUES (?)");
-	identifier id = 0;
-	void intrans(void) {
-	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
-	int res = db_check(sqlite3_step(find));
-	if(res == SQLITE_ROW) {
-		id = sqlite3_column_int64(find,0);
-		sqlite3_reset(find);
-		return;
-	} else {
-		sqlite3_reset(find);
-		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
-		db_once(insert);
-		id = sqlite3_last_insert_rowid(db);
-		return;
-	}
-	}
-	db_transaction(intrans);
-	return id;
-}
-
-
-identifier db_find_story_derp(const string location, git_time_t timestamp) {
+identifier db_find_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
@@ -228,7 +204,7 @@ void db_for_stories(void (*handle)(identifier story,
 																 size_t numchaps,
 																 git_time_t timestamp),
 									git_time_t since) {
-	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp > ?");
+	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp AND timestamp > ?");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
