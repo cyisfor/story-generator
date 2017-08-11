@@ -130,20 +130,15 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 
 void db_caught_up(void) {
 	if(!saw_commit) return;
-	DECLARE_STMT(delete,"DELETE FROM commits WHERE kind = ?");
-	DECLARE_STMT(update,"UPDATE commits SET kind = ? WHERE kind = ?");
+	DECLARE_STMT(update,"UPDATE OR REPLACE commits SET kind = ? WHERE kind = ?");
 	static bool setup = false;
 	if(setup == false) {
 		setup = true;
 		// these never change
-		sqlite3_bind_int(delete,1,LAST);
 		sqlite3_bind_int(update,1,LAST);
 		sqlite3_bind_int(update,2,PENDING);
 	}
-	BEGIN_TRANSACTION(caught);
-	db_once(delete);
-	db_once(update);
-	END_TRANSACTION(caught);
+	db_once_trans(update);
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
