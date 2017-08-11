@@ -3,6 +3,12 @@ CREATE TABLE IF NOT EXISTS last_commit (
 			 timestamp INTEGER NOT NULL,
 			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
+CREATE TABLE IF NOT EXISTS pending_commit (
+			 oid BLOB NOT NULL,
+			 timestamp INTEGER NOT NULL,
+			 sentinel BOOL DEFAULT 0 UNIQUE,
+			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
+
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
