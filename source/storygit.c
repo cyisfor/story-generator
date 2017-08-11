@@ -8,8 +8,6 @@
 #include <git2/revwalk.h>
 #include <git2/diff.h>
 
-#include <error.h>
-
 #include <string.h> // strlen, memcmp
 #include <assert.h>
 #include <stdio.h>
@@ -114,7 +112,8 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 			// note: with copied, the old file didn't change, so disregard it.
 			return one_file(delta->new_file.path,false);
 		default:
-			error(23,23,"bad delta status %d",delta->status);
+			ERROR("bad delta status %d",delta->status);
+			abort();
 		};
 	}
 

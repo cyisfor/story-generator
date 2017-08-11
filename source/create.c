@@ -1,6 +1,8 @@
 #include "ddate.h"
 #include "create.h"
 #include "htmlish.h"
+#include "note.h"
+
 #include <libxml/HTMLparser.h> // input
 #include <libxml/HTMLtree.h> // output
 
