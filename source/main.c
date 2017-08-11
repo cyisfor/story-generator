@@ -25,7 +25,10 @@ int main(int argc, char *argv[])
 
 	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
-		if(last == NULL) return true;
+		if(last == NULL) {
+			db_saw_commit(timestamp, oid);			
+			return true;
+		}
 
 		printf("timestamp %d\n",timestamp);
 		
@@ -41,7 +44,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
-		db_saw_commit(timestamp, oid);
+
 		return ret;
 	}
 
@@ -141,6 +144,6 @@ int main(int argc, char *argv[])
 	}
 
 	db_for_stories(for_story, timestamp);
-
+	db_caught_up();
 	return 0;
 }

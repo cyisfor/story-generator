@@ -92,13 +92,20 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	static bool done = false;
 	if(done) return;
 	done = true;
+	DECLARE_STMT(create,
+							 "CREATE TEMPORARY TABLE IF NOT EXISTS pending_commit\n"
+							 " AS \n"
+							 "SELECT ? AS oid, ? AS timestamp");
+	sqlite3_bind_blob(create, 1, commit, sizeof(db_oid), NULL);
+	sqlite3_bind_int(create, 2, timestamp);
+	db_once(create);
+}
+
+void db_caught_up(void) {
 	void intrans(void) {
-		DECLARE_STMT(delete,"DELETE FROM last_commit");
-		DECLARE_STMT(insert,"INSERT INTO last_commit (oid,timestamp) VALUES (?,?)");
-		sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
-		sqlite3_bind_int(insert, 2, timestamp);
-		db_once(delete);
-		db_once(insert);
+	DECLARE_STMT(delete,"DELETE FROM last_commit");
+	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT * FROM pending_commit"):
+	DECLARE_STMT(drop,"DROP TABLE pending_commit"):
 	}
 	db_transaction(intrans);
 }
