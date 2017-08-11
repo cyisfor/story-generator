@@ -126,12 +126,13 @@ int main(int argc, char *argv[])
 		db_with_story_info(story,setupthead);
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			printf("chapter %d\n", chapter);
+			return;
 			char htmlnamebuf[0x100] = "index.html";
 			mstring htmlname = {
 				.s = htmlnamebuf,
 				.l = LITSIZ("index.html")
 			};
-			printf("chapter %d\n", chapter);
 		
 			if(chapter > 1) {
 				// XXX: index.html -> chapter2.html ehh...
