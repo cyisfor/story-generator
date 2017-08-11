@@ -14,10 +14,10 @@
 #include <dirent.h> // opendir, DIR, readdir, dirent
 #include <string.h> // 
 
-static bool AISOLDER(struct stat a, struct stat b) {
-	if(a.st_mtime < b.st_mtime) return true;
+static bool AISNEWER(struct stat a, struct stat b) {
+	if(a.st_mtime > b.st_mtime) return true;
 	if(a.st_mtime == b.st_mtime) return false;
-	return a.st_mtim.tv_nsec < b.st_mtim.tv_nsec;
+	return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
 }
 
 static void set_created(xmlNode* body) {
@@ -316,7 +316,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	assert(0==fstat(srcfd,&srcinfo));
 	struct stat destinfo;
 	bool dest_exists = 0==stat(dest.s,&destinfo);
-	if(dest_exists && !AISOLDER(destinfo,srcinfo)) {
+	if(dest_exists && AISNEWER(destinfo,srcinfo)) {
 		fputs("skip ",stdout);
 		STRPRINT(src);
 		fputc('\n',stdout);
