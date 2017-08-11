@@ -34,12 +34,12 @@ int main(int argc, char *argv[])
 
 		printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
 
-		if(++derp > 100) return false;
-
 		bool on_chapter(long int chapnum,
 										bool deleted,
 										const string loc,
 										const string src) {
+			if(++derp > 1000) exit(23);
+
 			if(++num % 100 == 0) db_retransaction();
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
