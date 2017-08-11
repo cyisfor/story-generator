@@ -39,9 +39,9 @@ void db_with_chapter_title(identifier story,
 													 identifier chapter,
 													 void (*handle)(const string));
 
-void db_with_story_info(identifier story, void (*handle)(const string title,
-																												 const string description,
-																												 const string source));
+void db_with_story_info(const identifier story, void (*handle)(const string title,
+																															 const string description,
+																															 const string source));
 
 // for db_set_* empty strings will set the db value to NULL
 void db_set_story_info(identifier story,

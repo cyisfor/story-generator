@@ -285,7 +285,7 @@ void db_with_chapter_title(identifier story,
 	sqlite3_reset(find);
 }
 
-void db_with_story_info(identifier story, void (*handle)(string title,
+void db_with_story_info(const identifier story, void (*handle)(string title,
 																												 string description,
 																												 string source)) {
 	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ? AND ("
