@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	} else {
 		src = open("custom.h",O_RDONLY);
 	}
-	write(1,LITLEN("#include \"base.h\""));
+	write(1,LITLEN("#include \"base.h\"\n"));
 	while(sendfile(1,src,NULL,0x1000) > 0);
 
 	return 0;
