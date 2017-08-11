@@ -137,6 +137,11 @@ int main(int argc, char *argv[])
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			printf("chapter %d\n", chapter);
+			if(chapter == numchaps) {
+				// or other criteria, env, db field, etc
+				puts("not exporting last chapter");
+				return;
+			}
 
 			char htmlnamebuf[0x100] = "index.html";
 			mstring htmlname = {
