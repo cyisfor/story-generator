@@ -209,7 +209,7 @@ void db_for_stories(void (*handle)(identifier story,
 																 git_time_t timestamp),
 									git_time_t since) {
 	DECLARE_STMT(find,"SELECT id,location,timestamp FROM stories WHERE timestamp AND timestamp > ?");
-	DECLARE_STMT(find_count,"(SELECT COUNT(chapter) FROM chapters WHERE story = ?)");
+	DECLARE_STMT(find_count,"SELECT COUNT(chapter) FROM chapters WHERE story = ?");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
@@ -218,7 +218,7 @@ void db_for_stories(void (*handle)(identifier story,
 			identifier story = sqlite3_column_int64(find,0);
 
 			sqlite3_bind_int64(find_count,1,story);
-			int rres = sqlite_step(find_count));
+			int rres = sqlite3_step(find_count);
 			assert(rres == SQLITE_ROW);
 			size_t count = sqlite3_column_int64(find_count,0);
 			sqlite3_reset(find_count);
