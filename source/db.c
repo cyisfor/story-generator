@@ -208,28 +208,19 @@ void db_for_stories(void (*handle)(identifier story,
 																 size_t numchaps,
 																 git_time_t timestamp),
 									git_time_t since) {
-	DECLARE_STMT(find,"SELECT id,location,timestamp FROM stories WHERE timestamp AND timestamp > ?");
-	DECLARE_STMT(find_count,"SELECT COUNT(chapter) FROM chapters WHERE story = ?");
+	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(chapter) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp AND timestamp > ?");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW: {
-			identifier story = sqlite3_column_int64(find,0);
-
-			sqlite3_bind_int64(find_count,1,story);
-			int rres = sqlite3_step(find_count);
-			assert(rres == SQLITE_ROW);
-			size_t count = sqlite3_column_int64(find_count,0);
-			sqlite3_reset(find_count);
-			
 			const string location = {
 				.s = sqlite3_column_blob(find,1),
 				.l = sqlite3_column_bytes(find,1)
 			};
-			handle(story,
+			handle(sqlite3_column_int64(find,0),
 						 location,
-						 count,
+						 sqlite3_column_int64(find,2),
 						 sqlite3_column_int64(find,3));
 			continue;
 		}
@@ -258,6 +249,7 @@ void db_for_chapters(identifier story,
 						 sqlite3_column_int64(find,1));
 			continue;
 		case SQLITE_DONE:
+			sqlite3_reset(find);
 			return;
 		default:
 			db_check(res);
