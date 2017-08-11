@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 					int amt = snprintf(dest.s+storydest.l,
 														 dspace-storydest.l,
 														 "chapter%d.html",chapter);
-					if(amt + storydest.l > dspace) {
+					if(amt + storydest.l + 1 > dspace) {
 						dspace = (((amt+storydest.l)>>8)+1)<<8;
 						dest.s = realloc(dest.s,dspace);
 					} else {
