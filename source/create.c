@@ -282,7 +282,7 @@ int create_contents(identifier story,
 					if(IS(attr->name,"id")) {
 						if(IS(attr->children->content,"description")) {
 							// in the <body> description will be in htmlish...
-							htmlish_str(cur,description,true);
+							htmlish_str(cur,description.s,description.l,true);
 							// don't descend into it looking for intitle and stuff?
 							// what about a description that contains a description div???
 						}
