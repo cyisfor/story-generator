@@ -125,7 +125,7 @@ int create_contents(identifier story,
 		with_title(i, got_title);
 	}
 	
-	void got_INFO(string title, string description, string source) {
+	void got_info(string title, string description, string source) {
 
 		// check for changes first
 
