@@ -1,4 +1,4 @@
-const char* db_oid_str(db_oid oid) {
+const char* db_oid_str(const db_oid oid) {
 	static char buf[(sizeof(db_oid)<<1)+1] = "";
 	//static char digits[] = "QBPVFZSDTJCGKYXW"; wonk
 	static char digits[] = "0123456789abcdef"; 

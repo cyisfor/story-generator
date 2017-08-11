@@ -28,6 +28,7 @@ bool git_for_commits(const db_oid until,
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
 	// XXX: todo revparse HEAD~10 etc
 	if(since) {
+		printf("since %s\n",db_oid_str(since));
 		repo_check(git_revwalk_push(walker,GIT_OID(since)));
 	} else {
 		repo_check(git_revwalk_push_head(walker));
@@ -50,6 +51,7 @@ bool git_for_commits(const db_oid until,
 		if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
 		last = cur;
 	}
+	git_revwalk_free(walker);
 }
 
 // note: this is the DIFF not the changes of each commit in between.
