@@ -142,6 +142,7 @@ identifier db_find_story(const string location) {
 	}
 	}
 	db_transaction(intrans);
+	return id;
 }
 
 
@@ -173,6 +174,7 @@ identifier db_find_story_derp(const string location, git_time_t timestamp) {
 	}
 	}
 	db_transaction(intrans);
+	return id;
 }
 
 void db_saw_chapter(bool deleted, identifier story,
