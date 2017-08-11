@@ -8,8 +8,6 @@
 
 #include "db_oid/base.h"
 
-const char* db_oid_str(db_oid oid);
-
 void db_open(const char* filename);
 void db_close_and_exit(void);
 
