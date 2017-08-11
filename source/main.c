@@ -138,13 +138,14 @@ int main(int argc, char *argv[])
 		}
 
 		// XXX: if finished, numchaps, otherwise
-		create_contents(story, location, CSTR(dest), numchaps-1, with_title);
+		if(!finished && numchaps > 1) --numchaps;
+		create_contents(story, location, CSTR(dest), numchaps, with_title);
 
 		// now we can mess with dest.s
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			printf("chapter %d\n", chapter);
-			if(chapter == numchaps) {
+			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				puts("not exporting last chapter");
 				return;

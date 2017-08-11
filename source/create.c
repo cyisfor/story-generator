@@ -381,7 +381,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	linkthing("contents.html","first",LITLEN("Contents"));
 
 	// XXX: chapters - finished ? 0 : 1
-	if(chapter < chapters - 1) {
+	if(chapter < chapters) {
 		xmlNodeAddContentLen(links,LITLEN(" "));
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
 		linkthing(buf,"next",LITLEN("Next"));

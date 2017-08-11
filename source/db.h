@@ -25,10 +25,11 @@ void db_saw_chapter(bool deleted, identifier story,
 
 
 void db_for_stories(void (*handle)(identifier story,
-																 const string location,
-																 size_t numchaps,
-																 git_time_t timestamp),
-									git_time_t since);
+																	 const string location,
+																	 bool finished,																	 
+																	 size_t numchaps,
+																	 git_time_t timestamp),
+										git_time_t since);
 
 void db_for_chapters(identifier story,
 										void (*handle)(identifier chapter,
