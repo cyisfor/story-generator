@@ -31,7 +31,7 @@ source/db-sql.gen.c: source/db.sql o/make-sql
 	./o/make-sql <$< >$@.temp
 	mv $@.temp $@
 
-source/db_oid/gen.h: source/db_oid/base.h source/db_oid/same.h source/db_oid/custom.h o/db_oid/make
+source/db_oid/gen.h: | source/db_oid/same.h source/db_oid/custom.h o/db_oid/make
 	./o/db_oid/make
 
 o/db_oid/make: o/db_oid/make.o
