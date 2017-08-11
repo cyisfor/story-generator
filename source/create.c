@@ -199,9 +199,9 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 					xmlFreeNode(cur);
 					cur = next;
 				}
-				return set_info(cur);
+				return setup_body(cur);
 			} else if(description.s && IS(cur->name,"div")) {
-				xmlNode* attr = div->properties;
+				xmlNode* attr = cur->properties;
 				while(attr) {
 					if(IS(attr->name,"id")) {
 						if(IS(attr->children->content,"description")) {
@@ -219,10 +219,10 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 				xmlAddChild(a,cur->children);
 				xmlReplaceNode(cur,a);
 				xmlFreeNode(cur);
-				return set_info(a->next);
+				return setup_body(a->next);
 			}
-			set_info(cur->children);
-			set_info(cur->next);
+			setup_body(cur->children);
+			return setup_body(cur->next);
 		}
 				
 		if(title.s) {
