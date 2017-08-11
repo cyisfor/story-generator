@@ -299,13 +299,8 @@ void db_with_story_info(identifier story, void (*handle)(string title,
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
-			if(SQLITE_NULL == sqlite3_column_type(find,col)) {
-				str->s = NULL;
-				str->l = 0;
-			} else {
-				str->s = sqlite3_column_blob(find,col); 
-				str->l = sqlite3_column_bytes(find,col);
-			}
+			str->s = sqlite3_column_blob(find,col); 
+			str->l = sqlite3_column_bytes(find,col);
 		}
 		CHECK(0,&title);
 		CHECK(1,&description);
@@ -341,7 +336,6 @@ void db_set_story_info(identifier story,
 		} else {
 			sqlite3_bind_blob(update,col,thing.s,thing.l,NULL);
 		}
-		db_once(update);
 	}
 	one(1,title);
 	one(2,description);

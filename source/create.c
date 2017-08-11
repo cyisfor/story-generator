@@ -189,11 +189,9 @@ int create_contents(identifier story,
 			close(tf);
 		}
 	
-
 		if(newtitle || newsource || newdesc) {
 			db_set_story_info(story,title,description,source);
 		}
-
 		// if STILL no title, just use location on a temporary unstored basis
 		if(!title.s) {
 			title = location;
