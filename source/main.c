@@ -84,23 +84,23 @@ int main(int argc, char *argv[])
 		
 		
 		mstring dest = {
-			.l = prefix.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
+			.l = category.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
 		};
 		size_t dspace = dest.l;
-		dest.s = malloc(dspace); // use malloc so we can realloc and use this as prefix for chaps
-		memcpy(dest.s,prefix.s,prefix.l);
-		dest.s[prefix.l] = '\0';
+		dest.s = malloc(dspace); // use malloc so we can realloc and use this as category for chaps
+		memcpy(dest.s,category.s,category.l);
+		dest.s[category.l] = '\0';
 		mkdir(dest.s,0755); // just in case
-		dest.s[prefix.l] = '/';
-		memcpy(dest.s+prefix.l+1,location.s,location.l);
-		dest.s[prefix.l+1 +  location.l] = '\0';
+		dest.s[category.l] = '/';
+		memcpy(dest.s+category.l+1,location.s,location.l);
+		dest.s[category.l+1 +  location.l] = '\0';
 		mkdir(dest.s,0755); // just in case
 		string storydest = {
 			.s = dest.s,
-			.l = prefix.l+1+location.l + 1
+			.l = category.l+1+location.l + 1
 		};
 
-		memcpy(dest.s+prefix.l+1+location.l,LITLEN("/contents.html\0"));
+		memcpy(dest.s+category.l+1+location.l,LITLEN("/contents.html\0"));
 
 		void dextend(const char* s, size_t len) {
 			size_t dlen = storydest.l + len + 1;
