@@ -109,12 +109,17 @@ bool saw_commit = false;
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	DECLARE_STMT(insert,"INSERT OR IGNORE INTO commits (oid,timestamp,kind) VALUES (?,?,?)\n");
 	DECLARE_STMT(delete,"DELETE FROM commits WHERE kind = ?\n");
-	BEGIN_TRANSACTION(saw);
-	sqlite3_bind_int(delete, 1, CURRENT);
-	db_once(delete);
+	static bool setup = false;
+	if(setup == false) {
+		setup = true;
+		// these never change
+		sqlite3_bind_int(delete, 1, CURRENT);
+	}
 	sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert, 2, timestamp);
 	sqlite3_bind_int(insert, 3, CURRENT);
+	BEGIN_TRANSACTION(saw);
+	db_once(delete);
 	db_once(insert);
 	if(saw_commit) return;
 	saw_commit = true;
