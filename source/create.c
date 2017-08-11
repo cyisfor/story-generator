@@ -145,7 +145,7 @@ int create_contents(identifier story,
 				if(description.s &&
 					 st.st_size == description.l &&
 					 0 == memcmp(desc,description.s,st.st_size)) {
-					munmap(desc);
+					munmap(desc,st.st_size);
 					// description unmodified
 				} else {
 					newdesc = true;
@@ -191,7 +191,7 @@ int create_contents(identifier story,
 				// eh, should be sorta limited, also saves a stat
 				newtitle = true;
 				char buf[0x100];
-				ssize_t amt = read(tf,newtitle.s,0x100);
+				ssize_t amt = read(tf,buf,0x100);
 				if(amt >= 0) {
 					title.s = buf; // goes out of scope when FUNCTION exits
 					title.l = amt;
@@ -223,7 +223,7 @@ int create_contents(identifier story,
 			if(cur->type != XML_ELEMENT_NODE) return;
 			
 			if(IS(cur->name,"title")) {
-				if(t.s)
+				if(title.s)
 					xmlNodeAddContentLen(cur,title.s,title.l);
 			} else if(IS(cur->name,"meta")) {
 				xmlAttr* attr = cur->properties;
@@ -305,7 +305,10 @@ int create_contents(identifier story,
 	}
 	db_with_story_info(story, got_info);
 
-
+	if(newdesc) {
+		munmap(description.s,description.l);
+	}
+	
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
 	return chapters;
