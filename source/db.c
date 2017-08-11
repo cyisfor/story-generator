@@ -143,26 +143,33 @@ void db_caught_up(void) {
 	db_once_trans(update);
 }
 
-bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM last_commit");
+void db_last_seen_commit(struct bad* out,
+												 db_oid last, db_oid current,
+												 git_time_t* timestamp) {
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE kind = ?");
 
-	int res = sqlite3_step(find);
-	switch(res) {
-	case SQLITE_DONE:
-		sqlite3_reset(find);
-		return false;
-	case SQLITE_ROW:
-		assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
-		const char* blob = sqlite3_column_blob(find, 0);
-		assert(blob != NULL);
-		memcpy(commit, blob, sizeof(db_oid));
-		*timestamp = sqlite3_column_int64(find,1);
-		sqlite3_reset(find);
-		return true;
-	default:
-		db_check(res);
-		abort();
-	};
+	bool one(db_oid dest, enum commit_kind kind) {
+		sqlite3_bind_int(find,1,kind);
+		int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_DONE:
+			sqlite3_reset(find);
+			return false;
+		case SQLITE_ROW:
+			assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
+			const char* blob = sqlite3_column_blob(find, 0);
+			assert(blob != NULL);
+			memcpy(dest, blob, sizeof(db_oid));
+			*timestamp = sqlite3_column_int64(find,1);
+			sqlite3_reset(find);
+			return true;
+		default:
+			db_check(res);
+			abort();
+		};
+	}
+	out->current = one(current,CURRENT);
+	out->last = one(last,LAST);
 }
 
 identifier db_find_story(const string location, git_time_t timestamp) {
