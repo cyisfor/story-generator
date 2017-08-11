@@ -21,16 +21,6 @@ int main(int argc, char *argv[])
 	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generderp.sqlite");
 
-	bool derp(long int chapnum,
-						bool deleted,
-						const string loc,
-						const string src) {
-		printf("chap %d\n",chapnum);
-		return true;
-	}
-	db_for_chapters(1,derp,0);
-	exit(23);
-
 	create_setup();
 
 	size_t num = 0;
