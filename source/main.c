@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %s\n",db_oid_str(oid));
+		printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
 		
 		bool on_chapter(long int chapnum,
 										bool deleted,
