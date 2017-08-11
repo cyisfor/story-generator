@@ -6,6 +6,22 @@
 #include <assert.h>
 #include <string.h> // memcpy
 
+char* db_oid_str(db_oid oid) {
+	char buf[sizeof(db_oid)<<1];
+	static char digits[] = "QBPVFZSDTJCGKYXW";
+	int i;
+	for(i=0;i<sizeof(db_oid);++i) {
+		char lo = oid[i] & 0xF;
+		char hi = (oid[i]>>4) & 0xF;
+		assert(lo < 0x10);
+		assert(hi < 0x10);
+		buf[i<<1] = lo;
+		buf[i<<1+1] = hi;
+	}
+	return buf;
+}
+		
+
 
 sqlite3* db = NULL;
 

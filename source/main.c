@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("timestamp %d\n",timestamp);
+		printf("commit %s\n",db_oid_str(oid));
 		
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 	git_time_t timestamp = 0;
 	void intrans(void) {
 		if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
+			printf("last seen commit %s\n",db_oid_str(DB_OID(oid)));
 			git_for_commits(&last_commit, on_commit);
 		}	else {
 			git_for_commits(NULL, on_commit);
