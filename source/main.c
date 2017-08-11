@@ -132,11 +132,17 @@ int main(int argc, char *argv[])
 			dest.l = storydest.l + htmlname.l + 1;
 
 			mstring src = {
-				.l = location.l + LITSIZ("/markup\0")
+				.l = location.l + LITSIZ("/markup/chapterXXXXX.hish")
 			};
 			src.s = alloca(src.l);
 			memcpy(src.s,location.s,location.l);
-			memcpy(src.s + location.l, LITLEN("/markup\0"));
+			memcpy(src.s + location.l, LITLEN("/markup/chapter"));
+			int amt = snprintf(src.s + location.l + LITLEN("/markup/chapter"),
+												 src.l - (location.l + LITLEN("/markup/chapter")),
+												 "%d",chapter);
+			assert(amt > 0);
+			assert(src.l - amt > 5); // for .hish at end
+			memcpy(src.s + location.l + LITLEN("/markup/chapter") + amt,LITLEN(".hish\0"));
 			
 			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps);
 		}
