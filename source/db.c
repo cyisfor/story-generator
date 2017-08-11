@@ -125,6 +125,7 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	saw_commit = true;
 	db_once(insert_pending);
 	END_TRANSACTION(saw);
+	printf("current is now %s\n",db_oid_str(commit));
 }
 
 void db_caught_up(void) {
