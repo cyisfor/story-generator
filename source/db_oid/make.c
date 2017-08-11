@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 			.id = "deadbeefdeadbeef"
 		};
 		char* derp = DB_OID(test);
-		db_oid res = (db_oid) derp;
+		db_oid res = *((db_oid*) &derp);
 		if(&test != &res) same = false;
 		else if(&test != ((git_oid*)&res)) same = false;
 		else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
