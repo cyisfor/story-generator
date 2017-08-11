@@ -8,7 +8,17 @@ int main(int argc, char *argv[])
 {
 	chdir("source/db_oid");
 	int src;
-	if(sizeof(db_oid) == sizeof(git_oid)) {
+	bool same = sizeof(db_oid) == sizeof(git_oid);
+	if(same) {
+		git_oid test = {
+			.id = "deadbeefdeadbeefdeadbeefdeadbeef"
+		};
+		db_oid res = DB_OID(test);
+		if(&test != &res) same = false;
+		else if(&test != ((git_oid*)&res)) same = false;
+		else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
+	}
+	if(same) {
 		unlink("gen.h");
 		symlink("same.h","gen.h");
 	} else {
