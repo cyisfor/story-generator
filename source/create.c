@@ -119,6 +119,77 @@ int create_contents(const string location,
 		}
 		with_title(i, got_title);
 	}
+	
+	void got_info(const string title, const string description, const string source) {
+		string t = {
+			.s = NULL,
+			.l = 0
+		};
+#define IS(what,name) strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
+		void setup_head(xmlNode* cur) {
+			if(!cur) return;
+			if(cur->type != XML_ELEMENT_NODE) return;
+			
+			if(IS(cur->name,"title")) {
+				if(t.s)
+					xmlNodeAddContentLen(cur,t.s,t.l);
+			}
+			setup_head(cur->children);
+			return setup_head(cur->next);
+		}
+
+		void setup_body(xmlNode* cur) {
+			if(IS(cur->name,"intitle")) {
+				if(t.s) {
+					xmlNode* new = xmlNewTextLen(t.s,t.l);
+					xmlReplaceNode(cur,new);
+					// no need to check a text node's children
+					cur = new->next;
+				} else {
+					xmlNode* next = cur->next;
+					xmlUnlinkNode(cur);
+					xmlFreeNode(cur);
+					cur = next;
+				}
+				return setup_body(cur);
+			} else if(description.s && IS(cur->name,"div")) {
+				xmlAttr* attr = cur->properties;
+				while(attr) {
+					if(IS(attr->name,"id")) {
+						if(IS(attr->children->content,"description")) {
+							xmlNodeAddContentLen(cur,description.s,description.l);
+							// don't expect the description to have intitle childen?
+							// return setup_body(cur->next);
+						}
+					}
+				}
+			} else if(IS(cur->name,"source")) {
+				// move contents into an anchor node
+				xmlNode* a = xmlNewNode(cur->ns,"a");
+				// since libxml sucks, source.s must be null terminated
+				xmlSetProp(a,"href",source.s);
+				xmlAddChild(a,cur->children);
+				xmlReplaceNode(cur,a);
+				xmlFreeNode(cur);
+				return setup_body(a->next);
+			}
+			setup_body(cur->children);
+			return setup_body(cur->next);
+		}
+				
+		if(title.s) {
+			t = title;
+		} else if(getenv("title")) {
+			t.s = getenv("title");
+			t.l = strlen(t.s);
+		}
+		if(t.s) {
+			setup_head(head);
+		}
+		setup_body(body);		
+	}
+	db_with_story_info(story, got_info);
+
 
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
@@ -167,77 +238,6 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	xmlNode* head = doc->children->next->children->next;
 	// head, blank, body
 	xmlNode* body = head->next->next;
-
-	void got_info(const string title, const string description, const string source) {
-		string t = {
-			.s = NULL,
-			.l = 0
-		};
-#define IS(what,name) strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
-		void setup_head(xmlNode* cur) {
-			if(!cur) return;
-			if(cur->type != XML_ELEMENT_NODE) return;
-			
-			if(IS(cur->name,"title")) {
-				if(t.s)
-					xmlNodeAddContentLen(cur,t.s,t.l);
-			}
-			setup_head(cur->children);
-			return setup_head(cur->next);
-		}
-
-		void setup_body(xmlNode* cur) {
-			if(IS(cur->name,"intitle")) {
-				if(t.s) {
-					xmlNode* new = xmlNewTextLen(t.s,t.l);
-					xmlReplaceNode(cur,new);
-					// no need to check a text node's children
-					cur = new->next;
-				} else {
-					xmlNode* next = cur->next;
-					xmlUnlinkNode(cur);
-					xmlFreeNode(cur);
-					cur = next;
-				}
-				return setup_body(cur);
-			} else if(description.s && IS(cur->name,"div")) {
-				xmlNode* attr = cur->properties;
-				while(attr) {
-					if(IS(attr->name,"id")) {
-						if(IS(attr->children->content,"description")) {
-							xmlNodeAddContentLen(cur,description.s,description.l);
-							// don't expect the description to have intitle childen?
-							// return set_info(cur->next);
-						}
-					}
-				}
-			} else if(IS(cur->name,"source")) {
-				// move contents into an anchor node
-				xmlNode* a = xmlNewNode(cur->ns,"a");
-				// since libxml sucks, source.s must be null terminated
-				xmlSetProp(a,"href",source.s);
-				xmlAddChild(a,cur->children);
-				xmlReplaceNode(cur,a);
-				xmlFreeNode(cur);
-				return setup_body(a->next);
-			}
-			setup_body(cur->children);
-			return setup_body(cur->next);
-		}
-				
-		if(title.s) {
-			t = title;
-		} else if(getenv("title")) {
-			t.s = getenv("title");
-			t.l = strlen(t.s);
-		}
-		if(t.s) {
-			setup_head(head);
-		}
-		setup_body(body);		
-	}
-	db_with_story_info(story, got_info);
-
 	// text suffix, body, last e in body
 	xmlNode* links = head->next->next->last;
 	while(links->type != XML_ELEMENT_NODE) {
