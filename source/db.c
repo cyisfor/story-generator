@@ -107,24 +107,26 @@ enum commit_kind {
 bool saw_commit = false;
 
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	DECLARE_STMT(insert,"INSERT OR IGNORE INTO commits (oid,timestamp,kind) VALUES (?,?,?)\n");
-	DECLARE_STMT(delete,"DELETE FROM commits WHERE kind = ?\n");
+	DECLARE_STMT(insert_current,
+							 "INSERT OR REPLACE INTO commits (oid,timestamp,kind) VALUES (?,?,?)\n");
+	DECLARE_STMT(insert_pending,
+							 "INSERT OR IGNORE INTO commits (oid,timestamp,kind) "
+							 "SELECT oid,timestamp,? FROM commits WHERE kind = ?");
 	static bool setup = false;
 	if(setup == false) {
 		setup = true;
 		// these never change
-		sqlite3_bind_int(delete, 1, CURRENT);
+		sqlite3_bind_int(insert_current, 3, CURRENT);
+		sqlite3_bind_int(insert_pending, 1, PENDING);
+		sqlite3_bind_int(insert_pending, 2, CURRENT);
 	}
-	sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
-	sqlite3_bind_int(insert, 2, timestamp);
-	sqlite3_bind_int(insert, 3, CURRENT);
+	sqlite3_bind_blob(insert_current, 1, commit, sizeof(db_oid), NULL);
+	sqlite3_bind_int(insert_current, 2, timestamp);
 	BEGIN_TRANSACTION(saw);
-	db_once(delete);
-	db_once(insert);
+	db_once(insert_current);
 	if(saw_commit) return;
 	saw_commit = true;
-	sqlite3_bind_int(insert,3,PENDING);
-	db_once(insert);
+	db_once(insert_pending);
 	END_TRANSACTION(saw);
 }
 
