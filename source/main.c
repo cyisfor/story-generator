@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 		}	else {
 			git_for_commits(NULL, on_commit);
 		}
+		db_commit_commits();
 	}
 	db_transaction(intrans);
 
