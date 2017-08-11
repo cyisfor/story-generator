@@ -11,13 +11,13 @@ int main(int argc, char *argv[])
 	int src;
 	bool same = sizeof(db_oid) == sizeof(git_oid);
 	if(same) {
-		git_oid testt = {
+		git_oid test = {
 			.id = "deadbeefdeadbeefdeadbeef"
 		};
-		db_oid res = DB_OID(testt);
-		if(&testt != &res) same = false;
-		else if(&testt != ((git_oid*)&res)) same = false;
-		else if(0!=memcmp(testt.id,res,sizeof(db_oid))) same = false;
+		char* res = DB_OID(test);
+		if(&test != &res) same = false;
+		else if(&test != ((git_oid*)&res)) same = false;
+		else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
 	}
 	if(same) {
 		unlink("gen.h");
