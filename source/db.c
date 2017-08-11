@@ -105,10 +105,11 @@ DECLARE_DB_FUNC(begin, "BEGIN");
 DECLARE_DB_FUNC(commit, "COMMIT");
 DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
+bool saw_commit = false;
+
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	static bool done = false;
-	if(done) return;
-	done = true;
+	if(saw_commit) return;
+	saw_commit = true;
 	DECLARE_STMT(create,
 							 "CREATE TEMPORARY TABLE IF NOT EXISTS pending_commit\n"
 							 " AS \n"
@@ -119,10 +120,14 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 }
 
 void db_caught_up(void) {
+	if(!saw_commit) return;
 	void intrans(void) {
 	DECLARE_STMT(delete,"DELETE FROM last_commit");
 	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT * FROM pending_commit");
 	DECLARE_STMT(drop,"DROP TABLE pending_commit");
+	db_once(delete);
+	db_once(commit);
+	db_once(drop);
 	}
 	db_transaction(intrans);
 }
