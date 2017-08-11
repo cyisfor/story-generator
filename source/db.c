@@ -8,7 +8,8 @@
 
 char* db_oid_str(db_oid oid) {
 	static char buf[(sizeof(db_oid)<<1)+1] = "";
-	static char digits[] = "QBPVFZSDTJCGKYXW";
+	//static char digits[] = "QBPVFZSDTJCGKYXW"; wonk
+	static char digits[] = "0123456789abcdef"; 
 	assert(sizeof(digits) == 0x11);
 	int i;
 	for(i=0;i<sizeof(db_oid);++i) {
