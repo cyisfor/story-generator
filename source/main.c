@@ -38,7 +38,10 @@ int main(int argc, char *argv[])
 										bool deleted,
 										const string loc,
 										const string src) {
-			if(++derp > 1000) exit(23);
+			if(++derp > 100) {
+				db_retransaction();
+				exit(23);
+			}
 
 			if(++num % 100 == 0) db_retransaction();
 			//printf("saw %d of ",chapnum);
