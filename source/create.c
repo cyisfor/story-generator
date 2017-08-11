@@ -229,7 +229,7 @@ int create_contents(identifier story,
 				if(title.s)
 					xmlNodeAddContentLen(cur,title.s,title.l);
 			} else if(IS(cur->name,"meta")) {
-				xmlAttr* attr = cur->properties;
+				xmlAttr* attr;
 				for(attr=cur->properties;attr;attr=attr->next) {
 					if(IS(attr->name,"name")) {
 						if(IS(attr->children->content,"description")) {
@@ -277,14 +277,15 @@ int create_contents(identifier story,
 					return setup_body(next);
 				}
 			} else if(description.s && IS(cur->name,"div")) {
-				xmlAttr* attr = cur->properties;
-				while(attr) {
+				xmlAttr* attr;
+				for(attr=cur->properties;attr;attr=attr->next) {				
 					if(IS(attr->name,"id")) {
 						if(IS(attr->children->content,"description")) {
 							// in the <body> description will be in htmlish...
 							htmlish_str(cur,description.s,description.l,true);
 							// don't descend into it looking for intitle and stuff?
 							// what about a description that contains a description div???
+							break;
 						}
 					}
 				}
