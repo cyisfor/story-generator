@@ -337,7 +337,6 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 	htmlish(content,srcfd,as_child);
 
-	close(srcfd);
 	if(!as_child) {
 		// throw away placeholder node
 		xmlUnlinkNode(content);
