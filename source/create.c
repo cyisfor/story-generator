@@ -136,7 +136,7 @@ int create_contents(identifier story,
 		// check for description file
 		char path[0x200];
 		memcpy(path,location.s,location.l);
-		memcpy(path+location.l,LITLEN("/markup/description\0"));
+		memcpy(path+location.l,LITLEN("/description\0"));
 		int dfd = open(path,O_RDONLY);
 		if(dfd >= 0) {
 			struct stat st;
