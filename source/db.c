@@ -96,12 +96,12 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 }
 
 void db_commit_commits(void) {
-	DECLARE_STMT(go,"UPDATE last_commit SET committed = 1 WHERE NOT committed");
+	DECLARE_STMT(go,"UPDATE last_commit SET committed = 1");
 	db_once(go);
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM last_commit");
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM last_commit WHERE committed");
 
 	int res = sqlite3_step(find);
 	switch(res) {

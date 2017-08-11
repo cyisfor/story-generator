@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS last_commit (
        id INTEGER PRIMARY KEY,
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
-			 committed BOOL NOT NULL DEFAULT 0
+			 committed BOOL NOT NULL DEFAULT 0,
 			 UNIQUE(id));
 
 -- we can do this... right?
