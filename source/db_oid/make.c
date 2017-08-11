@@ -2,6 +2,7 @@
 
 #include <unistd.h> // chdir, symlink
 #include <stdbool.h>
+#include <string.h>
 
 #define LITLEN(a) a,sizeof(a)-1
 
