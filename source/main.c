@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	if(results.last) {
 		const char* derp = db_oid_str(last_commit);
 		INFO("last seen commit %.*s",2*sizeof(db_oid),derp);
-		INFO("us %.*s",2*sizeof(db_oid),derp);
+		puts(derp);
 	}
 	if(results.current)
 		INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
