@@ -65,6 +65,13 @@ int main(int argc, char *argv[])
 
 	if(getenv("recheck")) timestamp = 0;
 
+	string category = {LITLEN("html")};
+
+	if(getenv("censored")!=NULL) {
+		category.s = "censored";
+		category.l = LITSIZ("censored");
+	}
+
 	puts("processing...");
 
 	void for_story(identifier story,
@@ -74,6 +81,7 @@ int main(int argc, char *argv[])
 		printf("story %lu ",numchaps);
 		STRPRINT(location);
 		fputc('\n',stdout);
+		
 		
 		mstring dest = {
 			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
