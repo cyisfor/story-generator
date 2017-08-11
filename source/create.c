@@ -281,9 +281,10 @@ int create_contents(identifier story,
 				while(attr) {
 					if(IS(attr->name,"id")) {
 						if(IS(attr->children->content,"description")) {
-							xmlNodeAddContentLen(cur,description.s,description.l);
-							// don't expect the description to have intitle childen?
-							// return setup_body(cur->next);
+							// in the <body> description will be in htmlish...
+							htmlish_str(cur,description,true);
+							// don't descend into it looking for intitle and stuff?
+							// what about a description that contains a description div???
 						}
 					}
 				}
