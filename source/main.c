@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 			//fputc('\n',stdout);
 			struct stat derp;
 			if(0!=stat(src.s,&derp)) {
-				printf("%s wasn't there\n",src.s);
+				warn("%s wasn't there\n",src.s);
 				return true;
 			}
 			db_saw_chapter(deleted,db_find_story(loc,timestamp),timestamp,chapnum);
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 		return ret;
 	}
 
-	puts("searching...");
+	info("searching...");
 
 	// but not older than the last commit we dealt with
 	struct bad results;
@@ -62,9 +62,9 @@ int main(int argc, char *argv[])
 	BEGIN_TRANSACTION(last_seen);
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	if(results.last)
-		printf("last seen commit %s\n",db_oid_str(last_commit));
+		info("last seen commit %s",db_oid_str(last_commit));
 	if(results.current)
-		printf("current commit %s\n",db_oid_str(current_commit));
+		info("current commit %s",db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
@@ -83,16 +83,14 @@ int main(int argc, char *argv[])
 		category.l = LITSIZ("censored");
 	}
 
-	puts("processing...");
+	info("processing...");
 
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
 								 size_t numchaps,
 								 git_time_t story_timestamp) {
-		printf("story %lu %lu ",story,numchaps);
-		STRPRINT(location);
-		fputc('\n',stdout);
+		info("story %lu %lu %.*s",story,numchaps,location.l,location.s);
 		
 		mstring dest = {
 			.l = category.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
@@ -147,10 +145,10 @@ int main(int argc, char *argv[])
 		// now we can mess with dest.s
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-			printf("chapter %d\n", chapter);
+			info("chapter %d", chapter);
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
-				puts("not exporting last chapter");
+				warn("not exporting last chapter");
 				return;
 			}
 
@@ -193,10 +191,10 @@ int main(int argc, char *argv[])
 		free(dest.s);
 	}
 
-	printf("stories since %d\n",timestamp);
+	info("stories since %d",timestamp);
 	db_for_stories(for_story, timestamp);
 	db_caught_up();
-	puts("caught up");
+	info("caught up");
 	db_close_and_exit();
 	return 0;
 }
