@@ -1,6 +1,7 @@
 #include "base.h"
 
 #include <unistd.h> // chdir, symlink
+#include <stdbool.h>
 
 #define LITLEN(a) a,sizeof(a)-1
 
