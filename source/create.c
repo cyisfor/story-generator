@@ -3,6 +3,10 @@
 #include "htmlish.h"
 #include <libxml/HTMLparser.h> // input
 #include <libxml/HTMLtree.h> // output
+
+#include <sys/mman.h> // mmap
+
+
 #include <fcntl.h> // open
 #include <unistd.h> // close
 #include <assert.h>
@@ -71,9 +75,6 @@ void create_setup(void) {
 int create_contents(identifier story,
 										const string location,
 										const string dest,
-										const string title,
-										const string description,
-										const string source,
 										size_t chapters,
 										void (*with_title)(identifier chapter,
 																			 void(*handle)(const string title))) {	
@@ -134,7 +135,7 @@ int create_contents(identifier story,
 
 		char path[0x200];
 		memcpy(path,location.s,location.l);
-		memcpy(path+location.l,"markup/description\0");
+		memcpy(path+location.l,LITLEN("markup/description\0"));
 		int dfd = open(path,O_RDONLY);
 		if(dfd >= 0) {
 			struct stat st;

@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter);
 			}
 			// reuse dest, extend if htmlname is longer than contents.html plus nul
-			dextend(htmlname);
+			dextend(htmlname.s,htmlname.l);
 			mstring src = {
 				.l = location.l + LITSIZ("/markup/chapterXXXXX.hish")
 			};
