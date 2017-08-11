@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 								 const string location,
 								 size_t numchaps,
 								 git_time_t story_timestamp) {
-		printf("story %lu ",numchaps);
+		printf("story %lu %lu ",story,numchaps);
 		STRPRINT(location);
 		fputc('\n',stdout);
 		
