@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	git_time_t timestamp = 0;
 	void intrans(void) {
 		if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
-			printf("last seen commit %s\n",db_oid_str(DB_OID(oid)));
+			printf("last seen commit %s\n",db_oid_str(DB_OID(last_commit)));
 			git_for_commits(&last_commit, on_commit);
 		}	else {
 			git_for_commits(NULL, on_commit);
