@@ -129,7 +129,7 @@ int create_contents(identifier story,
 
 		// check for changes first
 
-		puts("got info");
+		spam("got info");
 		bool newdesc = false;
 		bool newsource = false;
 		bool newtitle = false;
@@ -309,7 +309,7 @@ int create_contents(identifier story,
 void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
 	if(srcfd < 0) {
-		printf("%s moved...\n",src.s);
+		info("%.*s moved...",src.l,src.s);
 		return;
 	}
 	struct stat srcinfo;
@@ -317,19 +317,13 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	struct stat destinfo;
 	bool dest_exists = 0==stat(dest.s,&destinfo);
 	if(dest_exists && AISNEWER(destinfo,srcinfo)) {
-		fputs("skip ",stdout);
-		STRPRINT(src);
-		fputc('\n',stdout);
+		warn("skip %.*s",src.l,src.s);
 		return;
 	}
 	if(!dest_exists) {
-		puts("warning dest no exist!");
+		warn("warning dest no exist!");
 	}
-	fputs("then create uh ",stdout);
-	STRPRINT(src);
-	fputs(" -> ",stdout);
-	STRPRINT(dest);
-	fputc('\n',stdout);
+	spam("then create uh %.*s -> %.*s",src.l,src.s,dest.l,dest.s);
 
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	bool as_child = false;
