@@ -14,11 +14,12 @@ int main(int argc, char *argv[])
 		git_oid test = {
 			.id = "deadbeefdeadbeef"
 		};
-		char* derp = DB_OID(test);
-		db_oid res = *((db_oid*) &derp);
-		if(&test != &res) same = false;
-		else if(&test != ((git_oid*)&res)) same = false;
-		else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
+		void doit(db_oid res) {
+			if(&test != &res) same = false;
+			else if(&test != ((git_oid*)&res)) same = false;
+			else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
+		}
+		doit(DB_OID(test));
 	}
 	if(same) {
 		unlink("gen.h");
