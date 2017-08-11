@@ -91,7 +91,6 @@ int create_contents(const string location,
 	assert(toc);
 	
 	size_t i;
-	string title = {};
 	for(i=0;i<chapters;++i) {
 		xmlNode* li = xmlNewNode(toc->ns,"li");
 		xmlNode* a = xmlNewNode(li->ns,"a");
@@ -107,7 +106,6 @@ int create_contents(const string location,
 		}
 		with_title(i, got_title);
 	}
-	free(title.s);
 
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	

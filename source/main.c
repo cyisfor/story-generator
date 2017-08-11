@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
 	}
 	db_transaction(intrans);
 
+	if(getenv("recheck")) timestamp = 0;
+
 	puts("processing...");
 
 	void for_story(identifier story,
