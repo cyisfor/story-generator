@@ -287,7 +287,10 @@ void db_with_chapter_title(identifier story,
 void db_with_story_info(identifier story, void (*handle)(const string title,
 																												 const string description,
 																												 const string source)) {
-	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ?");
+	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ? AND ("
+		"title IS NOT NULL OR "
+		"description IS NOT NULL OR "
+		"source IS NOT NULL)");
 	sqlite3_bind_int64(find,1,story);
 	string title = {};
 	string description = {};
@@ -295,7 +298,10 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
-			if(SQLITE_NULL == sqlite3_column_type(find,col)) { 
+			if(SQLITE_NULL == sqlite3_column_type(find,col)) {
+				str->s = NULL;
+				str->l = 0;
+			} else {
 				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
 			}
