@@ -172,6 +172,17 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		assert(links);
 	}
 
+	void linkthing(const char* href, const char* rel, const string title) {
+		xmlNode* a = xmlNewNode(links->ns,"a");
+		xmlSetProp(a,"href",href);
+		xmlNodeAddContentLen(a,title.s,title.l);
+		xmlAddChild(links,a);
+		a = xmlNewNode(head->ns,"link");
+		xmlSetProp(a,"rel",rel);
+		xmlSetProp(a,"href",href);
+		xmlAddChild(head,a);
+	}
+	
 	char buf[0x100] = "index.html";
 	if(chapter > 1) {
 		if(chapter != 1) {
@@ -179,15 +190,10 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			//otherwise just use index.html
 		}
 
-		xmlNode* a = xmlNewNode(links->ns,"a");
-		xmlSetProp(a,"href",buf);
-		xmlNodeAddContent(a,"Prev");
-		xmlAddChild(links,a);
-		a = xmlNewNode(head->ns,"link");
-		xmlSetProp(a,"rel","prev");
-		xmlSetProp(a,"href",buf);
-		xmlAddChild(head,a);
+		linkthing(buf,"prev",{LITLEN("Prev"});
+
 	}
+	
 	if(chapter < chapters) {
 		xmlNodeAddContent(links," ");
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
