@@ -284,7 +284,7 @@ void db_with_chapter_title(identifier story,
 void db_with_story_info(identifier story, void (*handle)(const string title,
 																												 const string description,
 																												 const string source)) {
-	DECLARE_STMT(find,"SELECT title,description,source FROM storier WHERE id = ?");
+	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ?");
 	sqlite3_bind_int64(find,1,story);
 	string title = {};
 	string description = {};

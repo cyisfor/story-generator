@@ -153,6 +153,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	bool as_child = false;
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
+
 	htmlish(content,srcfd,as_child);
 
 	close(srcfd);
