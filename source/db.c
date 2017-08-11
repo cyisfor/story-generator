@@ -285,9 +285,12 @@ void db_with_chapter_title(identifier story,
 	sqlite3_reset(find);
 }
 
+bool derp = false;
 void db_with_story_info(const identifier story, void (*handle)(string title,
 																												 string description,
 																												 string source)) {
+	assert(derp == false); // not reentrant!
+	derp = true;
 	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ? AND ("
 		"title IS NOT NULL OR "
 		"description IS NOT NULL OR "
@@ -296,6 +299,7 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	string title = {};
 	string description = {};
 	string source = {};
+	printf("start find %d\n",story);
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
@@ -311,7 +315,9 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	// handle if nothing in the db, so we can search for files and stuff.
 	// XXX: TODO: only call a special creation function if not found?
 	handle(title,description,source);
+	printf("reset find %d\n",story);
 	sqlite3_reset(find);
+	derp = false;
 }
 
 // should set to NULL if string is empty
