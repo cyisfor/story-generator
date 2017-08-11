@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <string.h> // memcpy
 
-#include "db_oid.gen.c"
+#include "db_oid/gen.h"
 
 sqlite3* db = NULL;
 
