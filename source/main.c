@@ -84,21 +84,23 @@ int main(int argc, char *argv[])
 		
 		
 		mstring dest = {
-			.l = LITSIZ("testnew/") + location.l + LITSIZ("/contents.html\0")
+			.l = prefix.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
 		};
 		size_t dspace = dest.l;
 		dest.s = malloc(dspace); // use malloc so we can realloc and use this as prefix for chaps
-		memcpy(dest.s,LITLEN("testnew/\0"));
+		memcpy(dest.s,prefix.s,prefix.l);
+		dest.s[prefix.l] = '\0';
 		mkdir(dest.s,0755); // just in case
-		memcpy(dest.s+LITSIZ("testnew/"),location.s,location.l);
-		dest.s[LITSIZ("testnew/") +  location.l] = '\0';
+		dest.s[prefix.l] = '/';
+		memcpy(dest.s+prefix.l+1,location.s,location.l);
+		dest.s[prefix.l+1 +  location.l] = '\0';
 		mkdir(dest.s,0755); // just in case
 		string storydest = {
 			.s = dest.s,
-			.l = LITSIZ("testnew/")+location.l + 1
+			.l = prefix.l+1+location.l + 1
 		};
 
-		memcpy(dest.s+LITSIZ("testnew/")+location.l,LITLEN("/contents.html\0"));
+		memcpy(dest.s+prefix.l+1+location.l,LITLEN("/contents.html\0"));
 
 		void dextend(const char* s, size_t len) {
 			size_t dlen = storydest.l + len + 1;
