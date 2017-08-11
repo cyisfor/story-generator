@@ -109,13 +109,13 @@ int create_contents(identifier story,
 	assert(toc);
 	
 	size_t i;
-	for(i=0;i<chapters;++i) {
+	for(i=1;i<=chapters;++i) {
 		xmlNode* li = xmlNewNode(toc->ns,"li");
 		xmlNode* a = xmlNewNode(li->ns,"a");
 		xmlAddChild(li,a);
 		xmlAddChild(toc,li);
 		char buf[0x100] = "index.html";
-		if(i > 0) {
+		if(i > 1) {
 			snprintf(buf,0x100,"chapter%d.html",i);
 		}
 		xmlSetProp(a,"href",buf);
