@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
 			 timestamp INTEGER NOT NULL,
+			 finished BOOLEAN NOT NULL DEFAULT FALSE,
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);

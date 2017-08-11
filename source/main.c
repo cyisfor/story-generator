@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 
 	void for_story(identifier story,
 								 const string location,
+								 bool finished,
 								 size_t numchaps,
 								 git_time_t story_timestamp) {
 		printf("story %lu %lu ",story,numchaps);
