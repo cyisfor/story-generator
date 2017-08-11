@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
+		printf("commit %d %s\r",sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
 	BEGIN_TRANSACTION(last_seen);
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	if(results.last)
-		printf("last seen commit %s\n",db_oid_str(last_commit));
+		printf("\nlast seen commit %s\n",db_oid_str(last_commit));
 	if(results.current)
-		printf("current commit %s\n",db_oid_str(current_commit));
+		printf("\ncurrent commit %s\n",db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
