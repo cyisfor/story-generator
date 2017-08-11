@@ -190,7 +190,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			//otherwise just use index.html
 		}
 
-		linkthing(buf,"prev",{LITLEN("Prev"});
+		linkthing(buf,"prev",{{LITLEN("Prev"}});
 
 	}
 	
