@@ -116,11 +116,6 @@ int create_contents(const string location,
 		xmlSetProp(a,"href",buf);
 		void got_title(const string title) {
 			xmlNodeAddContentLen(a,title.s,title.l);
-
-			xmlNode* t = get_title(head);
-			if(t) {
-				xmlNodeAddContentLen(t,title.s,title.l);
-			}
 		}
 		with_title(i, got_title);
 	}
@@ -159,6 +154,11 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	bool as_child = false;
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 	htmlish(content,srcfd,as_child);
+
+	xmlNode* title = get_title(doc->children);
+	assert(title);
+
+
 	close(srcfd);
 	if(!as_child) {
 		// throw away placeholder node
