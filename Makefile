@@ -18,7 +18,7 @@ N=main storygit repo create db
 generderp: $O
 	$(LINK)
 
-N=test_git storygit repo
+N=test_git storygit repo db
 test_git: $O
 	$(LINK)
 
