@@ -158,9 +158,9 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	}
 
 	char buf[0x100] = "index.html";
-	if(chapter > 0) {
-		if(chapter > 1) {
-			snprintf(buf,0x100,"chapter%d.html",chapter);
+	if(chapter > 1) {
+		if(chapter != 1) {
+			snprintf(buf,0x100,"chapter%d.html",chapter-1);
 			//otherwise just use index.html
 		}
 
@@ -175,7 +175,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	}
 	if(chapter < chapters-1) {
 		xmlNodeAddContent(links," ");
-		snprintf(buf,0x100,"chapter%d.html",chapter+2);
+		snprintf(buf,0x100,"chapter%d.html",chapter+1);
 		xmlNode* a = xmlNewNode(links->ns,"a");
 		xmlSetProp(a,"href",buf);
 		xmlNodeAddContent(a,"Next");
