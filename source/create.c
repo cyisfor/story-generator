@@ -1,3 +1,4 @@
+#include "ddate.h"
 #include "create.h"
 #include "htmlish.h"
 #include <libxml/HTMLparser.h> // input
@@ -15,6 +16,17 @@ static bool AISOLDER(struct stat a, struct stat b) {
 	return a.st_mtim.tv_nsec < b.st_mtim.tv_nsec;
 }
 
+static void set_created(xmlNode* body) {
+	xmlNode* div = xmlNewNode(body->ns, "div");
+	xmlSetProp(div,"id","ddate");
+	xmlNodeAddContentLen(div,LITLEN("This page was created on "));
+	
+	char buf[0x400];
+	time_t now = time(NULL);
+	int amt = disc_format(buf,0x400,NULL,disc_fromtm(gmtime(&now)));
+	xmlNodeAddContentLen(div,buf,amt);
+	xmlAddChild(body,div);
+}
 
 xmlDoc* chapter_template = NULL;
 xmlDoc* contents_template = NULL;
@@ -175,6 +187,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlSetProp(a,"href",buf);
 		xmlAddChild(head,a);
 	}
+	set_created(head->next->next);
 
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 }
