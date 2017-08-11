@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
 										const string src) {
 			if(++num % 100 == 0) db_retransaction();
 			//printf("saw %d of ",chapnum);
-			STRPRINT(loc);
-			fputc('\n',stdout);
+			//STRPRINT(loc);
+			//fputc('\n',stdout);
 			struct stat derp;
 			if(0!=stat(src.s,&derp)) {
 				printf("%s wasn't there\n",src.s);
