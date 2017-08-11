@@ -56,17 +56,17 @@ int main(int argc, char *argv[])
 	puts("searching...");
 
 	// but not older than the last commit we dealt with
-	git_oid last_commit;
+	struct bad results;
+	db_oid last_commit, current_commit;
 	git_time_t timestamp = 0;
-	void intrans(void) {
-		if(db_last_seen_commit(DB_OID(last_commit),&timestamp)) {
-			printf("last seen commit %s\n",db_oid_str(DB_OID(last_commit)));
-			git_for_commits(&last_commit, on_commit);
-		}	else {
-			git_for_commits(NULL, on_commit);
-		}
-	}
-	db_transaction(intrans);
+	BEGIN_TRANSACTION(last_seen);
+	db_last_seen_commit(&bad,last_commit,current_commit,&timestamp);
+	printf("last seen commit %s\n",db_oid_str(last_commit));
+	printf("current commit %s\n",db_oid_str(current_commit));
+	git_for_commits(results.last ? last_commit : NULL,
+									results.current ? current_commit : NULL,
+									on_commit);
+	END_TRANSACTION(last_seen);
 
 	if(getenv("recheck")) timestamp = 0;
 

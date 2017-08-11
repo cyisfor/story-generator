@@ -12,7 +12,13 @@ void db_close_and_exit(void);
 
 void db_saw_commit(git_time_t timestamp, db_oid commit);
 void db_caught_up(void);
-bool db_last_seen_commit(db_oid commit, git_time_t* timestamp);
+struct bad {
+	bool last;
+	bool current;
+};
+void db_last_seen_commit(struct bad* out,
+												 db_oid last, db_oid current,
+												 git_time_t* timestamp);
 
 typedef int64_t identifier;
 
