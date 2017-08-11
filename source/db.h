@@ -1,3 +1,6 @@
+#ifndef _DB_H_
+#define _DB_H_
+
 #include "string.h"
 
 #include <stdint.h> // int64_t
@@ -70,3 +73,7 @@ void db_set_story_info(identifier story,
 
 void db_transaction(void (*run)(void));
 void db_retransaction(void);
+#define BEGIN_TRANSACTION(name) void intrans ## name(void) {
+#define END_TRANSACTION(name) }; db_transaction(intrans ## name);
+
+#endif /* _DB_H_ */

@@ -84,9 +84,6 @@ static void db_once(sqlite3_stmt* stmt) {
 		db_check(res);
 }
 
-#define BEGIN_TRANSACTION(name) void intrans ## name(void) {
-#define END_TRANSACTION(name) }; db_transaction(intrans ## name);
-
 static void db_once_trans(sqlite3_stmt* stmt) {
 	// because sqlite is retarded, no changes take effect outside a transaction
 	BEGIN_TRANSACTION(once);
