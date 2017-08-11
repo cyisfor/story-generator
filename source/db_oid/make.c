@@ -1,18 +1,20 @@
 #include "base.h"
 
-#include <unistd.h> // write
+#include <sys/sendfile.h>
+
+#include <unistd.h> // chdir
+#include <fcntl.h> // open, O_*
 
 int main(int argc, char *argv[])
 {
-#define PUT(a) write(1,(a),sizeof(a)-1)
-#define CHOOSE(a) PUT("#include \"db_oid/" #a ".h\"\n")
-
-	PUT("#include \"db_oid/base.h\"\n");
+	chdir("source/db_oid");
+	int src;
 	if(sizeof(db_oid) == sizeof(git_oid)) {
-		CHOOSE(same);
+		src = open("same.h",O_RDONLY);
 	} else {
-		CHOOSE(custom);
+		src = open("custom.h",O_RDONLY);
 	}
+	while(sendfile(src,1) > 0);
 
 	return 0;
 }
