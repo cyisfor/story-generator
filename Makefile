@@ -14,11 +14,11 @@ LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
 S=$(patsubst %,source/%.c,$N)
 
-N=main storygit repo create db
+N=main storygit repo create db note
 generderp: $O
 	$(LINK)
 
-N=test_git storygit repo db
+N=test_git storygit repo db note
 test_git: $O
 	$(LINK)
 
