@@ -103,6 +103,19 @@ int create_contents(const string location,
 		xmlSetProp(a,"href",buf);
 		void got_title(const string title) {
 			xmlNodeAddContentLen(a,title.s,title.l);
+			xmlNode* get_title(xmlNode* cur) {
+				if(!cur) return NULL:
+				if(cur->type == XML_ELEMENT_NODE &&
+					 LITSIZ("title")==strlen(cur->name) &&
+					 0==memcmp(cur->name,LITLEN("title"))) return cur;
+				xmlNode* t = get_title(cur->children);
+				if(t) return t;
+				return get_title(cur->next);
+			}
+			xmlNode* t = get_title();
+			if(t) {
+				xmlNodeAddContentLen(t,title.s,title.l);
+			}
 		}
 		with_title(i, got_title);
 	}
