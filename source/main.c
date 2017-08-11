@@ -30,16 +30,21 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
+		//printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
 										const string loc,
 										const string src) {
 			if(++num % 100 == 0) db_retransaction();
-			printf("saw %d of ",chapnum);
+			//printf("saw %d of ",chapnum);
 			STRPRINT(loc);
 			fputc('\n',stdout);
+			struct stat derp;
+			if(0!=stat(src.s,&derp)) {
+				printf("%s wasn't there\n",src.s);
+				return true;
+			}
 			db_saw_chapter(deleted,db_find_story(loc,timestamp),timestamp,chapnum);
 			return true;
 		}
