@@ -227,9 +227,9 @@ int create_contents(identifier story,
 					xmlNodeAddContentLen(cur,title.s,title.l);
 			} else if(IS(cur->name,"meta")) {
 				xmlAttr* attr = cur->properties;
-				for(attr;attr = attr->next) {
+				for(attr=cur->properties;attr;attr=attr->next) {
 					if(IS(attr->name,"name")) {
-						if(IS(attr->children->contents,"description")) {
+						if(IS(attr->children->content,"description")) {
 							void check(void) {
 								xmlAttr* attr;
 								// start over (we don't care about remaining attrs now
@@ -247,6 +247,7 @@ int create_contents(identifier story,
 								return;
 							}
 							check();
+							break;
 						}
 					}
 				}
