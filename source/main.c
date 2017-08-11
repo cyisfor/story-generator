@@ -64,10 +64,10 @@ int main(int argc, char *argv[])
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	if(results.last) {
 		const char* derp = db_oid_str(last_commit);
-		INFO("last seen commit %s",derp);
+		INFO("last seen commit %.*s",2*sizeof(db_oid),derp);
 	}
 	if(results.current)
-		INFO("current commit %s",db_oid_str(current_commit));
+		INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
