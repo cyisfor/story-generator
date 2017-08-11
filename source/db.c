@@ -192,7 +192,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(update,2,story);
 		sqlite3_bind_int64(update,3,chapter);
 		db_once(update);
-		if(db_changes(db) > 0) return;
+		if(sqlite3_changes(db) > 0) return;
 		sqlite3_bind_int64(insert,1,timestamp);
 		sqlite3_bind_int64(insert,2,story);
 		sqlite3_bind_int64(insert,3,chapter);
