@@ -6,7 +6,12 @@
 #include <assert.h>
 #include <string.h> // memcpy
 
-char* db_oid_str(db_oid oid) {
+#if sizeof(db_oid) == sizeof(git_oid)
+const char* db_oid_str(db_oid oid) {
+	return git_oid_strp(*((git_oid*)oid));
+}
+#else
+const char* db_oid_str(db_oid oid) {
 	static char buf[(sizeof(db_oid)<<1)+1] = "";
 	//static char digits[] = "QBPVFZSDTJCGKYXW"; wonk
 	static char digits[] = "0123456789abcdef"; 
@@ -22,6 +27,7 @@ char* db_oid_str(db_oid oid) {
 	}
 	return buf;
 }
+#endif
 		
 
 

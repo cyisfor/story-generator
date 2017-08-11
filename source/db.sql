@@ -1,6 +1,7 @@
-CREATE TABLE IF NOT EXISTS last_commit (
+CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
+			 kind INTEGER NOT NULL UNIQUE,
 			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS pending_commit (
