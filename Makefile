@@ -3,7 +3,7 @@ PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Ihtmlish/src -Ihtmlish/html_when/source -Ihtmlish/html_when/libxml2/include
+CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/source -Ihtmlish/html_when/libxml2/include
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
