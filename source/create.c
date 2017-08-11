@@ -129,6 +129,7 @@ int create_contents(identifier story,
 
 		// check for changes first
 
+		puts("got info");
 		bool newdesc = false;
 		bool newsource = false;
 		bool newtitle = false;
