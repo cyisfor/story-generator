@@ -89,19 +89,19 @@ DECLARE_DB_FUNC(commit, "COMMIT");
 DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	DECLARE_STMT(insert,"INSERT OR REPLACE INTO commits (oid,timestamp) VALUES (?,?)");
+	DECLARE_STMT(insert,"INSERT OR REPLACE INTO last_commit (oid,timestamp) VALUES (?,?)");
 	sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert, 2, timestamp);
 	db_once(insert);
 }
 
 void db_commit_commits(void) {
-	DECLARE_STMT(go,"UPDATE commits SET committed = 1 WHERE NOT committed");
+	DECLARE_STMT(go,"UPDATE last_commit SET committed = 1 WHERE NOT committed");
 	db_once(go);
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE committed ORDER BY timestamp DESC LIMIT 1");
+	DECLARE_STMT(find,"SELECT oid,timestamp FROM last_commit");
 
 	int res = sqlite3_step(find);
 	switch(res) {
