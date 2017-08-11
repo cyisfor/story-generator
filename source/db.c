@@ -164,7 +164,6 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,id);
 		db_once(update);
-		commit();
 		return;
 	} else {
 		sqlite3_reset(find);
@@ -172,7 +171,6 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
 		id = sqlite3_last_insert_rowid(db);
-		commit();
 		return;
 	}
 	}

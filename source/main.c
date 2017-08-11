@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 			printf("saw %d of ",chapnum);
 			STRPRINT(loc);
 			fputc('\n',stdout);
-			db_saw_chapter(deleted,db_find_story(loc),timestamp,chapnum);
+			db_saw_chapter(deleted,db_find_story(loc,timestamp),timestamp,chapnum);
 			return true;
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
