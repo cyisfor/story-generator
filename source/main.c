@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
 		STRPRINT(location);
 		fputc('\n',stdout);
 		
-		
 		mstring dest = {
 			.l = category.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
 		};
@@ -182,5 +181,6 @@ int main(int argc, char *argv[])
 	printf("stories since %d\n",timestamp);
 	db_for_stories(for_story, timestamp);
 	db_caught_up();
+	db_close_and_exit();
 	return 0;
 }
