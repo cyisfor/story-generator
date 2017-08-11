@@ -125,11 +125,11 @@ int create_contents(identifier story,
 		with_title(i, got_title);
 	}
 	
-	void got_info(string title, string description, string source) {
+	void got_INFO(string title, string description, string source) {
 
 		// check for changes first
 
-		spam("got info");
+		SPAM("got info");
 		bool newdesc = false;
 		bool newsource = false;
 		bool newtitle = false;
@@ -191,7 +191,7 @@ int create_contents(identifier story,
 		}
 	
 		if(newtitle || newsource || newdesc) {
-			db_set_story_info(story,title,description,source);
+			db_set_story_INFO(story,title,description,source);
 		}
 		// if STILL no title, just use location on a temporary unstored basis
 		if(!title.s) {
@@ -297,7 +297,7 @@ int create_contents(identifier story,
 			munmap((char*)description.s,description.l);
 		}
 	}
-	db_with_story_info(story, got_info);
+	db_with_story_INFO(story, got_info);
 
 	unsetenv("titlehead");
 
@@ -309,7 +309,7 @@ int create_contents(identifier story,
 void create_chapter(string src, string dest, int chapter, int chapters) {
 	int srcfd = open(src.s,O_RDONLY);
 	if(srcfd < 0) {
-		info("%.*s moved...",src.l,src.s);
+		INFO("%.*s moved...",src.l,src.s);
 		return;
 	}
 	struct stat srcinfo;
@@ -317,13 +317,13 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	struct stat destinfo;
 	bool dest_exists = 0==stat(dest.s,&destinfo);
 	if(dest_exists && AISNEWER(destinfo,srcinfo)) {
-		warn("skip %.*s",src.l,src.s);
+		WARN("skip %.*s",src.l,src.s);
 		return;
 	}
 	if(!dest_exists) {
-		warn("warning dest no exist!");
+		WARN("WARNing dest no exist!");
 	}
-	spam("then create uh %.*s -> %.*s",src.l,src.s,dest.l,dest.s);
+	SPAM("then create uh %.*s -> %.*s",src.l,src.s,dest.l,dest.s);
 
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	bool as_child = false;
