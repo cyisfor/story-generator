@@ -62,8 +62,10 @@ int main(int argc, char *argv[])
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
-	if(results.last)
-		INFO("last seen commit %s",db_oid_str(last_commit));
+	if(results.last) {
+		const char* derp = db_oid_str(last_commit);
+		INFO("last seen commit %s",derp);
+	}
 	if(results.current)
 		INFO("current commit %s",db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
