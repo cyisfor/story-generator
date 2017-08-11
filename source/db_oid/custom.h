@@ -15,7 +15,7 @@ const char* db_oid_str(db_oid oid) {
 	return buf;
 }
 
-git_oid* git_oid(db_oid a) {
+git_oid* GIT_OID(db_oid a) {
 	static git_oid temp; // ugh
 	memcpy(temp.id,a,sizeof(db_oid));
 	return &temp;
