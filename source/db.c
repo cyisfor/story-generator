@@ -95,9 +95,13 @@ void db_close_and_exit(void) {
 }
 
 static void db_once(sqlite3_stmt* stmt) {
-	int res = sqlite3_step(stmt);
-	sqlite3_reset(stmt);
-	db_check(res);
+	// because sqlite is retarded, no changes take effect outside a transaction
+	void intrans(void) {
+		int res = sqlite3_step(stmt);
+		sqlite3_reset(stmt);
+		db_check(res);
+	}
+	db_transaction(intrans);
 }
 
 

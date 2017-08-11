@@ -195,6 +195,7 @@ int create_contents(identifier story,
 				char buf[0x100];
 				ssize_t amt = read(tf,buf,0x100);
 				if(amt >= 0) {
+					buf[amt] = '\0';
 					title.s = buf; // goes out of scope when FUNCTION exits
 					title.l = amt;
 					newtitle = true;
