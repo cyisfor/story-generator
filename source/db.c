@@ -125,14 +125,10 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 
 void db_caught_up(void) {
 	if(!saw_commit) return;
-	BEGIN_TRANSACTION(cu);
-	DECLARE_STMT(delete,"DELETE FROM last_commit");
-	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT oid,timestamp FROM pending_commit");
-	DECLARE_STMT(drop,"DELETE FROM pending_commit");
-	db_once(delete);
-	db_once(commit);
-	db_once(drop);
-	END_TRANSACTION(cu);
+	DECLARE_STMT(update,"UPDATE commits SET kind = ? WHERE kind = ?");
+	sqlite3_bind_int(update,1,LAST);
+	sqlite3_bind_int(update,2,PENDING);
+	db_once_trans(update);
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
