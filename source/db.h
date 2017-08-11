@@ -1,11 +1,9 @@
 #include "string.h"
 
 #include <stdint.h> // int64_t
-#include <git2/oid.h> // GIT_OID_RAWSZ
 #include <stdbool.h>
 
-#define DB_OID(o) o.id
-typedef unsigned char db_oid[GIT_OID_RAWSZ];
+#include "db_oid.gen.h"
 
 const char* db_oid_str(db_oid oid);
 
