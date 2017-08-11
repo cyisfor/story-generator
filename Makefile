@@ -27,17 +27,23 @@ o/%.o: source/%.c | o
 
 o/db.o: source/db-sql.gen.c
 
-source/db-sql.gen.c: source/db.sql make-sql
-	./make-sql <$< >$@.temp
+source/db-sql.gen.c: source/db.sql o/make-sql
+	./o/make-sql <$< >$@.temp
 	mv $@.temp $@
 
-make-sql: o/make-sql.o
+source/db-oid/gen.h: source/db-oid/base.h source/db-oid/same.h source/db-oid/custom.h o/make-db-oid
+	./o/make-db-oid >$@.temp
+	mv $@.temp $@
+
+o/make-db-oid: o/db-oid/make.o
+o/db-oid/make.o: o/db-oid
+o/make-sql: o/make-sql.o
 	$(LINK)
 
 ddate/ddate.o:
 	$(MAKE) -C ddate ddate.o
 
-o:
+o o/db-oid:
 	mkdir $@
 
 clean:
