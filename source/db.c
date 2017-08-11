@@ -71,10 +71,7 @@ static void add_stmt(sqlite3_stmt* stmt) {
 #define DECLARE_STMT(stmt,sql)																		\
 	static sqlite3_stmt* stmt = NULL;																\
 	if(stmt == NULL) {																							\
-		puts("preparing " sql);																				\
 		PREPARE(stmt, sql);																						\
-	} else {																												\
-		puts("PREPPED " sql);																					\
 	}
 
 #define DECLARE_DB_FUNC(name,sql) static void name(void) { \
