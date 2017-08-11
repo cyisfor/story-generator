@@ -35,7 +35,7 @@ bool git_for_commits(const db_oid until,
 	}
 
 	if(until) {
-		printf("until %s\n",db_oid_str(since));
+		printf("until %s\n",db_oid_str(until));
 		repo_check(git_revwalk_hide(walker,GIT_OID(until)));
 	}
 	
