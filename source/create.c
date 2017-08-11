@@ -163,20 +163,31 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlFreeNode(content);
 	}
 
+	// root, doctype, html, text prefix, head
+	xmlNode* head = doc->children->next->children->next;
+	// head, blank, body
+	xmlNode* body = head->next->next;
+
 	void got_info(const string title, const string description, const string source) {
 		string t = {
 			.s = NULL,
 			.l = 0;
 		}
 #define IS(what,name) strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
-		void set_info(xmlNode* cur) {
+		void setup_head(xmlNode* cur) {
 			if(!cur) return;
 			if(cur->type != XML_ELEMENT_NODE) return;
 			
 			if(IS(cur->name,"title")) {
 				if(t.s)
 					xmlAddContentLen(t.s,t.l);
-			} else if(IS(cur->name,"intitle")) {
+			}
+			setup_head(cur->children);
+			return setup_head(cur->next);
+		}
+
+		void setup_body(xmlNode* cur) {
+			if(IS(cur->name,"intitle")) {
 				if(t.s) {
 					xmlNode* new = xmlNewTextLen(t.s,t.l);
 					xmlReplaceNode(cur,new);
@@ -213,7 +224,6 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			set_info(cur->children);
 			set_info(cur->next);
 		}
-					
 				
 		if(title.s) {
 			t = title;
@@ -221,11 +231,13 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			t.s = getenv("title");
 			t.l = strlen(t.s);
 		}
+		if(t.s) {
+			setup_head(head);
+		}
+		setup_body(body);		
 	}
 	db_with_story_info(story, got_info);
 
-	// root, doctype, html, text prefix, head
-	xmlNode* head = doc->children->next->children->next;
 	// text suffix, body, last e in body
 	xmlNode* links = head->next->next->last;
 	while(links->type != XML_ELEMENT_NODE) {
