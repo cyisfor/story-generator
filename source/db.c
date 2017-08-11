@@ -22,8 +22,8 @@ const char* db_oid_str(db_oid oid) {
 		char hi = (oid[i]>>4) & 0xF;
 		assert(lo < 0x10);
 		assert(hi < 0x10);
-		buf[i<<1] = digits[lo];
-		buf[(i<<1)+1] = digits[hi];
+		buf[i<<1] = digits[hi];
+		buf[(i<<1)+1] = digits[lo];
 	}
 	return buf;
 }
