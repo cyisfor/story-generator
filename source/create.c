@@ -172,10 +172,10 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		assert(links);
 	}
 
-	void linkthing(const char* href, const char* rel, const string title) {
+	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {
 		xmlNode* a = xmlNewNode(links->ns,"a");
 		xmlSetProp(a,"href",href);
-		xmlNodeAddContentLen(a,title.s,title.l);
+		xmlNodeAddContentLen(a,title,tlen);
 		xmlAddChild(links,a);
 		a = xmlNewNode(head->ns,"link");
 		xmlSetProp(a,"rel",rel);
@@ -190,21 +190,14 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			//otherwise just use index.html
 		}
 
-		linkthing(buf,"prev",{{LITLEN("Prev"}});
-
+		linkthing(buf,"prev",LITLEN("Prev"));
 	}
 	
+	linkthing("contents.html","first",LITLEN("Contents"));
+	
 	if(chapter < chapters) {
-		xmlNodeAddContent(links," ");
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
-		xmlNode* a = xmlNewNode(links->ns,"a");
-		xmlSetProp(a,"href",buf);
-		xmlNodeAddContent(a,"Next");
-		xmlAddChild(links,a);
-		a = xmlNewNode(head->ns,"link");
-		xmlSetProp(a,"rel","next");
-		xmlSetProp(a,"href",buf);
-		xmlAddChild(head,a);
+		linkthing(buf,"next",LITLEN("Next"));
 	}
 	set_created(head->next->next);
 
