@@ -112,10 +112,15 @@ int main(int argc, char *argv[])
 		void setupthead(const string title,
 										const string description,
 										const string source) {
-			if(!title.s) return;
+			string derp;
+			if(!title.s) {
+				derp = location;
+			} else {
+				derp = title;
+			}
 			char buf[0x100];
-			memcpy(buf,title.s,title.l);
-			memcpy(buf+title.l,LITLEN(" - \0"));
+			memcpy(buf,derp.s,derp.l);
+			memcpy(buf+derp.l,LITLEN(" - \0"));
 			setenv("titlehead",buf,1);
 		}
 		db_with_story_info(story,setupthead);
