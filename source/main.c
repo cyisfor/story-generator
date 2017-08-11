@@ -143,6 +143,7 @@ int main(int argc, char *argv[])
 		free(dest.s);
 	}
 
+	printf("stories since %d\n",timestamp);
 	db_for_stories(for_story, timestamp);
 	db_caught_up();
 	return 0;
