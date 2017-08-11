@@ -5,4 +5,4 @@
 typedef unsigned char db_oid[GIT_OID_RAWSZ];
 
 const git_oid* GIT_OID(const db_oid a);
-const char* db_oid_str(db_oid oid);
+const char* db_oid_str(const db_oid oid);
