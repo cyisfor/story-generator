@@ -1,9 +1,10 @@
 #include "base.h"
-
 #include <sys/sendfile.h>
 
 #include <unistd.h> // chdir
 #include <fcntl.h> // open, O_*
+
+#define LITLEN(a) a,sizeof(a)-1
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +15,8 @@ int main(int argc, char *argv[])
 	} else {
 		src = open("custom.h",O_RDONLY);
 	}
-	while(sendfile(src,1) > 0);
+	write(1,LITLEN("#include \"base.h\""));
+	while(sendfile(src,1,NULL,0x1000) > 0);
 
 	return 0;
 }
