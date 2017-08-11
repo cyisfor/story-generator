@@ -62,13 +62,14 @@ int main(int argc, char *argv[])
 	BEGIN_TRANSACTION(last_seen);
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	if(results.last)
-		printf("\nlast seen commit %s\n",db_oid_str(last_commit));
+		printf("last seen commit %s\n",db_oid_str(last_commit));
 	if(results.current)
-		printf("\ncurrent commit %s\n",db_oid_str(current_commit));
+		printf("current commit %s\n",db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
 	END_TRANSACTION(last_seen);
+	if(num > 0) putchar('\n');
 
 	if(getenv("recheck")) timestamp = 0;
 
