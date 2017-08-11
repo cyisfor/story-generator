@@ -7,7 +7,7 @@
 #include <string.h> // memcpy
 
 char* db_oid_str(db_oid oid) {
-	static char buf[sizeof(db_oid)<<1] = "";
+	static char buf[(sizeof(db_oid)<<1)+1] = "";
 	static char digits[] = "QBPVFZSDTJCGKYXW";
 	assert(sizeof(digits) == 0x11);
 	int i;
