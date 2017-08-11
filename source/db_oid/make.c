@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	bool same = sizeof(db_oid) == sizeof(git_oid);
 	if(same) {
 		git_oid test = {
-			.id = "deadbeefdeadbeefdeadbeefdeadbeef"
+			.id = "deadbeefdeadbeefdeadbeef"
 		};
 		db_oid res = DB_OID(test);
 		if(&test != &res) same = false;
