@@ -381,7 +381,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	
 	char buf[0x100] = "index.html";
 	if(chapter > 1) {
-		if(chapter != 1) {
+		if(chapter != 2) {
 			snprintf(buf,0x100,"chapter%d.html",chapter-1);
 			//otherwise just use index.html
 		}
@@ -392,8 +392,9 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 	xmlNodeAddContentLen(links,LITLEN(" "));
 	linkthing("contents.html","first",LITLEN("Contents"));
-	
-	if(chapter < chapters) {
+
+	// XXX: chapters - finished ? 0 : 1
+	if(chapter < chapters - 1) {
 		xmlNodeAddContentLen(links,LITLEN(" "));
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
 		linkthing(buf,"next",LITLEN("Next"));
