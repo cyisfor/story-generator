@@ -107,7 +107,10 @@ int create_contents(const string location,
 				if(!cur) return NULL;
 				if(cur->type == XML_ELEMENT_NODE &&
 					 strlen(cur->name)==LITSIZ("title") &&
-					 0==memcmp(cur->name,LITLEN("title"))) return cur;
+					 0==memcmp(cur->name,LITLEN("title"))) {
+					puts("found title");
+					return cur;
+				}
 				xmlNode* t = get_title(cur->children);
 				if(t) return t;
 				return get_title(cur->next);
