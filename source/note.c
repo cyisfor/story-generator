@@ -21,6 +21,10 @@ void warnf(const char* file, int line, const char* fmt, ...) {
 	fputs("WARN ",stderr);
 	note(file,line,fmt);
 }
+void spamf(const char* file, int line, const char* fmt, ...) {
+	fputs("DEBUG ",stderr);
+	note(file,line,fmt);
+}
 void errorf(const char* file, int line, const char* fmt, ...) {
 	fputs("ERROR ",stderr);
 	note(file,line,fmt);
