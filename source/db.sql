@@ -3,10 +3,8 @@ CREATE TABLE IF NOT EXISTS last_commit (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
 			 committed BOOL NOT NULL DEFAULT 0,
-			 UNIQUE(id));
-
--- we can do this... right?
-CREATE UNIQUE INDEX IF NOT EXISTS committime ON commits(timestamp);
+			 sentinel BOOL NOT NULL DEFAULT 0;
+			 UNIQUE(sentinel));
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
