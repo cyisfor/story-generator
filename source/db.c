@@ -230,6 +230,7 @@ void db_for_stories(void (*handle)(identifier story,
 			continue;
 		}
 		case SQLITE_DONE:
+			sqlite3_reset(find);
 			return;
 		default:
 			db_check(res);
@@ -304,11 +305,6 @@ void db_with_story_info(identifier story, void (*handle)(string title,
 			} else {
 				str->s = sqlite3_column_blob(find,col); 
 				str->l = sqlite3_column_bytes(find,col);
-				// testing
-				char* s = malloc(str->l+1);
-				memcpy(s,str->s,str->l);
-				s[str->l] = '\0';
-				str->s = s;
 			}
 		}
 		CHECK(0,&title);
