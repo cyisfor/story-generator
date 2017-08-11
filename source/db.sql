@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS last_commit (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
 			 committed BOOL NOT NULL DEFAULT 0,
-			 sentinel BOOL NOT NULL DEFAULT 0;
+			 sentinel BOOL NOT NULL DEFAULT 0,
 			 UNIQUE(sentinel));
 
 CREATE TABLE IF NOT EXISTS stories (
