@@ -28,8 +28,8 @@ static void note(const char* how, int hlen,
 		BODY(name)																																\
 }
 
-DEFINE(warn,"DEBUG");
-DEFINE(warn,"INFO");
+DEFINE(spam,"DEBUG");
+DEFINE(info,"INFO");
 DEFINE(warn,"WARN");
 
 HEAD(error) {
