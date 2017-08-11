@@ -11,8 +11,8 @@ void db_open(const char* filename);
 void db_close_and_exit(void);
 
 void db_saw_commit(git_time_t timestamp, db_oid commit);
+void db_caught_up(void);
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp);
-void db_commit_commits(void);
 
 typedef int64_t identifier;
 

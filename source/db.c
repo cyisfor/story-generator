@@ -104,8 +104,8 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 void db_caught_up(void) {
 	void intrans(void) {
 	DECLARE_STMT(delete,"DELETE FROM last_commit");
-	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT * FROM pending_commit"):
-	DECLARE_STMT(drop,"DROP TABLE pending_commit"):
+	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT * FROM pending_commit");
+	DECLARE_STMT(drop,"DROP TABLE pending_commit");
 	}
 	db_transaction(intrans);
 }

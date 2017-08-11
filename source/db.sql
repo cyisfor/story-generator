@@ -3,9 +3,6 @@ CREATE TABLE IF NOT EXISTS last_commit (
 			 timestamp INTEGER NOT NULL,
 			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
 
--- we can do this... right?
-CREATE UNIQUE INDEX IF NOT EXISTS committime ON commits(timestamp);
-
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
