@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 			.id = "deadbeefdeadbeef"
 		};
 		void doit(db_oid res) {
-			printf("um %p %p\n",&test,&res);
+			printf("um %p %p\n",&test.id,&res);
 			if(&test != &res) same = false;
 			else if(&test != ((git_oid*)&res)) same = false;
 			else if(0!=memcmp(test.id,res,sizeof(db_oid))) same = false;
