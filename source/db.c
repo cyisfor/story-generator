@@ -228,7 +228,7 @@ void db_for_stories(void (*handle)(identifier story,
 																 size_t numchaps,
 																 git_time_t timestamp),
 									git_time_t since) {
-	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp > ?");
+	DECLARE_STMT(find,"SELECT id,location,(SELECT COUNT(1) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp >= ?");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
@@ -258,7 +258,7 @@ void db_for_chapters(identifier story,
 																	 git_time_t timestamp),
 										git_time_t since) {
 	DECLARE_STMT(find,
-							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
+							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp >= ?");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
 	for(;;) {
