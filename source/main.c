@@ -92,6 +92,17 @@ int main(int argc, char *argv[])
 
 		memcpy(dest.s+LITSIZ("testnew/")+location.l,LITLEN("/contents.html\0"));
 
+		void dextend(const char* s, size_t len) {
+			size_t dlen = storydest.l + len + 1;
+			if(dspace < dlen) {
+				dspace = ((dlen>>8)+1)<<8;
+				dest.s = realloc(dest.s, dspace);
+			}
+			memcpy(dest.s + storydest.l, s, len);
+			dest.s[storydest.l + len] = '\0';
+			dest.l = storydest.l + len;
+		}
+
 		void with_title(identifier chapter, void(*handle)(const string title)) {
 			void on_title(const string title) {
 				if(title.s == NULL) {
@@ -109,21 +120,7 @@ int main(int argc, char *argv[])
 		}
 		create_contents(story, location, CSTR(dest), numchaps, with_title);
 
-		void setupthead(const string title,
-										const string description,
-										const string source) {
-			string derp;
-			if(!title.s) {
-				derp = location;
-			} else {
-				derp = title;
-			}
-			char buf[0x100];
-			memcpy(buf,derp.s,derp.l);
-			memcpy(buf+derp.l,LITLEN(" - \0"));
-			setenv("titlehead",buf,1);
-		}
-		db_with_story_info(story,setupthead);
+		// now we can mess with dest.s
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			printf("chapter %d\n", chapter);
@@ -139,15 +136,7 @@ int main(int argc, char *argv[])
 				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter);
 			}
 			// reuse dest, extend if htmlname is longer than contents.html plus nul
-			size_t chap_dlen = storydest.l + htmlname.l + 1;
-			if(dspace < chap_dlen) {
-				dspace = ((chap_dlen>>8)+1)<<8;
-				dest.s = realloc(dest.s, dspace);
-			}
-			memcpy(dest.s + storydest.l, htmlname.s, htmlname.l);
-			dest.s[storydest.l + htmlname.l] = '\0';
-			dest.l = storydest.l + htmlname.l + 1;
-
+			dextend(htmlname);
 			mstring src = {
 				.l = location.l + LITSIZ("/markup/chapterXXXXX.hish")
 			};
