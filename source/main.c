@@ -67,7 +67,10 @@ int main(int argc, char *argv[])
 
 	string category = {LITLEN("html")};
 
-	if(getenv("censored")!=NULL) {
+	if(getenv("category")!=NULL) {
+		category.s = getenv("category");
+		category.l = strlen(category.s);
+	} else if(getenv("censored")!=NULL) {
 		category.s = "censored";
 		category.l = LITSIZ("censored");
 	}
