@@ -1,7 +1,14 @@
-void infof(const char* file, int line, const char* fmt, ...);
-void warnf(const char* file, int line, const char* fmt, ...);
-void errorf(const char* file, int line, const char* fmt, ...);
+void infof(const char* file, int flen, int line, const char* fmt, ...);
+void warnf(const char* file, int flen, int line, const char* fmt, ...);
+void errorf(const char* file, int flen, int line, const char* fmt, ...);
+void spamf(const char* file, int flen, int line, const char* fmt, ...);
 
-#define info(args...) infof(__FILE__,__LINE__, args)
-#define warn(args...) warnf(__FILE__,__LINE__, args)
-#define error(args...) errorf(__FILE__,__LINE__, args)
+#define INFO(args...) infof(__FILE__,sizeof(__FILE__)-1,__LINE__, args)
+#define WARN(args...) warnf(__FILE__,sizeof(__FILE__)-1,__LINE__, args)
+#define ERROR(args...) errorf(__FILE__,sizeof(__FILE__)-1,__LINE__, args)
+
+#ifdef DEBUG
+#define SPAM(args...) spamf(__FILE__,__LINE__, args)
+#else
+#define SPAM(...)
+#endif
