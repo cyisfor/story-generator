@@ -64,7 +64,7 @@ static void add_stmt(sqlite3_stmt* stmt) {
 
 #define PREPARE(stmt,sql) {																	 \
 	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
-	add_stmt(name);																							 \
+	add_stmt(stmt);																							 \
 	}
 
 #define DECLARE_STMT(stmt,sql)																		\
