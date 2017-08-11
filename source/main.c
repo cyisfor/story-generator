@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 												 src.l - (location.l + LITSIZ("/markup/chapter")),
 												 "%d",chapter);
 			assert(amt > 0);
-			assert(src.l - amt > 5); // for .hish at end
+			assert(src.l - (location.l + LITSIZ("/markup/chapter")) - amt > 5); // for .hish at end
 			memcpy(src.s + location.l + LITSIZ("/markup/chapter") + amt,LITLEN(".hish\0"));
 			src.l = location.l + LITSIZ("/markup/chapter") + amt + LITSIZ(".hish");
 			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps);
