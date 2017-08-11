@@ -95,9 +95,9 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	void intrans(void) {
 		DECLARE_STMT(delete,"DELETE FROM last_commit");
 		DECLARE_STMT(insert,"INSERT INTO last_commit (oid,timestamp) VALUES (?,?)");
-		db_once(delete);
 		sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
 		sqlite3_bind_int(insert, 2, timestamp);
+		db_once(delete);
 		db_once(insert);
 	}
 	db_transaction(intrans);
