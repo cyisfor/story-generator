@@ -45,7 +45,7 @@ bool git_for_commits(const db_oid until,
 	git_oid commit_oid;
 	for(;;) {
 		if(0!=git_revwalk_next(&commit_oid, walker)) return true;
-		printf("rev oid %s\n",git_oid_tostr_s(&commit_oid));
+		//printf("rev oid %s\n",git_oid_tostr_s(&commit_oid));
 		repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 		git_time_t timestamp = git_commit_time(commit);
 		repo_check(git_commit_tree(&cur,commit));
