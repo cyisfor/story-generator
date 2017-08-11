@@ -89,10 +89,9 @@ static void db_once(sqlite3_stmt* stmt) {
 
 static void db_once_trans(sqlite3_stmt* stmt) {
 	// because sqlite is retarded, no changes take effect outside a transaction
-	void intrans(void) {
-		db_once_intrans(stmt);
-	}
-	db_transaction(intrans);
+	BEGIN_TRANSACTION(once);
+	db_once(stmt);
+	END_TRANSACTION(once);
 }
 
 DECLARE_DB_FUNC(begin, "BEGIN");
@@ -126,15 +125,14 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 
 void db_caught_up(void) {
 	if(!saw_commit) return;
-	void intrans(void) {
+	BEGIN_TRANSACTION(cu);
 	DECLARE_STMT(delete,"DELETE FROM last_commit");
 	DECLARE_STMT(commit,"INSERT INTO last_commit SELECT oid,timestamp FROM pending_commit");
 	DECLARE_STMT(drop,"DELETE FROM pending_commit");
 	db_once(delete);
 	db_once(commit);
 	db_once(drop);
-	}
-	db_transaction(intrans);
+	END_TRANSACTION(cu);
 }
 
 bool db_last_seen_commit(db_oid commit, git_time_t* timestamp) {
@@ -165,7 +163,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 
 	identifier id = 0;
-	void intrans(void) {
+	BEGIN_TRANSACTION(find);
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -173,7 +171,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		sqlite3_reset(find);
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,id);
-		db_once(update);
+		db_once_trans(update);
 		return;
 	} else {
 		sqlite3_reset(find);
@@ -183,8 +181,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		id = sqlite3_last_insert_rowid(db);
 		return;
 	}
-	}
-	db_transaction(intrans);
+	END_TRANSACTION(find);
 	return id;
 }
 
@@ -194,19 +191,19 @@ void db_saw_chapter(bool deleted, identifier story,
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapter);
-		db_once(delete);
+		db_once_trans(delete);
 	} else {
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = ? WHERE story = ? AND chapter = ?"); 
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,story);
 		sqlite3_bind_int64(update,3,chapter);
-		db_once(update);
+		db_once_trans(update);
 		if(sqlite3_changes(db) > 0) return;
 		sqlite3_bind_int64(insert,1,timestamp);
 		sqlite3_bind_int64(insert,2,story);
 		sqlite3_bind_int64(insert,3,chapter);
-		db_once(insert);
+		db_once_trans(insert);
 	}
 }
 
@@ -331,7 +328,7 @@ void db_set_chapter_title(const string title, identifier story, identifier chapt
 	sqlite3_bind_blob(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
-	db_once(update);
+	db_once_trans(update);
 }
 void db_set_story_info(identifier story,
 											 const string title,
@@ -352,7 +349,7 @@ void db_set_story_info(identifier story,
 	one(2,description);
 	one(3,source);
 	sqlite3_bind_int64(update,4,story);
-	db_once(update);
+	db_once_trans(update);
 }
 
 void db_transaction(void (*run)(void)) {
