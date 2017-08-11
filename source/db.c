@@ -315,6 +315,7 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 	// handle if nothing in the db, so we can search for files and stuff.
 	// XXX: TODO: only call a special creation function if not found?
 	handle(title,description,source);
+	sqlite3_reset(find);
 }
 
 // should set to NULL if string is empty
