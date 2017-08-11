@@ -157,12 +157,13 @@ int main(int argc, char *argv[])
 														 dspace-storydest.l,
 														 "chapter%d.html",chapter);
 					if(amt + storydest.l > dspace) {
-						dspace = dspace << 1;
+						dspace = (((amt+storydest.l)>>8)+1)<<8;
 						dest.s = realloc(dest.s,dspace);
 					} else {
 						dest.l = storydest.l + amt;
 						break;
 					}
+				}
 			}
 			// reuse dest, extend if htmlname is longer than contents.html plus nul
 			dextend(htmlname.s,htmlname.l);
