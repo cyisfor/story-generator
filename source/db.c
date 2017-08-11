@@ -62,15 +62,16 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	stmts[nstmt-1] = stmt;
 }
 
-#define PREPARE(name,stmt) {																	 \
-	db_check(sqlite3_prepare_v2(db, LITLEN(stmt), &name, NULL)); \
+#define PREPARE(stmt,sql) {																	 \
+	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
 	add_stmt(name);																							 \
 	}
 
-#define DECLARE_STMT(name,stmt)																		\
-	static sqlite3_stmt* name = NULL;																\
-	if(name == NULL) {																							\
-		PREPARE(name, stmt);																					\
+#define DECLARE_STMT(stmt,sql)																		\
+	static sqlite3_stmt* stmt = NULL;																\
+	if(stmt == NULL) {																							\
+		puts("preparing " sql);																				\
+		PREPARE(stmt, sql);																					\
 	}
 
 #define DECLARE_DB_FUNC(name,sql) static void name(void) { \
