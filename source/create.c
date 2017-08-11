@@ -171,6 +171,7 @@ int create_contents(identifier story,
 			}
 		}
 
+		// we process many stories, so using one title for all of them is stupid...
 		const char* tenv = getenv("title");
 		if(tenv) {
 			size_t len = strlen(tenv);
@@ -186,7 +187,7 @@ int create_contents(identifier story,
 		} else {
 			// title is sometimes a file
 			// .../description => .../title
-			memcpy(path+location.l+LITSIZ("markup/"),LITLEN("title\0"));
+			memcpy(path+location.l+1,LITLEN("title\0"));
 			int tf = open(path,O_RDONLY);
 			if(tf > 0) {
 				// eh, should be sorta limited, also saves a stat
