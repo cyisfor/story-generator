@@ -171,8 +171,8 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	void got_info(const string title, const string description, const string source) {
 		string t = {
 			.s = NULL,
-			.l = 0;
-		}
+			.l = 0
+		};
 #define IS(what,name) strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
 		void setup_head(xmlNode* cur) {
 			if(!cur) return;
@@ -180,7 +180,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 			
 			if(IS(cur->name,"title")) {
 				if(t.s)
-					xmlAddContentLen(t.s,t.l);
+					xmlNodeAddContentLen(cur,t.s,t.l);
 			}
 			setup_head(cur->children);
 			return setup_head(cur->next);
@@ -205,7 +205,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 				while(attr) {
 					if(IS(attr->name,"id")) {
 						if(IS(attr->children->content,"description")) {
-							xmlAddContentLen(cur,description.s,description.l);
+							xmlNodeAddContentLen(cur,description.s,description.l);
 							// don't expect the description to have intitle childen?
 							// return set_info(cur->next);
 						}
