@@ -28,8 +28,6 @@ const char* db_oid_str(db_oid oid) {
 	return buf;
 }
 #endif
-		
-
 
 sqlite3* db = NULL;
 
@@ -102,29 +100,49 @@ void db_close_and_exit(void) {
 }
 
 static void db_once(sqlite3_stmt* stmt) {
-	// because sqlite is retarded, no changes take effect outside a transaction
-	void intrans(void) {
 		int res = sqlite3_step(stmt);
 		sqlite3_reset(stmt);
 		db_check(res);
+}
+
+#define BEGIN_TRANSACTION(name) void intrans ## name(void) {
+#define END_TRANSACTION(name) }; db_transaction(intrans ## name);
+
+static void db_once_trans(sqlite3_stmt* stmt) {
+	// because sqlite is retarded, no changes take effect outside a transaction
+	void intrans(void) {
+		db_once_intrans(stmt);
 	}
 	db_transaction(intrans);
 }
-
 
 DECLARE_DB_FUNC(begin, "BEGIN");
 DECLARE_DB_FUNC(commit, "COMMIT");
 DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
+enum commit_kind {
+	PENDING, /* the soonest commit we've seen, but not finished all before */
+	LAST, /* the soonest commit we've finished with */
+	CURRENT /* the oldest commit we've seen, but not finished with */
+};
+
 bool saw_commit = false;
 
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	if(saw_commit) return;
-	saw_commit = true;
-	DECLARE_STMT(insert,"INSERT OR IGNORE INTO pending_commit (oid,timestamp) VALUES (?,?)\n");
+	DECLARE_STMT(insert,"INSERT OR IGNORE INTO commits (oid,timestamp,kind) VALUES (?,?,?)\n");
+	DECLARE_STMT(delete,"DELETE FROM commits WHERE kind = ?\n");
+	BEGIN_TRANSACTION(saw);
+	sqlite3_bind_int(delete, 1, CURRENT);
+	db_once(delete);
 	sqlite3_bind_blob(insert, 1, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert, 2, timestamp);
+	sqlite3_bind_int(insert, 3, CURRENT);
 	db_once(insert);
+	if(saw_commit) return;
+	saw_commit = true;
+	sqlite3_bind_int(insert,3,PENDING);
+	db_once(insert);
+	END_TRANSACTION(saw);
 }
 
 void db_caught_up(void) {
