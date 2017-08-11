@@ -131,7 +131,9 @@ int main(int argc, char *argv[])
 			}
 			db_with_chapter_title(story,chapter,on_title);
 		}
-		create_contents(story, location, CSTR(dest), numchaps, with_title);
+
+		// XXX: if finished, numchaps, otherwise
+		create_contents(story, location, CSTR(dest), numchaps-1, with_title);
 
 		// now we can mess with dest.s
 
