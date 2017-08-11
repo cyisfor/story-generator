@@ -163,6 +163,67 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 		xmlFreeNode(content);
 	}
 
+	void got_info(const string title, const string description, const string source) {
+		string t = {
+			.s = NULL,
+			.l = 0;
+		}
+#define IS(what,name) strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
+		void set_info(xmlNode* cur) {
+			if(!cur) return;
+			if(cur->type != XML_ELEMENT_NODE) return;
+			
+			if(IS(cur->name,"title")) {
+				if(t.s)
+					xmlAddContentLen(t.s,t.l);
+			} else if(IS(cur->name,"intitle")) {
+				if(t.s) {
+					xmlNode* new = xmlNewTextLen(t.s,t.l);
+					xmlReplaceNode(cur,new);
+					// no need to check a text node's children
+					cur = new->next;
+				} else {
+					xmlNode* next = cur->next;
+					xmlUnlinkNode(cur);
+					xmlFreeNode(cur);
+					cur = next;
+				}
+				return set_info(cur);
+			} else if(description.s && IS(cur->name,"div")) {
+				xmlNode* attr = div->properties;
+				while(attr) {
+					if(IS(attr->name,"id")) {
+						if(IS(attr->children->content,"description")) {
+							xmlAddContentLen(cur,description.s,description.l);
+							// don't expect the description to have intitle childen?
+							// return set_info(cur->next);
+						}
+					}
+				}
+			} else if(IS(cur->name,"source")) {
+				// move contents into an anchor node
+				xmlNode* a = xmlNewNode(cur->ns,"a");
+				// since libxml sucks, source.s must be null terminated
+				xmlSetProp(a,"href",source.s);
+				xmlAddChild(a,cur->children);
+				xmlReplaceNode(cur,a);
+				xmlFreeNode(cur);
+				return set_info(a->next);
+			}
+			set_info(cur->children);
+			set_info(cur->next);
+		}
+					
+				
+		if(title.s) {
+			t = title;
+		} else if(getenv("title")) {
+			t.s = getenv("title");
+			t.l = strlen(t.s);
+		}
+	}
+	db_with_story_info(story, got_info);
+
 	// root, doctype, html, text prefix, head
 	xmlNode* head = doc->children->next->children->next;
 	// text suffix, body, last e in body
@@ -192,6 +253,7 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 		linkthing(buf,"prev",LITLEN("Prev"));
 	}
+	
 
 	xmlNodeAddContentLen(links,LITLEN(" "));
 	linkthing("contents.html","first",LITLEN("Contents"));
