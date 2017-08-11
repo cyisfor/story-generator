@@ -29,13 +29,13 @@ bool git_for_commits(const db_oid until,
 	// XXX: todo revparse HEAD~10 etc
 	if(since) {
 		printf("since %s\n",db_oid_str(since));
-		printf("uh %s\n",git_oid_tostr_s(GIT_OID(since)));
 		repo_check(git_revwalk_push(walker,GIT_OID(since)));
 	} else {
 		repo_check(git_revwalk_push_head(walker));
 	}
 
 	if(until) {
+		printf("until %s\n",db_oid_str(since));
 		repo_check(git_revwalk_hide(walker,GIT_OID(until)));
 	}
 	
