@@ -133,6 +133,7 @@ int create_contents(identifier story,
 		bool newsource = false;
 		bool newtitle = false;
 
+		// check for description file
 		char path[0x200];
 		memcpy(path,location.s,location.l);
 		memcpy(path+location.l,LITLEN("markup/description\0"));
@@ -186,7 +187,7 @@ int create_contents(identifier story,
 			// title is sometimes a file
 			// .../description => .../title
 			memcpy(path+location.l+LITSIZ("markup/"),LITLEN("title\0"));
-			int tf = open(dest.s,O_RDONLY);
+			int tf = open(path,O_RDONLY);
 			if(tf > 0) {
 				// eh, should be sorta limited, also saves a stat
 				newtitle = true;
@@ -303,13 +304,12 @@ int create_contents(identifier story,
 		} else if(source.s) {
 			setup_body(body);
 		}
+		if(newdesc) {
+			munmap((char*)description.s,description.l);
+		}
 	}
 	db_with_story_info(story, got_info);
 
-	if(newdesc) {
-		munmap(description.s,description.l);
-	}
-	
 	htmlSaveFileEnc(dest.s,doc,"UTF-8");
 	
 	return chapters;
