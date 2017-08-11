@@ -5,7 +5,7 @@
 
 static void note(const char* file, int line, const char* fmt, ...) {
 	fputs(file, stderr);
-	printf(":%d ",line);
+	fprintf(stderr,":%d ",line);
 	va_list arg;
 	va_start(arg, fmt);
 	vfprintf(stderr,fmt,arg);
