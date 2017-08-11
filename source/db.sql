@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
 			 kind INTEGER NOT NULL UNIQUE,
-			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
+			 PRIMARY KEY(oid,timestamp,kind)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS pending_commit (
 			 oid BLOB NOT NULL,
