@@ -312,6 +312,8 @@ void db_with_story_info(identifier story, void (*handle)(const string title,
 	} else {
 		db_check(res);
 	}
+	// handle if nothing in the db, so we can search for files and stuff.
+	// XXX: TODO: only call a special creation function if not found?
 	handle(title,description,source);
 }
 
