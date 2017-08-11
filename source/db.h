@@ -3,6 +3,8 @@
 #include <stdint.h> // int64_t
 #include <stdbool.h>
 
+#include "db_oid/base.h"
+
 const char* db_oid_str(db_oid oid);
 
 void db_open(const char* filename);
