@@ -8,7 +8,7 @@ void spamf(const char* file, int flen, int line, const char* fmt, ...);
 #define ERROR(args...) errorf(__FILE__,sizeof(__FILE__)-1,__LINE__, args)
 
 #ifdef DEBUG
-#define SPAM(args...) spamf(__FILE__,__LINE__, args)
+#define SPAM(args...) spamf(__FILE__,sizeof(__FILE__)-1,__LINE__, args)
 #else
 #define SPAM(...)
 #endif
