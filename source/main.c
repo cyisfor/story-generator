@@ -152,7 +152,17 @@ int main(int argc, char *argv[])
 		
 			if(chapter > 1) {
 				// XXX: index.html -> chapter2.html ehh...
-				htmlname.l = snprintf(htmlname.s,0x100,"chapter%d.html",chapter);
+				for(;;) {
+					int amt = snprintf(dest.s+storydest.l,
+														 dspace-storydest.l,
+														 "chapter%d.html",chapter);
+					if(amt + storydest.l > dspace) {
+						dspace = dspace << 1;
+						dest.s = realloc(dest.s,dspace);
+					} else {
+						dest.l = storydest.l + amt;
+						break;
+					}
 			}
 			// reuse dest, extend if htmlname is longer than contents.html plus nul
 			dextend(htmlname.s,htmlname.l);
