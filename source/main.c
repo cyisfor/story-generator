@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	db_oid last_commit, current_commit;
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
-	db_last_seen_commit(&bad,last_commit,current_commit,&timestamp);
+	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	printf("last seen commit %s\n",db_oid_str(last_commit));
 	printf("current commit %s\n",db_oid_str(current_commit));
 	git_for_commits(results.last ? last_commit : NULL,
