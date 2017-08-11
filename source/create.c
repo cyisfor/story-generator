@@ -192,10 +192,12 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 
 		linkthing(buf,"prev",LITLEN("Prev"));
 	}
-	
+
+	xmlNodeAddContentLen(links,LITLEN(" "));
 	linkthing("contents.html","first",LITLEN("Contents"));
 	
 	if(chapter < chapters) {
+		xmlNodeAddContentLen(links,LITLEN(" "));
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
 		linkthing(buf,"next",LITLEN("Next"));
 	}
