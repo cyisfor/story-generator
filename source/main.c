@@ -23,8 +23,6 @@ int main(int argc, char *argv[])
 
 	create_setup();
 
-	int derp = 0;
-
 	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		if(last == NULL) {
@@ -34,8 +32,6 @@ int main(int argc, char *argv[])
 
 		printf("commit %d %s\n",sizeof(db_oid),db_oid_str(oid));
 
-		if(++derp == 100) return false;
-		
 		bool on_chapter(long int chapnum,
 										bool deleted,
 										const string loc,
