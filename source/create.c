@@ -223,7 +223,7 @@ int create_contents(identifier story,
 		void setup_head(xmlNode* cur) {
 			// set <title> and <meta name="description">
 			if(!cur) return;
-			if(cur->type != XML_ELEMENT_NODE) return;
+			if(cur->type != XML_ELEMENT_NODE) return setup_head(cur->next);
 			
 			if(IS(cur->name,"title")) {
 				if(title.s)
@@ -261,7 +261,7 @@ int create_contents(identifier story,
 
 		void setup_body(xmlNode* cur) {
 			if(!cur) return;
-			if(cur->type != XML_ELEMENT_NODE) return;
+			if(cur->type != XML_ELEMENT_NODE) return setup_body(cur->next);
 			
 			if(IS(cur->name,"intitle")) {
 				if(title.s) {
