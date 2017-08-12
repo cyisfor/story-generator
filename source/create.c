@@ -79,7 +79,7 @@ static void dump_to_fd(int dest, xmlDoc* src) {
 		 totally ignored, and should not be there, since xmlOutputBuffer
 		 handles encoding from this point.
 	*/
-	htmlDocContentDumpOutput(out,doc,NULL);
+	htmlDocContentDumpOutput(out,src,NULL);
 	ensure0(xmlOutputBufferClose(out));
 }
 
@@ -325,7 +325,7 @@ void create_chapter(int src, int dest,
 	bool as_child = false;
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 
-	htmlish(content,srcfd,as_child);
+	htmlish(content,src,as_child);
 
 	if(!as_child) {
 		// throw away placeholder node
