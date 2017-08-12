@@ -177,12 +177,10 @@ int main(int argc, char *argv[])
 				return;
 			}
 
-			const char* destname = "index.html";
+			const char destname[0x100] = "index.html";
 			if(chapter > 1) {
-				char buf[0x100];
-				int amt = snprintf(buf,0x100, "chapter%d.html",chapter);
+				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
-				destname = buf;
 			}
 			char srcname[0x100];
 			snprintf(srcname,0x100,"chapter%d.hish",chapter);
