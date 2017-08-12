@@ -231,7 +231,6 @@ int main(int argc, char *argv[])
 			db_story_set_chapters(story,savenumchaps);
 		}
 		// but if only the title of a chapter changed, we still recreate contents
-
 	}
 
 	INFO("stories since %d",timestamp);
