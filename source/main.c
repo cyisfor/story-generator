@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 				char buf[0x100];
 				int amt = snprintf(buf,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
-				ensure0(renameat(destloc,".tempchap",buf));
+				ensure0(renameat(destloc,".tempchap",destloc,buf));
 				destname = buf;
 			}
 			char srcname[0x100];
@@ -190,10 +190,10 @@ int main(int argc, char *argv[])
 			if(skip(srcname,destname)) return;
 
 
-			src = openat(srcloc, srcname, O_RDONLY, 0755);
+			int src = openat(srcloc, srcname, O_RDONLY, 0755);
 			ensure_ge(src,0);
 
-			dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
+			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
 
 			create_chapter(src,dest_exists,dest,chapter,numchaps,story,&title_changed);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 		ensure_ge(dest,0);
 		create_contents(story, location, dest, numchaps, with_title);
 		ensure0(close(dest));
-		ensure0(renameat(destloc,".tempcontents","contents.html"));
+		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 		ensure0(close(destloc));
 
 		if(numchaps_changed) {

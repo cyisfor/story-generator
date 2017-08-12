@@ -63,6 +63,8 @@ void db_get_story_title(string* dest, identifier story);
 void db_get_story_description(string* dest, identifier story);
 void db_get_story_source(string* dest, identifier story);
 
+identifier db_count_chapters(identifier story);
+
 // db should set to NULL if string is empty
 void db_set_chapter_title(const string title,
 													identifier story, identifier chapter,
