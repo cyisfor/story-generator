@@ -143,6 +143,8 @@ int main(int argc, char *argv[])
 
 			if(dest_exists) {
 				if(AISNEWER(destinfo,srcinfo)) {
+					// XXX: this will keep the db from getting chapter titles
+					// if it's destroyed w/out deleting chapter htmls
 					WARN("skip %s",srcname);
 					return true;
 				}
