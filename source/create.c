@@ -348,7 +348,7 @@ void create_chapter(int src, int dest,
 		assert(links);
 	}
 	xmlNode* title = get_title(head);
-	if(title) {
+	if(title && title->children) {
 		string t = {
 			.s = title->children->content
 		};
