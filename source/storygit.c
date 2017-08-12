@@ -40,7 +40,7 @@ bool git_for_commits(db_oid until,
 		/* XXX: this is overcomplicated... */
 		git_revwalk* derper=NULL;
 		repo_check(git_revwalk_new(&derper, repo));
-		const git_oid* derp = GIT_OID(until);
+		git_oid* derp = GIT_OID(until);
 		repo_check(git_revwalk_push(derper,derp));
 		if(0!=git_revwalk_next(derp, derper)) {
 			// an older one exists, yay.
