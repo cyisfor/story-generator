@@ -119,10 +119,12 @@ int main(int argc, char *argv[])
 			close(loc);
 			return sub;
 		}
-		int destloc = descend(FD_ATCWD, category, true);
+		int destloc = descend(AT_FDCWD, category, true);
 		destloc = descend(destloc, location, true);
-		int srcloc = descend(FD_ATCWD, location, false);
-		srcloc = descend(srcloc, "markup", false);
+		int srcloc = descend(AT_FDCWD, location, false);
+		{ string markup = {LITLEN("markup")};
+			srcloc = descend(srcloc, markup, false);
+		}
 		// don't forget to close these!
 
 		bool skip(const char* srcname, const char* destname) {
