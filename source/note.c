@@ -5,13 +5,11 @@
 
 static void note(const char* how, int hlen,
 								 const char* file, int flen,
-								 int line, const char* fmt, ...) {
+								 int line, const char* fmt, va_list arg) {
 	fwrite(how, hlen, 1, stderr);
 	fputc(' ',stderr);
 	fwrite(file, flen, 1, stderr);
 	fprintf(stderr,":%d ",line);
-	va_list arg;
-	va_start(arg, fmt);
 	vfprintf(stderr,fmt,arg);
 	va_end(arg);
 	fputc('\n',stderr);
@@ -20,7 +18,7 @@ static void note(const char* how, int hlen,
 #define BODY(name) \
 	va_list arg;																													\
 	va_start(arg, fmt);																										\
-	note(name,sizeof(name)-1,file,flen,line,fmt,arg);																					\
+	note(name,sizeof(name)-1,file,flen,line,fmt,arg);											\
 
 #define HEAD(ident) void ident ## f(const char* file, int flen, int line, const char* fmt, ...)
 
