@@ -143,11 +143,11 @@ int main(int argc, char *argv[])
 
 			if(dest_exists) {
 				if(AISNEWER(destinfo,srcinfo)) {
-					warn("skip %s",srcname);
+					WARN("skip %s",srcname);
 					return true;
 				}
 			} else {
-				info("dest no exist %s",destname);
+				INFO("dest no exist %s",destname);
 			}
 			return false;
 		}

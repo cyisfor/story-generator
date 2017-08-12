@@ -16,13 +16,6 @@
 #include <dirent.h> // opendir, DIR, readdir, dirent
 #include <string.h> // 
 
-static bool AISNEWER(struct stat a, struct stat b) {
-	if(a.st_mtime > b.st_mtime) return true;
-	if(a.st_mtime == b.st_mtime) 
-		return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
-	return false;
-}
-
 static void set_created(xmlNode* body) {
 	xmlNode* div = xmlNewNode(body->ns, "div");
 	xmlSetProp(div,"id","ddate");
