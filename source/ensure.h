@@ -16,6 +16,15 @@
 		}																								\
 }
 
+#define ensure_ne(less,more) { int res1 = (less);		\
+		int res2 = (more);															\
+		if(res1 == res2) {															\
+			ERROR(#less " %d == " #more " %d",res1,res2); \
+			abort();																			\
+		}																								\
+}
+
+
 #define ensure_gt(less,more) { int res1 = (less);		\
 		int res2 = (more);															\
 		if(res1 <= res2) {															\
