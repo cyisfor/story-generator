@@ -18,8 +18,9 @@
 
 static bool AISNEWER(struct stat a, struct stat b) {
 	if(a.st_mtime > b.st_mtime) return true;
-	if(a.st_mtime == b.st_mtime) return false;
-	return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
+	if(a.st_mtime == b.st_mtime) 
+		return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
+	return false;
 }
 
 static void set_created(xmlNode* body) {
