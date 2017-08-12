@@ -72,7 +72,7 @@ void create_setup(void) {
 	}
 }
 
-static dump_to_fd(int dest, xmlDoc* src) {
+static void dump_to_fd(int dest, xmlDoc* src) {
 	xmlOutputBuffer* out = xmlOutputBufferCreateFd(dest,encoding);
 	ensure_ne(out,NULL);
 	/* note, the encoding string passed to htmlDocContentDumpOutput is

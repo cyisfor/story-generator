@@ -55,7 +55,7 @@ void db_set_story_info(identifier story,
 											 const string description,
 											 const string source);
 
-void db_set_story_chapters(identifier story, size_t numchaps);
+void db_set_chapters(identifier story, size_t numchaps);
 
 
 void db_get_chapter_title(string* dest, identifier story, identifier chapter);

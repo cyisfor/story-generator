@@ -390,7 +390,7 @@ void db_set_story_info(identifier story,
 	db_once_trans(update);
 }
 
-void db_set_story_chapters(identifier story, size_t numchaps) {
+void db_set_chapters(identifier story, size_t numchaps) {
 	DECLARE_STMT(update,"UPDATE stories SET chapters = ? "
 							 "WHERE id = ?");
 	sqlite3_bind_int64(update,1,numchaps);
