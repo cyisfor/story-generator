@@ -14,6 +14,23 @@
 #include <fcntl.h> // open, O_*
 #include <assert.h>
 
+static bool skip(const char* srcname, const char* destname) {
+	struct stat srcinfo, destinfo;
+	bool dest_exists = (0==statat(destloc,destname,&destinfo));
+	ensure0(statat(srcloc,srcname,&srcinfo));
+
+	if(dest_exists) {
+		if(ANEWER(destinfo,srcinfo)) {
+			warn("skip %s",srcname);
+			return true;
+		}
+	} else {
+		info("dest no exist %s",destname);
+	}
+	return false;
+}
+
+
 int main(int argc, char *argv[])
 {
 	struct stat info;
@@ -96,37 +113,100 @@ int main(int argc, char *argv[])
 								 size_t numchaps,
 								 git_time_t story_timestamp) {
 		INFO("story %lu %lu %.*s",story,numchaps,location.l,location.s);
-		
-		mstring dest = {
-			.l = category.l + LITSIZ("/") + location.l + LITSIZ("/contents.html\0")
-		};
-		size_t dspace = dest.l;
-		dest.s = malloc(dspace); // use malloc so we can realloc and use this as category for chaps
-		memcpy(dest.s,category.s,category.l);
-		dest.s[category.l] = '\0';
-		mkdir(dest.s,0755); // just in case
-		dest.s[category.l] = '/';
-		memcpy(dest.s+category.l+1,location.s,location.l);
-		dest.s[category.l+1 +  location.l] = '\0';
-		mkdir(dest.s,0755); // just in case
-		string storydest = {
-			.s = dest.s,
-			.l = category.l+1+location.l + 1
-		};
 
-		memcpy(dest.s+category.l+1+location.l,LITLEN("/contents.html\0"));
+		// we can spare two file descriptors, to track the directories
+		// use openat from there.
 
-		void dextend(const char* s, size_t len) {
-			size_t dlen = storydest.l + len + 1;
-			if(dspace < dlen) {
-				dspace = ((dlen>>8)+1)<<8;
-				dest.s = realloc(dest.s, dspace);
+		int descend(int loc, const string name, bool create) {
+		// XXX: ensure these are all null terminated, because open sucks
+			assert(name.s[name.l] == '\0');
+			int sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
+			if(!create) {
+				ensure_gt(sub,0);
+			} else if(sub < 0) {
+				ensure_eq(errno,ENOENT);
+				// mkdir if not exists is a painless operation
+				ensure0(mkdirat(loc,name.s));
+				sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
+				ensure_gt(sub,0);
 			}
-			memcpy(dest.s + storydest.l, s, len);
-			dest.s[storydest.l + len] = '\0';
-			dest.l = storydest.l + len;
+			close(loc);
+			return sub;
+		}
+		int destloc = descend(FD_ATCWD, category, true);
+		destloc = descend(destloc, location, true);
+		int srcloc = descend(FD_ATCWD, location, false);
+		srcloc = descend(srcloc, "markup", false);
+		// don't forget to close these!
+
+		bool title_changed = false;
+		bool numchaps_changed = false;
+		{
+			int countchaps = db_count_chapters(story);
+			if(countchaps != numchaps) {
+				numchaps_changed = true;
+				numchaps = countchaps;
+			}
 		}
 
+		// save numchaps to update story later.
+		const int savenumchaps = numchaps;
+		// XXX: if finished, numchaps, otherwise
+		if(!finished && numchaps > 1) --numchaps;
+
+		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			INFO("chapter %d", chapter);
+			if(chapter == numchapsderp + 1) {
+				// or other criteria, env, db field, etc
+				WARN("not exporting last chapter");
+				return;
+			}
+
+			const char* destname = "index.html";
+			if(chapter > 1) {
+				char buf[0x100];
+				int amt = snprintf(buf,0x100, "chapter%d.html",chapter);
+				assert(amt < 0x100);
+				ensure0(renameat(destloc,".tempchap",buf));
+				destname = buf;
+			}
+			char srcname[0x100];
+			snprintf(srcname,0x100,"chapter%d.hish",chapter);
+
+			if(skip(srcname,destname)) return;
+
+
+			src = openat(srcloc, srcname, O_RDONLY, 0755);
+			ensure_ge(src,0);
+
+			dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
+			ensure_ge(dest,0);
+
+			create_chapter(src,dest_exists,dest,chapter,numchapsderp,story,&title_changed);
+			ensure0(close(src));
+			ensure0(close(dest));
+
+			ensure0(renameat(destloc,".tempchap",destname));
+		}
+
+		// NOT story_timestamp
+		db_for_chapters(story, for_chapter, timestamp);
+
+		// we create contents.html strictly from the db, not the markup directory
+		ensure0(close(srcloc));
+
+		if(!(numchaps_changed || title_changed)) {
+			// no chapters added or removed, and no chapter had an embedded title that changed.
+			return;
+		}
+		if(numchaps_changed) {
+			db_story_set_chapters(story,savenumchaps);
+		}
+		// but if only the title of a chapter changed, we still recreate contents
+
+		/* be sure to create the contents after processing the chapters, to update the db
+		 with any embedded chapter titles */
+		
 		void with_title(identifier chapter, void(*handle)(const string title)) {
 			void on_title(const string title) {
 				if(title.s == NULL) {
@@ -143,57 +223,12 @@ int main(int argc, char *argv[])
 			db_with_chapter_title(story,chapter,on_title);
 		}
 
-		// XXX: if finished, numchaps, otherwise
-		if(!finished && numchaps > 1) --numchaps;
-		create_contents(story, location, CSTR(dest), numchaps, with_title);
-
-		// now we can mess with dest.s
-
-		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-			INFO("chapter %d", chapter);
-			if(chapter == numchaps + 1) {
-				// or other criteria, env, db field, etc
-				WARN("not exporting last chapter");
-				return;
-			}
-
-			if(chapter == 1) {
-				dextend(LITLEN("index.html"));
-			} else {
-				// XXX: index.html -> chapter2.html ehh...
-				for(;;) {
-					int amt = snprintf(dest.s+storydest.l,
-														 dspace-storydest.l,
-														 "chapter%d.html",chapter);
-					if(amt + storydest.l + 1 > dspace) {
-						dspace = (((amt+storydest.l)>>8)+1)<<8;
-						dest.s = realloc(dest.s,dspace);
-					} else {
-						dest.l = storydest.l + amt;
-						break;
-					}
-				}
-			}
-			mstring src = {
-				.l = location.l + LITSIZ("/markup/chapterXXXXX.hish")
-			};
-			src.s = alloca(src.l);
-			memcpy(src.s,location.s,location.l);
-			memcpy(src.s + location.l, LITLEN("/markup/chapter"));
-			int amt = snprintf(src.s + location.l + LITSIZ("/markup/chapter"),
-												 src.l - (location.l + LITSIZ("/markup/chapter")),
-												 "%d",chapter);
-			assert(amt > 0);
-			assert(src.l - (location.l + LITSIZ("/markup/chapter")) - amt > 5); // for .hish at end
-			memcpy(src.s + location.l + LITSIZ("/markup/chapter") + amt,LITLEN(".hish\0"));
-			src.l = location.l + LITSIZ("/markup/chapter") + amt + LITSIZ(".hish");
-			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps,story);
-		}
-
-		// NOT story_timestamp
-		db_for_chapters(story, for_chapter, timestamp);
-		
-		free(dest.s);
+		int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
+		ensure_ge(dest,0);
+		create_contents(story, location, dest, numchapsderp, with_title);
+		ensure0(close(dest));
+		ensure0(renameat(destloc,".tempcontents","contents.html"));
+		ensure0(close(destloc));
 	}
 
 	INFO("stories since %d",timestamp);
