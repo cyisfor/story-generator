@@ -352,7 +352,7 @@ void create_chapter(string src, string dest, int chapter, int chapters, identifi
 	xmlNode* title = get_title(head);
 	if(title) {
 		string t = {
-			.s = title->children->content;
+			.s = title->children->content
 		};
 		t.l = strlen(t.s);
 		db_set_chapter_title(t, story, chapter);

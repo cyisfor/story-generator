@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 		}
 
 		// XXX: if finished, numchaps, otherwise
-x		if(!finished && numchaps > 1) --numchaps;
+		if(!finished && numchaps > 1) --numchaps;
 		create_contents(story, location, CSTR(dest), numchaps, with_title);
 
 		// now we can mess with dest.s
