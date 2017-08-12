@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 				return;
 			}
 
-			const char destname[0x100] = "index.html";
+			char destname[0x100] = "index.html";
 			if(chapter > 1) {
 				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
