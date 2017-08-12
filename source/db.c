@@ -415,7 +415,7 @@ void db_retransaction(void) {
 }
 
 // this is SUCH a hack
-char is_cool_xml_tag(const char* tag, size_t tlen) {
+static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	if(!db) return true;
 	DECLARE_STMT(find,"SELECT 1 FROM cool_xml_tags WHERE name = ?");
 	sqlite3_bind_blob(find,1,tag,tlen,NULL);
@@ -424,3 +424,15 @@ char is_cool_xml_tag(const char* tag, size_t tlen) {
 	db_check(res);
 	return res == SQLITE_ROW ? 1 : 0;
 }
+
+void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
+	if(error->code == XML_HTML_UNKNOWN_TAG) {
+		const char* name = error->str1;
+		size_t nlen = strlen(name);
+		if(is_cool_xml_tag(name,nlen)) return;
+	}
+	fprintf(stderr,"um %s %s\n",error->message,
+					error->level == XML_ERR_FATAL ? "fatal..." : "ok");
+}
+
+	
