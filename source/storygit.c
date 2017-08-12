@@ -15,8 +15,8 @@
 #define LITSIZ(a) (sizeof(a)-1)
 #define LITLEN(a) a,LITSIZ(a)
 
-bool git_for_commits(const db_oid until,
-										 const db_oid since, 
+bool git_for_commits(db_oid until,
+										 db_oid since, 
 										 bool (*handle)(db_oid commit,
 																		git_time_t timestamp,
 																		git_tree* last,
@@ -40,7 +40,7 @@ bool git_for_commits(const db_oid until,
 		/* XXX: this is overcomplicated... */
 		git_revwalk* derper=NULL;
 		repo_check(git_revwalk_new(&derper, repo));
-		git_oid* derp = GIT_OID(until);
+		const git_oid* derp = GIT_OID(until);
 		repo_check(git_revwalk_push(derper,derp));
 		if(0!=git_revwalk_next(derp, derper)) {
 			// an older one exists, yay.
