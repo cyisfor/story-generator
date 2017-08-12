@@ -36,7 +36,6 @@ bool git_for_commits(db_oid until,
 	if(until) {
 		// IMPORTANT: be sure to go 1 past this in the commit log
 		// since changes are from old->new, so it needs a starting old state.
-		WARN("until %s\n",db_oid_str(until));
 		/* XXX: this is overcomplicated... */
 		git_revwalk* derper=NULL;
 		repo_check(git_revwalk_new(&derper, repo));
@@ -44,8 +43,9 @@ bool git_for_commits(db_oid until,
 		repo_check(git_revwalk_push(derper,&derp));
 		if(0==git_revwalk_next(&derp, derper)) {
 			// an older one exists, yay.
-			WARN("UNTIL %s\n",git_oid_tostr_s(&derp));
 			repo_check(git_revwalk_hide(walker,&derp));
+		} else {
+			// no older version, we're going back to the beginning.
 		}
 		git_revwalk_free(derper);
 	}
