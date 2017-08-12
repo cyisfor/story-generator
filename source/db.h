@@ -75,6 +75,8 @@ void db_set_story_info(identifier story,
 											 const string description,
 											 const string source);
 
+#include <libxml/xmlerror.h>
+
 void cool_xml_error_handler(void * userData, xmlErrorPtr error);
 
 void db_transaction(void (*run)(void));
