@@ -423,7 +423,6 @@ static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	int res = sqlite3_step(find);
 	sqlite3_reset(find);
 	db_check(res);
-	INFO("tag cool? %.*s %d %d %d",tlen,tag,res,SQLITE_ROW,SQLITE_DONE);
 	return res == SQLITE_ROW ? 1 : 0;
 }
 
