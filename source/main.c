@@ -14,23 +14,6 @@
 #include <fcntl.h> // open, O_*
 #include <assert.h>
 
-static bool skip(const char* srcname, const char* destname) {
-	struct stat srcinfo, destinfo;
-	bool dest_exists = (0==statat(destloc,destname,&destinfo));
-	ensure0(statat(srcloc,srcname,&srcinfo));
-
-	if(dest_exists) {
-		if(ANEWER(destinfo,srcinfo)) {
-			warn("skip %s",srcname);
-			return true;
-		}
-	} else {
-		info("dest no exist %s",destname);
-	}
-	return false;
-}
-
-
 int main(int argc, char *argv[])
 {
 	struct stat info;
@@ -138,6 +121,24 @@ int main(int argc, char *argv[])
 		int srcloc = descend(FD_ATCWD, location, false);
 		srcloc = descend(srcloc, "markup", false);
 		// don't forget to close these!
+
+		static bool skip(const char* srcname, const char* destname) {
+			struct stat srcinfo, destinfo;
+			bool dest_exists = (0==fstatat(destloc,destname,&destinfo));
+			ensure0(fstatat(srcloc,srcname,&srcinfo));
+
+			if(dest_exists) {
+				if(ANEWER(destinfo,srcinfo)) {
+					warn("skip %s",srcname);
+					return true;
+				}
+			} else {
+				info("dest no exist %s",destname);
+			}
+			return false;
+		}
+
+
 
 		bool title_changed = false;
 		bool numchaps_changed = false;
