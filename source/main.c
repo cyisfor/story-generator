@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 			int countchaps = db_count_chapters(story);
 			if(countchaps != numchaps) {
 				numchaps_changed = true;
-				printf("#chapters changed %d -> %d",numchaps,countchaps);
+				WARN("#chapters changed %d -> %d",numchaps,countchaps);
 				numchaps = countchaps;
 			}
 		}
