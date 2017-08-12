@@ -17,6 +17,15 @@
 #include <assert.h>
 #include <errno.h> // ENOENT
 
+
+static bool AISNEWER(struct stat a, struct stat b) {
+	if(a.st_mtime > b.st_mtime) return true;
+	if(a.st_mtime == b.st_mtime) 
+		return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
+	return false;
+}
+
+
 int main(int argc, char *argv[])
 {
 	struct stat info;
@@ -129,11 +138,11 @@ int main(int argc, char *argv[])
 
 		bool skip(const char* srcname, const char* destname) {
 			struct stat srcinfo, destinfo;
-			bool dest_exists = (0==fstatat(destloc,destname,&destinfo));
-			ensure0(fstatat(srcloc,srcname,&srcinfo));
+			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
+			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
 
 			if(dest_exists) {
-				if(ANEWER(destinfo,srcinfo)) {
+				if(AISNEWER(destinfo,srcinfo)) {
 					warn("skip %s",srcname);
 					return true;
 				}
