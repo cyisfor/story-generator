@@ -34,8 +34,19 @@ bool git_for_commits(const db_oid until,
 	}
 
 	if(until) {
+		// IMPORTANT: be sure to go 1 past this in the commit log
+		// since changes are from old->new, so it needs a starting old state.
 		SPAM("until %s\n",db_oid_str(until));
-		repo_check(git_revwalk_hide(walker,GIT_OID(until)));
+		/* XXX: this is overcomplicated... */
+		git_revwalk* derper=NULL;
+		repo_check(git_revwalk_new(&derper, repo));
+		git_oid* derp = GIT_OID(until);
+		repo_check(git_revwalk_push(derper,derp));
+		if(0!=git_revwalk_next(derp, derper)) {
+			// an older one exists, yay.
+			repo_check(git_revwalk_hide(walker,derp));
+		}
+		git_revwalk_free(derper);
 	}
 	
 	git_commit* commit = NULL;
