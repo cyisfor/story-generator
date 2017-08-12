@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <fcntl.h> // open, O_*
 #include <assert.h>
+#include <errno.h> // ENOENT
 
 int main(int argc, char *argv[])
 {
