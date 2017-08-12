@@ -7,4 +7,4 @@ int create_contents(identifier story,
 										size_t chapters,
 										void (*with_title)(identifier chapter,
 																			 void(*handle)(const string title)));
-void create_chapter(string src, string dest, int chapter, int chapters);
+void create_chapter(string src, string dest, int chapter, int chapters, identifier story);
