@@ -389,5 +389,5 @@ void create_chapter(int src, int dest,
 	}
 	set_created(head->next->next);
 
-	htmlSaveFileEnc(dest.s,doc,"UTF-8");
+	dump_to_fd(dest,doc);
 }
