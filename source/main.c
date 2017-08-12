@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
 
-			create_chapter(src,dest_exists,dest,chapter,numchaps,story,&title_changed);
+			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 			ensure0(close(src));
 			ensure0(close(dest));
 
