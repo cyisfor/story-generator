@@ -308,7 +308,7 @@ int create_contents(identifier story,
 	return chapters;
 }
 
-void create_chapter(string src, string dest, int chapter, int chapters) {
+void create_chapter(string src, string dest, int chapter, int chapters, identifier story) {
 	int srcfd = open(src.s,O_RDONLY);
 	if(srcfd < 0) {
 		INFO("%.*s moved...",src.l,src.s);
@@ -348,6 +348,16 @@ void create_chapter(string src, string dest, int chapter, int chapters) {
 	while(links->type != XML_ELEMENT_NODE) {
 		links = links->prev;
 		assert(links);
+	}
+	xmlNode* title = get_title(head);
+	if(title) {
+		string t = {
+			.s = title->children->content;
+		};
+		t.l = strlen(t.s);
+		db_set_chapter_title(t, story, chapter);
+	} else {
+		WARN("no chapter title found for %d %d",story,chapter);
 	}
 
 	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {

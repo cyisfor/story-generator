@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 		}
 
 		// XXX: if finished, numchaps, otherwise
-		if(!finished && numchaps > 1) --numchaps;
+x		if(!finished && numchaps > 1) --numchaps;
 		create_contents(story, location, CSTR(dest), numchaps, with_title);
 
 		// now we can mess with dest.s
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 			assert(src.l - (location.l + LITSIZ("/markup/chapter")) - amt > 5); // for .hish at end
 			memcpy(src.s + location.l + LITSIZ("/markup/chapter") + amt,LITLEN(".hish\0"));
 			src.l = location.l + LITSIZ("/markup/chapter") + amt + LITSIZ(".hish");
-			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps);
+			create_chapter(CSTR(src),CSTR(dest),chapter,numchaps,story);
 		}
 
 		// NOT story_timestamp
