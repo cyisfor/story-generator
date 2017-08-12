@@ -42,16 +42,20 @@ bool git_for_commits(const db_oid until,
 	git_tree* last = NULL;
 	git_tree* cur = NULL;
 	git_oid commit_oid;
-	for(;;) {
-		if(0!=git_revwalk_next(&commit_oid, walker)) return true;
-		SPAM("rev oid %s\n",git_oid_tostr_s(&commit_oid));
-		repo_check(git_commit_lookup(&commit, repo, &commit_oid));
-		git_time_t timestamp = git_commit_time(commit);
-		repo_check(git_commit_tree(&cur,commit));
-		if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
-		last = cur;
+	bool op() {
+		for(;;) {
+			if(0!=git_revwalk_next(&commit_oid, walker)) return true;
+			SPAM("rev oid %s\n",git_oid_tostr_s(&commit_oid));
+			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
+			git_time_t timestamp = git_commit_time(commit);
+			repo_check(git_commit_tree(&cur,commit));
+			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
+			last = cur;
+		}
 	}
+	bool ret = op();
 	git_revwalk_free(walker);
+	return ret;
 }
 
 // note: this is the DIFF not the changes of each commit in between.
