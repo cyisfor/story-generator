@@ -3,8 +3,8 @@
 void create_setup(void);
 int create_contents(identifier story,
 										const string location,
-										const string dest,
+										int dest,
 										size_t chapters,
 										void (*with_title)(identifier chapter,
 																			 void(*handle)(const string title)));
-void create_chapter(string src, string dest, int chapter, int chapters, identifier story);
+void create_chapter(int src, int dest, int chapter, int chapters, identifier story);

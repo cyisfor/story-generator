@@ -145,6 +145,7 @@ int main(int argc, char *argv[])
 			int countchaps = db_count_chapters(story);
 			if(countchaps != numchaps) {
 				numchaps_changed = true;
+				printf("#chapters changed %d -> %d",numchaps,countchaps);
 				numchaps = countchaps;
 			}
 		}
@@ -199,10 +200,6 @@ int main(int argc, char *argv[])
 			// no chapters added or removed, and no chapter had an embedded title that changed.
 			return;
 		}
-		if(numchaps_changed) {
-			db_story_set_chapters(story,savenumchaps);
-		}
-		// but if only the title of a chapter changed, we still recreate contents
 
 		/* be sure to create the contents after processing the chapters, to update the db
 		 with any embedded chapter titles */
@@ -229,6 +226,12 @@ int main(int argc, char *argv[])
 		ensure0(close(dest));
 		ensure0(renameat(destloc,".tempcontents","contents.html"));
 		ensure0(close(destloc));
+
+		if(numchaps_changed) {
+			db_story_set_chapters(story,savenumchaps);
+		}
+		// but if only the title of a chapter changed, we still recreate contents
+
 	}
 
 	INFO("stories since %d",timestamp);
