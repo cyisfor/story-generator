@@ -211,6 +211,8 @@ int main(int argc, char *argv[])
 
 		if(!(numchaps_changed || title_changed)) {
 			// no chapters added or removed, and no chapter had an embedded title that changed.
+			WARN("not recreating contents of %d because %d %d",
+					 story,numchaps_changed,title_changed);
 			return;
 		}
 
