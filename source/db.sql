@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS stories (
 			 location TEXT NOT NULL UNIQUE,
 			 timestamp INTEGER NOT NULL,
 			 finished BOOLEAN NOT NULL DEFAULT FALSE,
+			 -- these are how many chapters the story had the LAST
+			 -- time its contents were written. COUNT(1) FROM chapters for accurate count
+			 chapters INTEGER NOT NULL DEFAULT 0,
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);

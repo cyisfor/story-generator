@@ -347,10 +347,13 @@ void db_set_chapter_title(const string title,
 	sqlite3_bind_int64(update,3,chapter);
 	BEGIN_TRANSACTION(setchap);
 	db_once(update);
-	if(sqlite3_changes(db) > 0) *title_changed = true;
-	// never set title_changed to false, it goes true it stays true
+	if(!*title_changed) {
+		if(sqlite3_changes(db) > 0) *title_changed = true;
+		// never set title_changed to false, it goes true it stays true
+	}
 	END_TRANSACTION(setchap);
 }
+
 void db_set_story_info(identifier story,
 											 const string title,
 											 const string description,
@@ -370,6 +373,14 @@ void db_set_story_info(identifier story,
 	one(2,description);
 	one(3,source);
 	sqlite3_bind_int64(update,4,story);
+	db_once_trans(update);
+}
+
+void db_set_story_chapters(identifier story, size_t numchaps) {
+	DECLARE_STMT(update,"UPDATE stories SET chapters = ? "
+							 "WHERE id = ?");
+	sqlite3_bind_int64(update,1,numchaps);
+	sqlite3_bind_int64(update,2,story);
 	db_once_trans(update);
 }
 
