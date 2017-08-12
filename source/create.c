@@ -1,3 +1,5 @@
+#include "ensure.h"
+
 #include "ddate.h"
 #include "create.h"
 #include "htmlish.h"
