@@ -181,7 +181,6 @@ int main(int argc, char *argv[])
 				char buf[0x100];
 				int amt = snprintf(buf,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
-				ensure0(renameat(destloc,".tempchap",destloc,buf));
 				destname = buf;
 			}
 			char srcname[0x100];
@@ -200,7 +199,7 @@ int main(int argc, char *argv[])
 			ensure0(close(src));
 			ensure0(close(dest));
 
-			ensure0(renameat(destloc,".tempchap",destname));
+			ensure0(renameat(destloc,".tempchap",destloc,destname));
 		}
 
 		// NOT story_timestamp
@@ -241,7 +240,7 @@ int main(int argc, char *argv[])
 		ensure0(close(destloc));
 
 		if(numchaps_changed) {
-			db_story_set_chapters(story,savenumchaps);
+			db_set_chapters(story,savenumchaps);
 		}
 		// but if only the title of a chapter changed, we still recreate contents
 	}
