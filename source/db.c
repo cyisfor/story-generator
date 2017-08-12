@@ -231,7 +231,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 size_t numchaps,
 																	 git_time_t timestamp),
 										git_time_t since) {
-	DECLARE_STMT(find,"SELECT id,location,finished,(SELECT COUNT(chapter) FROM chapters WHERE story = stories.id),timestamp FROM stories WHERE timestamp AND timestamp > ?");
+	DECLARE_STMT(find,"SELECT id,location,finished,chapters,timestamp FROM stories WHERE timestamp AND timestamp > ?");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
@@ -335,6 +335,20 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	handle(title,description,source);
 	sqlite3_reset(find);
 	derp = false;
+}
+
+identifier db_count_chapters(identifier story) {
+	DECLARE_STMT(find,"SELECT COUNT(chapter) FROM chapters WHERE story = ?");
+	sqlite3_bind_int64(find,1,story);
+	int res = sqlite3_step(find);
+	if(res == SQLITE_ROW) {
+		identifier count = sqlite3_column_int64(find,0);
+		sqlite3_reset(find);
+		return count;
+	}
+	db_check(res);
+	// COUNT(...) always returns rows!
+	abort();
 }
 
 // should set to NULL if string is empty
