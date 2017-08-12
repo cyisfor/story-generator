@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			INFO("chapter %d", chapter);
-			if(chapter == numchapsderp + 1) {
+			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
 				return;
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 			dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
 
-			create_chapter(src,dest_exists,dest,chapter,numchapsderp,story,&title_changed);
+			create_chapter(src,dest_exists,dest,chapter,numchaps,story,&title_changed);
 			ensure0(close(src));
 			ensure0(close(dest));
 
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
 		int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 		ensure_ge(dest,0);
-		create_contents(story, location, dest, numchapsderp, with_title);
+		create_contents(story, location, dest, numchaps, with_title);
 		ensure0(close(dest));
 		ensure0(renameat(destloc,".tempcontents","contents.html"));
 		ensure0(close(destloc));
