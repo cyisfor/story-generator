@@ -74,7 +74,8 @@ int main(int argc, char *argv[])
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
 	if(getenv("until")) {
-		repo_check(git_oid_fromstrp(GIT_OID(last_commit),getenv("until")));
+		git_oid* derp = GIT_OID(last_commit);
+		repo_check(git_oid_fromstrp(derp,getenv("until")));
 		results.last = true;
 	} else {		
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
