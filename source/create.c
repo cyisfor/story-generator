@@ -83,7 +83,8 @@ static void dump_to_fd(int dest, xmlDoc* src) {
 		 handles encoding from this point.
 	*/
 	htmlDocContentDumpOutput(out,src,NULL);
-	ensure0(xmlOutputBufferClose(out));
+	// libxml
+	ensure_ge(xmlOutputBufferClose(out),0);
 }
 
 int create_contents(identifier story,
