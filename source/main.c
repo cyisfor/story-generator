@@ -238,8 +238,8 @@ int main(int argc, char *argv[])
 			bool contents_exist = (0 == fstatat(destloc,"contents.html",&info,0));
 			if(contents_exist) {
 				WARN("not recreating contents of %d", story);
+				return;
 			}
-			return;
 		}
 
 		/* be sure to create the contents after processing the chapters, to update the db
