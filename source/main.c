@@ -64,8 +64,6 @@ int main(int argc, char *argv[])
 	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 	if(results.last) {
 		const char* derp = db_oid_str(last_commit);
-		printf("ummm %.*s\n",2*sizeof(db_oid),derp);
-		infof(LITLEN("derp"),23,"huh? %.*s",2*sizeof(db_oid),derp);
 		INFO("last seen commit %.*s",2*sizeof(db_oid),derp);
 		puts(derp);
 	}
