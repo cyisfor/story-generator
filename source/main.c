@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 			} else if(sub < 0) {
 				ensure_eq(errno,ENOENT);
 				// mkdir if not exists is a painless operation
-				ensure0(mkdirat(loc,name.s));
+				ensure0(mkdirat(loc,name.s,0755));
 				sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
 				ensure_gt(sub,0);
 			}
