@@ -20,7 +20,7 @@
 
 static bool AISNEWER(struct stat a, struct stat b) {
 	if(a.st_mtime > b.st_mtime) return true;
-	if(a.st_mtime == b.st_mtime) 
+	if(a.st_mtime == b.st_mtime)
 		return a.st_mtim.tv_nsec > b.st_mtim.tv_nsec;
 	return false;
 }
@@ -73,14 +73,18 @@ int main(int argc, char *argv[])
 	db_oid last_commit, current_commit;
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
-	db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
-	if(results.last) {
-		const char* derp = db_oid_str(last_commit);
-		INFO("last seen commit %.*s",2*sizeof(db_oid),derp);
-		puts(derp);
+	if(getenv("until")) {
+		repo_check(git_oid_fromstrp(GIT_OID(last_commit),getenv("until")));
+		results.last = true;
+	} else {		
+		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
+		if(results.last)
+			INFO("last seen commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
+		
+		if(results.current)
+			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
 	}
-	if(results.current)
-		INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
+	
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
@@ -220,7 +224,7 @@ int main(int argc, char *argv[])
 
 		/* be sure to create the contents after processing the chapters, to update the db
 		 with any embedded chapter titles */
-		
+
 		void with_title(identifier chapter, void(*handle)(const string title)) {
 			void on_title(const string title) {
 				if(title.s == NULL) {
