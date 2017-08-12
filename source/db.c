@@ -414,6 +414,9 @@ void db_retransaction(void) {
 	begin();
 }
 
+#include <libxml2/error.h>
+
+
 // this is SUCH a hack
 static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	if(!db) return true;
@@ -431,7 +434,7 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 		size_t nlen = strlen(name);
 		if(is_cool_xml_tag(name,nlen)) return;
 	}
-	fprintf(stderr,"um %s %s\n",error->message,
+	fprintf(stderr,"xml error %s %s\n",error->message,
 					error->level == XML_ERR_FATAL ? "fatal..." : "ok");
 }
 

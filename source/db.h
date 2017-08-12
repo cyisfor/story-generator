@@ -75,6 +75,8 @@ void db_set_story_info(identifier story,
 											 const string description,
 											 const string source);
 
+void cool_xml_error_handler(void * userData, xmlErrorPtr error);
+
 void db_transaction(void (*run)(void));
 void db_retransaction(void);
 #define BEGIN_TRANSACTION(name) void intrans ## name(void) {
