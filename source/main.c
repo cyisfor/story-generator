@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 		results.last = true;
 		git_object* thing1;
 		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
-		ensure_eq(thingy->type,GIT_OBJ_COMMIT);
+		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
 		
 		memcpy(last_commit, DB_OID(git_object_id(thing1)),sizeof(db_oid));
@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
 		//arrgh we need a timestamp too
 		timestamp = git_commit_time(thing2);
 		git_object_free(thing1);
-
 	} else {		
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 		if(results.last)
