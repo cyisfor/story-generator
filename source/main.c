@@ -211,8 +211,12 @@ int main(int argc, char *argv[])
 
 		if(!(numchaps_changed || title_changed)) {
 			// no chapters added or removed, and no chapter had an embedded title that changed.
-			WARN("not recreating contents of %d because %d %d",
-					 story,numchaps_changed,title_changed);
+			struct stat info;
+			// be sure to create anyway if contents.html doesn't exist
+			bool contents_exist = (0 == fstatat(destloc,"contents.html",&info,0));
+			if(contents_exist) {
+				WARN("not recreating contents of %d", story);
+			}
 			return;
 		}
 
