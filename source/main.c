@@ -8,6 +8,9 @@
 #include "create.h"
 #include "note.h"
 
+#include "libxmlfixes.h"
+
+
 #include <git2/revparse.h>
 
 
@@ -37,6 +40,8 @@ int main(int argc, char *argv[])
 	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generderp.sqlite");
 
+	xmlSetStructuredErrorFunc(NULL,cool_xml_error_handler);
+	
 	create_setup();
 
 	size_t num = 0;

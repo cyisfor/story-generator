@@ -418,7 +418,7 @@ void db_retransaction(void) {
 bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	if(!db) return true;
 	DECLARE_STMT(find,"SELECT 1 FROM cool_xml_tags WHERE name = ?");
-	sqlite3_bind_blob(find,1,tag,tlen);
+	sqlite3_bind_blob(find,1,tag,tlen,NULL);
 	int res = sqlite3_step(find);
 	sqlite3_reset(find);
 	db_check(res);

@@ -34,3 +34,6 @@ CREATE TABLE IF NOT EXISTS chapters (
 -- we can do this... right?
 CREATE INDEX IF NOT EXISTS bystory ON chapters(story);
 CREATE INDEX IF NOT EXISTS chaptertime ON chapters(timestamp);
+
+CREATE TABLE IF NOT EXISTS cool_xml_tags (
+	tag TEXT PRIMARY KEY) WITHOUT ROWID;
