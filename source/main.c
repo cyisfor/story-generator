@@ -8,6 +8,9 @@
 #include "create.h"
 #include "note.h"
 
+#include <git2/revparse.h>
+
+
 #include <bsd/stdlib.h> // mergesort
 #include <string.h> // memcmp, memcpy
 #include <sys/stat.h>
@@ -80,7 +83,7 @@ int main(int argc, char *argv[])
 		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
 		
-		memcpy(last_commit, DB_OID(git_object_id(thing1)),sizeof(db_oid));
+		memcpy(last_commit, git_object_id(thing1)->id,sizeof(db_oid));
 		
 		//arrgh we need a timestamp too
 		timestamp = git_commit_time(thing2);
