@@ -418,8 +418,8 @@ void db_retransaction(void) {
 // this is SUCH a hack
 static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	if(!db) return true;
-	DECLARE_STMT(find,"SELECT 1 FROM cool_xml_tags WHERE tag LIKE ?");
-	sqlite3_bind_blob(find,1,tag,tlen,NULL);
+	DECLARE_STMT(find,"SELECT 1 FROM cool_xml_tags WHERE tag = ?");
+	sqlite3_bind_str(find,1,tag,NULL);
 	int res = sqlite3_step(find);
 	sqlite3_reset(find);
 	db_check(res);
