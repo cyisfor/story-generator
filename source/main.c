@@ -76,6 +76,12 @@ int main(int argc, char *argv[])
 	if(getenv("until")) {
 		repo_check(git_oid_fromstrp((git_oid*)last_commit,getenv("until")));
 		results.last = true;
+		//arrgh we need a timestamp too
+		git_commit* derpmit = NULL;
+		repo_check(git_commit_lookup(&derpmit, repo, GIT_OID(last_commit)));
+		timestamp = git_commit_time(derpmit);
+		git_commit_free(derpmit);
+
 	} else {		
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 		if(results.last)
