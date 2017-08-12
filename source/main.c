@@ -72,7 +72,10 @@ int main(int argc, char *argv[])
 	INFO("searching...");
 
 	// but not older than the last commit we dealt with
-	struct bad results;
+	struct bad results = {
+		.last = false,
+		.current = false
+	};
 	db_oid last_commit, current_commit;
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
@@ -88,7 +91,6 @@ int main(int argc, char *argv[])
 		timestamp = git_commit_time(thing2);
 		git_object_free(thing1);
 		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
-
 	} else {
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 		if(results.last)
