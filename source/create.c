@@ -60,7 +60,11 @@ const char defaultTemplate[] =
   "<content/>\n"
   "</body></html>";
 
+static xmlCharEncodingHandler* encoding = NULL;
+
 void create_setup(void) {
+	encoding = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_UTF8);
+	
 	chapter_template = htmlParseFile("template/chapter.html","UTF-8");
 	if(!chapter_template) {
 		chapter_template = htmlReadMemory(LITLEN(defaultTemplate),
@@ -75,9 +79,20 @@ void create_setup(void) {
 	}
 }
 
+static dump_to_fd(int dest, xmlDoc* src) {
+	xmlOutputBuffer* out = xmlOutputBufferCreateFd(dest,encoding);
+	ensure_ne(out,NULL);
+	/* note, the encoding string passed to htmlDocContentDumpOutput is
+		 totally ignored, and should not be there, since xmlOutputBuffer
+		 handles encoding from this point.
+	*/
+	htmlDocContentDumpOutput(out,doc,NULL);
+	ensure0(xmlOutputBufferClose(out));
+}
+
 int create_contents(identifier story,
 										const string location,
-										const string dest,
+										int dest,
 										size_t chapters,
 										void (*with_title)(identifier chapter,
 																			 void(*handle)(const string title))) {	
@@ -304,29 +319,14 @@ int create_contents(identifier story,
 
 	unsetenv("titlehead");
 
-	htmlSaveFileEnc(dest.s,doc,"UTF-8");
+	dump_to_fd(dest,doc);
 	
 	return chapters;
 }
 
-void create_chapter(string src, string dest, int chapter, int chapters, identifier story) {
-	int srcfd = open(src.s,O_RDONLY);
-	if(srcfd < 0) {
-		INFO("%.*s moved...",src.l,src.s);
-		return;
-	}
-	struct stat srcinfo;
-	assert(0==fstat(srcfd,&srcinfo));
-	struct stat destinfo;
-	bool dest_exists = 0==stat(dest.s,&destinfo);
-	if(dest_exists && AISNEWER(destinfo,srcinfo)) {
-		WARN("skip %.*s",src.l,src.s);
-		return;
-	}
-	if(!dest_exists) {
-		WARN("WARNing dest no exist!");
-	}
-	SPAM("then create uh %.*s -> %.*s",src.l,src.s,dest.l,dest.s);
+void create_chapter(int src, int dest,
+										int chapter, int chapters,
+										identifier story, bool* title_changed) {
 
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	bool as_child = false;
@@ -356,7 +356,7 @@ void create_chapter(string src, string dest, int chapter, int chapters, identifi
 			.s = title->children->content
 		};
 		t.l = strlen(t.s);
-		db_set_chapter_title(t, story, chapter);
+		db_set_chapter_title(t, story, chapter, title_changed);
 	} else {
 		WARN("no chapter title found for %d %d",story,chapter);
 	}

@@ -318,7 +318,6 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	string title = {};
 	string description = {};
 	string source = {};
-	printf("start find %d\n",story);
 	int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
@@ -334,18 +333,23 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	// handle if nothing in the db, so we can search for files and stuff.
 	// XXX: TODO: only call a special creation function if not found?
 	handle(title,description,source);
-	printf("reset find %d\n",story);
 	sqlite3_reset(find);
 	derp = false;
 }
 
 // should set to NULL if string is empty
-void db_set_chapter_title(const string title, identifier story, identifier chapter) {
+void db_set_chapter_title(const string title,
+													identifier story, identifier chapter,
+													bool* title_changed) {
 	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ?");
 	sqlite3_bind_blob(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
-	db_once_trans(update);
+	BEGIN_TRANSACTION(setchap);
+	db_once(update);
+	if(sqlite3_changes(db) > 0) *title_changed = true;
+	// never set title_changed to false, it goes true it stays true
+	END_TRANSACTION(setchap);
 }
 void db_set_story_info(identifier story,
 											 const string title,
