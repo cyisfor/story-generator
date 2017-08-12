@@ -1,3 +1,5 @@
+#define _GNU_SOURCE // O_PATH
+
 #include "db.h"
 #include "ensure.h"
 #include "storygit.h"
@@ -122,7 +124,7 @@ int main(int argc, char *argv[])
 		srcloc = descend(srcloc, "markup", false);
 		// don't forget to close these!
 
-		static bool skip(const char* srcname, const char* destname) {
+		bool skip(const char* srcname, const char* destname) {
 			struct stat srcinfo, destinfo;
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo));
 			ensure0(fstatat(srcloc,srcname,&srcinfo));
@@ -137,8 +139,6 @@ int main(int argc, char *argv[])
 			}
 			return false;
 		}
-
-
 
 		bool title_changed = false;
 		bool numchaps_changed = false;
