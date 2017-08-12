@@ -58,10 +58,8 @@ const char defaultTemplate[] =
 static xmlCharEncodingHandler* encoding = NULL;
 
 void create_setup(void) {
-	xmlInitCharEncodingHandlers	();
 	encoding = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_UTF8);
-	if(!encoding) {
-		warn("no UTF8 encoding handler?");
+	// encoding should be NULL (that indicates UTF-8 in libxml2)
 	
 	chapter_template = htmlParseFile("template/chapter.html","UTF-8");
 	if(!chapter_template) {
