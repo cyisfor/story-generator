@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		git_commit* thing2 = (git_commit*)thing1;
 		
 		memcpy(last_commit, git_object_id(thing1)->id,sizeof(db_oid));
-		
+		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
 		//arrgh we need a timestamp too
 		timestamp = git_commit_time(thing2);
 		git_object_free(thing1);
