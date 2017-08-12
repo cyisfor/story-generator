@@ -74,13 +74,17 @@ int main(int argc, char *argv[])
 	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION(last_seen);
 	if(getenv("until")) {
-		repo_check(git_oid_fromstrp((git_oid*)last_commit,getenv("until")));
 		results.last = true;
+		git_object* thing1;
+		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
+		ensure_eq(thingy->type,GIT_OBJ_COMMIT);
+		git_commit* thing2 = (git_commit*)thing1;
+		
+		memcpy(last_commit, DB_OID(git_object_id(thing1)),sizeof(db_oid));
+		
 		//arrgh we need a timestamp too
-		git_commit* derpmit = NULL;
-		repo_check(git_commit_lookup(&derpmit, repo, GIT_OID(last_commit)));
-		timestamp = git_commit_time(derpmit);
-		git_commit_free(derpmit);
+		timestamp = git_commit_time(thing2);
+		git_object_free(thing1);
 
 	} else {		
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
