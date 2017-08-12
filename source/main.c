@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
 	if(num > 0) putchar('\n');
 
 	if(getenv("recheck")) timestamp = 0;
+	timestamp = 1502509092;
 
 	string category = {LITLEN("html")};
 
