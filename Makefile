@@ -2,8 +2,10 @@ P=libgit2 sqlite3
 PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 
+LIBXML:=htmlish/html_when/libxml2/include
+
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/source -Ihtmlish/html_when/libxml2/include
+CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/source -I$(LIBXML)
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -54,5 +56,7 @@ htmlish/libhtmlish.a: always
 
 .PHONY: always
 
-htmlish/html_when/libxml2/include/xmlversion.h:
+$(LIBXML)/xmlversion.h:
 	make -C htmlish
+
+o/db.o: $(LIBXML)/xmlversion.h:
