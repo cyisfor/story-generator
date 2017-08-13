@@ -59,4 +59,4 @@ htmlish/libhtmlish.a: always
 $(LIBXML)/xmlversion.h:
 	make -C htmlish
 
-o/db.o: $(LIBXML)/xmlversion.h:
+o/db.o: $(LIBXML)/xmlversion.h
