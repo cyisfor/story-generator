@@ -41,7 +41,9 @@ bool git_for_commits(db_oid until,
 		repo_check(git_revwalk_new(&derper, repo));
 		git_oid derp = *(GIT_OID(until));
 		repo_check(git_revwalk_push(derper,&derp));
-		if(0==git_revwalk_next(&derp, derper)) {
+		git_oid test;
+		if(0==git_revwalk_next(&test, derper) &&
+			 0==git_revwalk_next(&test, derper)) {
 			// an older one exists, yay.
 			repo_check(git_revwalk_hide(walker,&derp));
 		} else {
