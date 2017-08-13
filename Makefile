@@ -59,4 +59,5 @@ htmlish/libhtmlish.a: always
 $(LIBXML)/xmlversion.h:
 	make -C htmlish
 
-o/db.o: $(LIBXML)/xmlversion.h
+N=db main test_parse
+$(patsubst %,src/%.c,$N): $(LIBXML)/xmlversion.h
