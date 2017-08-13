@@ -1,4 +1,8 @@
 [submodule "ddate"]
 	path = ddate
 	url = https://github.com/cyisfor/ddate
-    ignore = untracked
+	ignore = untracked
+[submodule "htmlish"]
+	path = htmlish
+	url = https://github.com/cyisfor/htmlish.git
+	ignore = untracked
