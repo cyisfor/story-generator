@@ -58,8 +58,4 @@ descend:
 
 .PHONY: descend
 
-N=db main
-$O: htmlish/libhtmlish.a
-
-$(LIBXML)/include/xmlversion.h:
-	descend
+$(LIBXML)/include/xmlversion.h: descend
