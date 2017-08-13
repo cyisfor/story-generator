@@ -22,7 +22,7 @@ N=test_git storygit repo db note
 test_git: $O
 	$(LINK)
 
-o/%.o: source/%.c | o
+o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/db.o: source/db-sql.gen.c source/db_oid/gen.h source/db_oid/make.c
@@ -53,3 +53,6 @@ htmlish/libhtmlish.a: always
 	$(MAKE) -C htmlish libhtmlish.a
 
 .PHONY: always
+
+htmlish/html_when/libxml2/include/xmlversion.h:
+	make -C htmlish
