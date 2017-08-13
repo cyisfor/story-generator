@@ -42,10 +42,11 @@ bool git_for_commits(db_oid until,
 		git_oid derp = *(GIT_OID(until));
 		repo_check(git_revwalk_push(derper,&derp));
 		git_oid test;
+		// first one is the one we pushed, so 2 to go back 1
 		if(0==git_revwalk_next(&test, derper) &&
 			 0==git_revwalk_next(&test, derper)) {
 			// an older one exists, yay.
-			repo_check(git_revwalk_hide(walker,&derp));
+			repo_check(git_revwalk_hide(walker,&test));
 		} else {
 			// no older version, we're going back to the beginning.
 		}
