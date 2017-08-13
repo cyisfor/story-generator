@@ -60,4 +60,4 @@ $(LIBXML)/xmlversion.h:
 	make -C htmlish
 
 N=db main test_parse
-$(patsubst %,src/%.c,$N): $(LIBXML)/xmlversion.h
+$O: $(LIBXML)/xmlversion.h
