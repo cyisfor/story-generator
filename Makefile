@@ -56,8 +56,5 @@ htmlish/libhtmlish.a: always
 
 .PHONY: always
 
-$(LIBXML)/xmlversion.h:
-	make -C htmlish
-
-N=db main test_parse
-$O: $(LIBXML)/xmlversion.h
+N=db main htmlish
+$O: htmlish/libhtmlish.a
