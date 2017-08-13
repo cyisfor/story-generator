@@ -263,7 +263,7 @@ void db_for_chapters(identifier story,
 																	 git_time_t timestamp),
 										git_time_t since) {
 	DECLARE_STMT(find,
-							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ?");
+							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp >= ?");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
 	for(;;) {
