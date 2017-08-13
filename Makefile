@@ -5,7 +5,7 @@ export PKG_CONFIG_PATH
 LIBXML:=htmlish/html_when/libxml2/include
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/source -I$(LIBXML)
+CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -14,7 +14,7 @@ all: generderp test_git
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
-S=$(patsubst %,source/%.c,$N)
+S=$(patsubst %,src/%.c,$N)
 
 N=main storygit repo create db note
 generderp: $O
@@ -27,13 +27,13 @@ test_git: $O
 o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-o/db.o: source/db-sql.gen.c source/db_oid/gen.h source/db_oid/make.c
+o/db.o: src/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
 
-source/db-sql.gen.c: source/db.sql o/make-sql
+src/db-sql.gen.c: src/db.sql o/make-sql
 	./o/make-sql <$< >$@.temp
 	mv $@.temp $@
 
-source/db_oid/gen.h: o/db_oid/make | source/db_oid/same.h source/db_oid/custom.h
+src/db_oid/gen.h: o/db_oid/make | src/db_oid/same.h src/db_oid/custom.h
 	./o/db_oid/make
 
 o/db_oid/make: o/db_oid/make.o
