@@ -2,10 +2,10 @@ P=libgit2 sqlite3
 PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 
-LIBXML:=htmlish/html_when/libxml2/include
+LIBXML:=htmlish/html_when/libxml2
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)
+CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)/include
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -24,7 +24,7 @@ N=test_git storygit repo db note
 test_git: $O
 	$(LINK)
 
-o/%.o: src/%.c | o
+o/%.o: src/%.c $(LIBXML)/include/xmlversion.h | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/db.o: src/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
@@ -51,10 +51,15 @@ o o/db_oid:
 clean:
 	rm -rf o generderp
 
-htmlish/libhtmlish.a: always
+htmlish/libhtmlish.a: descend
+
+descend:
 	$(MAKE) -C htmlish libhtmlish.a
 
-.PHONY: always
+.PHONY: descend
 
-N=db main htmlish
+N=db main
 $O: htmlish/libhtmlish.a
+
+$(LIBXML)/include/xmlversion.h:
+	descend
