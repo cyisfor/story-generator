@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
-	db_open("generderp.sqlite");
+	db_open("generate.sqlite");
 
 	xmlSetStructuredErrorFunc(NULL,cool_xml_error_handler);
 	
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %d %s\r",sizeof(db_oid),db_oid_str(oid));
+		printf("commit %.*s\r",2*sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
