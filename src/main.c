@@ -45,17 +45,18 @@ int main(int argc, char *argv[])
 	create_setup();
 
 	
-	const string category = (const string)({
-			if(getenv("category")!=NULL) {
-				string c = {getenv("category")};
-				c.l = strlen(c.s);
-				(const string)c;
-			} else if(getenv("censored")!=NULL) {
-				(const string){LITLEN("censored")};
-			} else {
-				(const string){LITLEN("html")};
-			}
-		});
+	const string get_category() {
+		if(getenv("category")!=NULL) {
+			string c = {getenv("category")};
+			c.l = strlen(c.s);
+			return c;
+		} else if(getenv("censored")!=NULL) {
+			return (const string){LITLEN("censored")};
+		} else {
+			return (const string){LITLEN("html")};
+		}
+	}
+	const string category = get_category();
 	db_set_category(category);
 
 	size_t num = 0;
