@@ -64,13 +64,14 @@ int main(int argc, char *argv[])
 	db_set_category(category);
 
 	size_t num = 0;
+	size_t counter = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
 		db_saw_commit(timestamp, oid);
 		if(last == NULL) {
 			return true;
 		}
 
-		printf("commit %d %.*s\r",++num, 2*sizeof(db_oid),db_oid_str(oid));
+		printf("commit %d %.*s\r",++counter, 2*sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -78,8 +79,8 @@ int main(int argc, char *argv[])
 										const string src) {
 			if(++num % 100 == 0) {
 				db_retransaction();
-				putchar('\n');
-				exit(23);
+/*				putchar('\n');
+					exit(23); */
 			}
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
