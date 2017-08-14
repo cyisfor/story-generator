@@ -35,7 +35,7 @@ o/db-sql.gen.c: src/db.sql o/make-sql
 	mv $@.temp $@
 
 src/db_oid/gen.h: o/db_oid/make | src/db_oid/same.h src/db_oid/custom.h
-	./o/db_oid/make
+	cd src/db_oid && ../../o/db_oid/make
 
 o/db_oid/make: o/db_oid/make.o
 o/db_oid/make.o: | o/db_oid
