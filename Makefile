@@ -28,6 +28,11 @@ N=test_git storygit repo db note
 test_git: $O
 	$(LINK)
 
+o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
+	$(CC) $(CFLAGS) -MM -o $@ $<
+
+-include o/*.d
+
 o/%.o: src/%.c $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
