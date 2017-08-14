@@ -17,13 +17,12 @@ all: generate test_git
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
+# bleah, accumulation side effects...
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a\
 $(foreach name,$(N),$(eval targets:=$$(targets) $(name)))
 S=$(patsubst %,src/%.c,$N)
 
 N=main storygit repo create db note
-$(warning o is $O)
-$(error $(objects))
 generate: $O
 	$(LINK)
 
@@ -34,9 +33,9 @@ test_git: $O
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -MM -o $@ $<
 
--include o/*.d
+-include $(wildcard o/*.d)
 
-o/%.o: src/%.c $(LIBXML)/$(XMLVERSION) | o
+o/%.o: src/%.c o/%.d $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/db.o: o/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
