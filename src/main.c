@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %.*s\r",2*sizeof(db_oid),db_oid_str(oid));
+		printf("commit %d %.*s\r",++num, 2*sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
