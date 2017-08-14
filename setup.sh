@@ -18,11 +18,16 @@ function sync {
 				fi
 		fi
 }
-	
+
+set -e
+
 dir=/extra/home/code/htmlish
 remote=https://github.com/cyisfor/htmlish.git
 dest=htmlish
 sync
+
+ln -rs ./htmlish/html_when .
+ln -rs ./htmlish/html_when/libxml2 .
 
 dir=/extra/home/code/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
