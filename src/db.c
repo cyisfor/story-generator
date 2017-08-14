@@ -159,16 +159,12 @@ void db_caught_up(void) {
 		assert(category != -1);
 		PREPARE(update,"UPDATE OR REPLACE commits SET kind = ? WHERE kind = ? AND category = ?");
 		PREPARE(nocurrent,"DELETE FROM commits WHERE kind = ? AND category = ?");
-		sqlite3_bind_int64(update,2,category);
-		sqlite3_bind_int64(nocurrent,2,category);
-	}
-	static bool setup = false;
-	if(setup == false) {
-		setup = true;
 		// these never change
 		sqlite3_bind_int(update,1,LAST);
 		sqlite3_bind_int(update,2,PENDING);
+		sqlite3_bind_int64(update,3,category);
 		sqlite3_bind_int(nocurrent,1,CURRENT);
+		sqlite3_bind_int64(nocurrent,2,category);
 	}
 	BEGIN_TRANSACTION(caught);
 	db_once(nocurrent);
