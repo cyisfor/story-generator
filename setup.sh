@@ -3,6 +3,7 @@ function sync {
 				source=$dir
 				adjremote=1
 		else
+				echo $dir
 				exit 23
 				source=$remote
 		fi
@@ -24,7 +25,7 @@ function sync {
 
 function uplink {
 		source=$1/$2
-		[[ -L $source ]] && return;
+		[[ -L $2 ]] && return;
 		ln -rs $source $2
 }
 
@@ -36,7 +37,7 @@ sync
 uplink ./htmlish/ html_when
 uplink ./htmlish/html_when/ libxml2
 
-dir=/extra/home/code/packages/git/ddate/
+dir=/extra/home/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
 dest=ddate
 sync
