@@ -96,6 +96,25 @@ DECLARE_DB_FUNC(begin, "BEGIN");
 DECLARE_DB_FUNC(commit, "COMMIT");
 DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
+identifier category = -1; // this only changes once at program init
+
+void db_set_category(const string category) {
+	DECLARE_STMT(find,"SELECT id FROM categories WHERE category = ?");
+	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
+	sqlite3_bind_blob(find,category.s,category.l,NULL);
+	BEGIN_TRANSACTION(category);
+	RESETTING(find) int res = sqlite3_step(find);
+	if(res == SQLITE_ROW) {
+		category = sqlite3_column_int64(find,0);
+		return id;
+	}
+	sqlite3_bind_blob(insert,category.s,category.l,NULL);
+	db_once(insert);
+	category = sqlite3_last_insert_rowid(db);
+	END_TRANSACTION(category);
+}
+
+
 enum commit_kind {
 	PENDING, /* the soonest commit we've seen, but not finished all before */
 	LAST, /* the soonest commit we've finished with */
@@ -104,26 +123,28 @@ enum commit_kind {
 
 bool saw_commit = false;
 
-void db_saw_commit(git_time_t timestamp, db_oid commit, identifier category) {
+void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	static sqlite3_stmt* insert_current = NULL, insert_pending;
 	if(insert_current == NULL) {
+		assert(category != -1); // call db_set_category first!
+		
 		PREPARE(insert_current,
-						"INSERT OR REPLACE INTO commits (kind,oid,timestamp,category) \n"
+						"INSERT OR REPLACE INTO commits (kind,category,oid,timestamp) \n"
 						"VALUES (?,?,?,?)");
-		// Note: insert pending uses what was inserted for insert_current
+		// Note: insert pending uses what was inserted for insert_current, but changes kind
 		PREPARE(insert_pending,
 						"INSERT OR IGNORE INTO commits (oid,timestamp,kind,category) \n"
 						"SELECT oid,timestamp,?,category FROM commits "
 						"WHERE kind = ? AND category = ?");
 		// these never change
 		sqlite3_bind_int(insert_current, 1, CURRENT);
+		sqlite3_bind_int64(insert_current, 2, category);
 		sqlite3_bind_int(insert_pending, 1, PENDING);
 		sqlite3_bind_int(insert_pending, 2, CURRENT);
+		sqlite3_bind_int64(insert_pending, 3, category);
 	}
-	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
-	sqlite3_bind_int(insert_current, 3, timestamp);
-	sqlite3_bind_int64(insert_current, 4, category);
-	sqlite3_bind_int64(insert_pending, 3, category);
+	sqlite3_bind_blob(insert_current, 3, commit, sizeof(db_oid), NULL);
+	sqlite3_bind_int(insert_current, 4, timestamp);
 	BEGIN_TRANSACTION(saw);
 	db_once(insert_current);
 	if(saw_commit) return;
@@ -148,23 +169,6 @@ void db_caught_up(void) {
 	if(!saw_commit) return;
 	db_once(update);
 	END_TRANSACTION(caught);
-}
-
-identifier db_lookup_category(const string category) {
-	DECLARE_STMT(find,"SELECT id FROM categories WHERE category = ?");
-	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
-	sqlite3_bind_blob(find,category.s,category.l,NULL);
-	identifier id;
-	BEGIN_TRANSACTION(category);
-	RESETTING(find) int res = sqlite3_step(find);
-	if(res == SQLITE_ROW) {
-		id = sqlite3_column_int64(find,0);
-		return id;
-	}
-	sqlite3_bind_blob(insert,category.s,category.l,NULL);
-	db_once(insert);
-	id = sqlite3_last_insert_rowid(db);
-	END_TRANSACTION(category);
 }
 
 void db_last_seen_commit(struct bad* out,

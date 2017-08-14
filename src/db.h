@@ -11,6 +11,7 @@
 void db_open(const char* filename);
 void db_close_and_exit(void);
 
+void db_set_category(const string category);
 void db_saw_commit(git_time_t timestamp, db_oid commit);
 void db_caught_up(void);
 struct bad {
