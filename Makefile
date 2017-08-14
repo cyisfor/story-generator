@@ -33,9 +33,9 @@ test_git: $O
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -MM -o $@ $<
 
--include $(wildcard o/*.d)
+-include $(patsubst %, o/%.d,$(targets))
 
-o/%.o: src/%.c o/%.d $(LIBXML)/$(XMLVERSION) | o
+o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/db.o: o/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
