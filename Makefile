@@ -70,7 +70,9 @@ html_when: ./htmlish/html_when
 
 ./htmlish/html_when/libxml2: ./htmlish/html_when
 
-htmlish: ./htmlish/html_when
+./htmlish/html_when: htmlish
+
+htmlish:
 	git clone --recurse-submodules https://github.com/cyisfor/htmlish.git pending-htmlish
 	$(MAKE) -C pending-htmlish
 	mv pending-htmlish $@
