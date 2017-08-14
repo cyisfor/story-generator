@@ -13,7 +13,7 @@ LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 derp: setup
 	$(MAKE) all
 
-all: generderp test_git 
+all: generate test_git 
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
@@ -21,7 +21,7 @@ O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
 S=$(patsubst %,src/%.c,$N)
 
 N=main storygit repo create db note
-generderp: $O
+generate: $O
 	$(LINK)
 
 N=test_git storygit repo db note
