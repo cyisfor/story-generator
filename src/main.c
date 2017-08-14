@@ -72,7 +72,11 @@ int main(int argc, char *argv[])
 										bool deleted,
 										const string loc,
 										const string src) {
-			if(++num % 100 == 0) db_retransaction();
+			if(++num % 100 == 0) {
+				db_retransaction();
+				putchar('\n');
+				exit(23);
+			}
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
 			//fputc('\n',stdout);
