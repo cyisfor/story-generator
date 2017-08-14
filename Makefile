@@ -3,6 +3,7 @@ PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
 
 LIBXML:=htmlish/html_when/libxml2
+XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
 CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)/include
@@ -24,7 +25,7 @@ N=test_git storygit repo db note
 test_git: $O
 	$(LINK)
 
-o/%.o: src/%.c $(LIBXML)/include/xmlversion.h | o
+o/%.o: src/%.c $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/db.o: o/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
@@ -58,4 +59,4 @@ descend:
 
 .PHONY: descend
 
-$(LIBXML)/include/xmlversion.h: descend
+$(LIBXML)/$(XMLVERSION): descend
