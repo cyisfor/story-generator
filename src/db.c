@@ -145,6 +145,24 @@ void db_caught_up(void) {
 	END_TRANSACTION(caught);
 }
 
+identifier db_lookup_category(const string category) {
+	DECLARE_STMT(find,"SELECT id FROM categories WHERE category = ?");
+	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
+	sqlite3_bind_blob(find,category.s,category.l,NULL);
+	identifier id;
+	BEGIN_TRANSACTION(category);
+	RESETTING(find) int res = sqlite3_step(find);
+	if(res == SQLITE_ROW) {
+		id = sqlite3_column_int64(find,0);
+		return id;
+	}
+	sqlite3_bind_blob(insert,category.s,category.l,NULL);
+	db_once(insert);
+	id = sqlite3_last_insert_rowid(db);
+	END_TRANSACTION(category);
+	
+	
+
 void db_last_seen_commit(struct bad* out,
 												 db_oid last, db_oid current,
 												 git_time_t* timestamp) {
