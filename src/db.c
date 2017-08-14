@@ -184,7 +184,7 @@ void db_last_seen_commit(struct bad* out,
 	if(find == NULL) {
 		assert(category != -1);
 		PREPARE(find,"SELECT oid,timestamp FROM commits WHERE kind = ? AND category = ?");
-		sqlite3_bind_int64(find,1,category);
+		sqlite3_bind_int64(find,2,category);
 	}
 
 	bool one(db_oid dest, enum commit_kind kind) {
