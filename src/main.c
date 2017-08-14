@@ -49,6 +49,10 @@ int main(int argc, char *argv[])
 		if(getenv("category")!=NULL) {
 			string c = {getenv("category")};
 			c.l = strlen(c.s);
+			if(c.l == LITSIZ("censored") && 0 == memcmp(c.s,LITLEN("censored"))) {
+				WARN("censored is a special category. set censored=1 instead plz");
+				setenv("censored","1",1);
+			}
 			return c;
 		} else if(getenv("censored")!=NULL) {
 			return (const string){LITLEN("censored")};
