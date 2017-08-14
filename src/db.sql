@@ -5,8 +5,9 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
-			 kind INTEGER NOT NULL UNIQUE,
+			 kind INTEGER NOT NULL,
 			 category INTEGER  NOT NULL REFERENCES categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
+			 UNIQUE(kind,category),
 			 PRIMARY KEY(oid,timestamp,kind,category)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stories (
