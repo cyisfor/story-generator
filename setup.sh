@@ -19,7 +19,12 @@ function sync {
 		fi
 }
 	
-dir=/extra/home/code/html_when
-remote=https://github.com/cyisfor/html_when.git
-dest=html_when
+dir=/extra/home/code/htmlish
+remote=https://github.com/cyisfor/htmlish.git
+dest=htmlish
+sync
+
+dir=/extra/home/code/packages/git/ddate/
+remote=https://github.com/cyisfor/ddate.git
+dest=ddate
 sync
