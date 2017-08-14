@@ -189,10 +189,9 @@ void db_last_seen_commit(struct bad* out,
 
 	bool one(db_oid dest, enum commit_kind kind) {
 		sqlite3_bind_int(find,1,kind);
-		int res = sqlite3_step(find);
+		RESETTING(find) int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_DONE:
-			sqlite3_reset(find);
 			return false;
 		case SQLITE_ROW:
 			assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
@@ -200,7 +199,6 @@ void db_last_seen_commit(struct bad* out,
 			assert(blob != NULL);
 			memcpy(dest, blob, sizeof(db_oid));
 			if(kind == LAST) *timestamp = sqlite3_column_int64(find,1);
-			sqlite3_reset(find);
 			return true;
 		default:
 			db_check(res);
