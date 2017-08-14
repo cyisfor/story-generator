@@ -17,10 +17,13 @@ all: generate test_git
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a
+O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a\
+$(foreach name,$(N),$(eval targets:=$$(targets) $(name)))
 S=$(patsubst %,src/%.c,$N)
 
 N=main storygit repo create db note
+$(warning o is $O)
+$(error $(objects))
 generate: $O
 	$(LINK)
 
