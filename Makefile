@@ -6,7 +6,7 @@ LIBXML:=htmlish/html_when/libxml2
 XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Iddate/ -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)/include
+CFLAGS+=-Iddate/ -Io -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)/include
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
