@@ -174,7 +174,12 @@ void db_caught_up(void) {
 void db_last_seen_commit(struct bad* out,
 												 db_oid last, db_oid current,
 												 git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT oid,timestamp FROM commits WHERE kind = ?");
+	static sqlite3_stmt* find = NULL;
+	if(find == NULL) {
+		assert(category != -1);
+		PREPARE(find,"SELECT oid,timestamp FROM commits WHERE kind = ? AND category = ?");
+		sqlite3_bind_int64(find,1,category);
+	}
 
 	bool one(db_oid dest, enum commit_kind kind) {
 		sqlite3_bind_int(find,1,kind);
