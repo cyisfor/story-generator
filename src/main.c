@@ -45,11 +45,11 @@ int main(int argc, char *argv[])
 	create_setup();
 
 	
-	const string category = ({
+	const string category = (const string)({
 			if(getenv("category")!=NULL) {
 				string c = {getenv("category")};
 				c.l = strlen(c.s);
-				c;
+				(const string)c;
 			} else if(getenv("censored")!=NULL) {
 				(const string){LITLEN("censored")};
 			} else {
