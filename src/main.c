@@ -44,9 +44,23 @@ int main(int argc, char *argv[])
 	
 	create_setup();
 
+	
+	const string category = ({
+			if(getenv("category")!=NULL) {
+				string c = {getenv("category")};
+				c.l = strlen(c.s);
+				c;
+			} else if(getenv("censored")!=NULL) {
+				(const string){LITLEN("censored")};
+			} else {
+				(const string){LITLEN("html")};
+			}
+		});
+	db_set_category(category);
+
 	size_t num = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
-		db_saw_commit(timestamp, oid);
+		db_saw_commit(timestamp, oid, catid);
 		if(last == NULL) {
 			return true;
 		}
@@ -112,16 +126,6 @@ int main(int argc, char *argv[])
 	if(num > 0) putchar('\n');
 
 	if(getenv("recheck")) timestamp = 0;
-
-	string category = {LITLEN("html")};
-
-	if(getenv("category")!=NULL) {
-		category.s = getenv("category");
-		category.l = strlen(category.s);
-	} else if(getenv("censored")!=NULL) {
-		category.s = "censored";
-		category.l = LITSIZ("censored");
-	}
 
 	INFO("processing...");
 
