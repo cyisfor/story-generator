@@ -19,15 +19,19 @@ function sync {
 		fi
 }
 
-set -e
+function uplink {
+		source=$1/$2
+		[[ -L $source ]] && return;
+		ln -rs $source $2
+}
 
 dir=/extra/home/code/htmlish
 remote=https://github.com/cyisfor/htmlish.git
 dest=htmlish
 sync
 
-ln -rs ./htmlish/html_when .
-ln -rs ./htmlish/html_when/libxml2 .
+uplink ./htmlish/ html_when
+uplink ./htmlish/html_when/ libxml2
 
 dir=/extra/home/code/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
