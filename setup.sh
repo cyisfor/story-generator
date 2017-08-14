@@ -25,7 +25,7 @@ function uplink {
 		ln -rs $source $2
 }
 
-dir=/extra/home/code/htmlish
+dir=/home/code/htmlish
 remote=https://github.com/cyisfor/htmlish.git
 dest=htmlish
 sync
