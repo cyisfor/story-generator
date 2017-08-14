@@ -101,14 +101,14 @@ identifier category = -1; // this only changes once at program init
 void db_set_category(const string category) {
 	DECLARE_STMT(find,"SELECT id FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
-	sqlite3_bind_blob(find,category.s,category.l,NULL);
+	sqlite3_bind_blob(find,1,category.s,category.l,NULL);
 	BEGIN_TRANSACTION(category);
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		category = sqlite3_column_int64(find,0);
 		return id;
 	}
-	sqlite3_bind_blob(insert,category.s,category.l,NULL);
+	sqlite3_bind_blob(insert,1,category.s,category.l,NULL);
 	db_once(insert);
 	category = sqlite3_last_insert_rowid(db);
 	END_TRANSACTION(category);
