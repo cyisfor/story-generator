@@ -8,6 +8,7 @@ function sync {
 				source=$remote
 		fi
 		if [[ -d $dest ]]; then
+				[[ -n "$nocheck" ]] && return
 				cd $dest
 				git pull $source
 				cd ..

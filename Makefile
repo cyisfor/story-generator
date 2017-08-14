@@ -74,3 +74,7 @@ $(LIBXML)/$(XMLVERSION): descend
 setup:
 	sh setup.sh
 	$(MAKE) -C htmlish setup
+
+clone: setup
+	[[ -n "$$remote" ]]
+	$(MAKE) -C htmlish clone
