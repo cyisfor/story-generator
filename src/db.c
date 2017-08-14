@@ -213,16 +213,14 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	identifier id = 0;
 	BEGIN_TRANSACTION(find);
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
-	int res = db_check(sqlite3_step(find));
+	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		id = sqlite3_column_int64(find,0);
-		sqlite3_reset(find);
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,id);
 		db_once_trans(update);
 		return;
 	} else {
-		sqlite3_reset(find);
 		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
@@ -320,7 +318,7 @@ void db_with_chapter_title(identifier story,
 	DECLARE_STMT(find,"SELECT title FROM chapters WHERE story = ? AND chapter = ?");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);
-	int res = sqlite3_step(find);
+	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		const string title = {
 			.s = sqlite3_column_blob(find,0),
@@ -332,7 +330,6 @@ void db_with_chapter_title(identifier story,
 		string title = {};
 		handle(title);
 	}
-	sqlite3_reset(find);
 }
 
 bool derp = false;
@@ -349,7 +346,7 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	string title = {};
 	string description = {};
 	string source = {};
-	int res = sqlite3_step(find);
+	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
 			str->s = sqlite3_column_blob(find,col); 
@@ -364,17 +361,15 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	// handle if nothing in the db, so we can search for files and stuff.
 	// XXX: TODO: only call a special creation function if not found?
 	handle(title,description,source);
-	sqlite3_reset(find);
 	derp = false;
 }
 
 identifier db_count_chapters(identifier story) {
 	DECLARE_STMT(find,"SELECT COUNT(chapter) FROM chapters WHERE story = ?");
 	sqlite3_bind_int64(find,1,story);
-	int res = sqlite3_step(find);
+	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		identifier count = sqlite3_column_int64(find,0);
-		sqlite3_reset(find);
 		return count;
 	}
 	db_check(res);
