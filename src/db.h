@@ -84,4 +84,10 @@ void db_retransaction(void);
 #define BEGIN_TRANSACTION(name) void intrans ## name(void) {
 #define END_TRANSACTION(name) }; db_transaction(intrans ## name);
 
+#define RESETTING(stmt) int CONCAT_SYM(resetter,__LINE__) () { \
+	INFO("Resetting " #stmt); \
+	sqlite3_reset(stmt); \
+	} \
+	__attribute__((__cleanup__(CONCAT_SYM(resetter,__LINE__))))
+
 #endif /* _DB_H_ */

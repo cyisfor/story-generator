@@ -1,14 +1,13 @@
+CREATE TABLE IF NOT EXISTS categories (
+			 id INTEGER PRIMARY KEY,
+			 category TEXT NOT NULL UNIQUE);
+
 CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
 			 timestamp INTEGER NOT NULL,
 			 kind INTEGER NOT NULL UNIQUE,
-			 PRIMARY KEY(oid,timestamp,kind)) WITHOUT ROWID;
-
-CREATE TABLE IF NOT EXISTS pending_commit (
-			 oid BLOB NOT NULL,
-			 timestamp INTEGER NOT NULL,
-			 sentinel BOOL DEFAULT 0 UNIQUE,
-			 PRIMARY KEY(oid,timestamp)) WITHOUT ROWID;
+			 category INTEGER  NOT NULL REFERENCES categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
+			 PRIMARY KEY(oid,timestamp,kind,category)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,

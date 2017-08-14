@@ -49,6 +49,7 @@ static void add_stmt(sqlite3_stmt* stmt) {
 
 #define PREPARE(stmt,sql) {																	 \
 	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
+	assert(stmt != NULL);																				 \
 	add_stmt(stmt);																							 \
 	}
 
@@ -103,22 +104,26 @@ enum commit_kind {
 
 bool saw_commit = false;
 
-void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	DECLARE_STMT(insert_current,
-							 "INSERT OR REPLACE INTO commits (oid,timestamp,kind) VALUES (?,?,?)\n");
-	DECLARE_STMT(insert_pending,
-							 "INSERT OR IGNORE INTO commits (oid,timestamp,kind) "
-							 "SELECT oid,timestamp,? FROM commits WHERE kind = ?");
-	static bool setup = false;
-	if(setup == false) {
-		setup = true;
+void db_saw_commit(git_time_t timestamp, db_oid commit, identifier category) {
+	static sqlite3_stmt* insert_current = NULL, insert_pending;
+	if(insert_current == NULL) {
+		PREPARE(insert_current,
+						"INSERT OR REPLACE INTO commits (kind,oid,timestamp,category) \n"
+						"VALUES (?,?,?,?)");
+		// Note: insert pending uses what was inserted for insert_current
+		PREPARE(insert_pending,
+						"INSERT OR IGNORE INTO commits (oid,timestamp,kind,category) \n"
+						"SELECT oid,timestamp,?,category FROM commits "
+						"WHERE kind = ? AND category = ?");
 		// these never change
-		sqlite3_bind_int(insert_current, 3, CURRENT);
+		sqlite3_bind_int(insert_current, 1, CURRENT);
 		sqlite3_bind_int(insert_pending, 1, PENDING);
 		sqlite3_bind_int(insert_pending, 2, CURRENT);
 	}
-	sqlite3_bind_blob(insert_current, 1, commit, sizeof(db_oid), NULL);
-	sqlite3_bind_int(insert_current, 2, timestamp);
+	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
+	sqlite3_bind_int(insert_current, 3, timestamp);
+	sqlite3_bind_int64(insert_current, 4, category);
+	sqlite3_bind_int64(insert_pending, 3, category);
 	BEGIN_TRANSACTION(saw);
 	db_once(insert_current);
 	if(saw_commit) return;
@@ -160,8 +165,7 @@ identifier db_lookup_category(const string category) {
 	db_once(insert);
 	id = sqlite3_last_insert_rowid(db);
 	END_TRANSACTION(category);
-	
-	
+}
 
 void db_last_seen_commit(struct bad* out,
 												 db_oid last, db_oid current,
