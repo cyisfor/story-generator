@@ -61,18 +61,29 @@ descend:
 
 $(LIBXML)/$(XMLVERSION): descend
 
-setup: htmlish libxml2 html_when
+setup: htmlish libxml2 html_when ddate
+	$(MAKE) -C htmlish setup
 
 libxml2: ./htmlish/html_when/libxml2
-	ln -rs $< $@
+	[[ -h $@ ]] || ln -rs $< $@
+./htmlish/html_when/libxml2: html_when
+
 html_when: ./htmlish/html_when
-	ln -rs $< $@
-
-./htmlish/html_when/libxml2: ./htmlish/html_when
-
+	[[ -h $@ ]] || ln -rs $< $@
 ./htmlish/html_when: htmlish
 
+define SYNC
+	@if [[ ! -d $1 ]]; then \
+		git clone $2 pending-$1 && \
+		mv pending-$1 $1 ; \
+	else \
+		cd $1 && git pull; \
+	fi
+endef
+
 htmlish:
-	git clone --recurse-submodules https://github.com/cyisfor/htmlish.git pending-htmlish
-	$(MAKE) -C pending-htmlish
-	mv pending-htmlish $@
+#	$(call SYNC,$@,/home/code/html_when)
+	$(call SYNC,$@,https://github.com/cyisfor/html_when.git)
+
+ddate:
+	$(call SYNC,$@,https://github.com/cyisfor/ddate.git)
