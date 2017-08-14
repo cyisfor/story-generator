@@ -6,7 +6,7 @@ LIBXML:=libxml2
 XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Iddate/ -Io -Ihtmlish/src -Ihtmlish/html_when/src -I$(LIBXML)/include
+CFLAGS+=-Io -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ilibxml2/include
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -57,6 +57,14 @@ htmlish/libhtmlish.a: descend
 descend:
 	$(MAKE) -C htmlish libhtmlish.a
 
-.PHONY: descend
+.PHONY: descend setup
 
 $(LIBXML)/$(XMLVERSION): descend
+
+setup: htmlish
+	$(MAKE) -C $<
+	ln -rs ./htmlish/html_when/libxml2 libxml2
+	ln -rs ./htmlish/html_when/ html_when
+
+htmlish:
+	git clone --recurse-submodules https://github.com/cyisfor/htmlish.git
