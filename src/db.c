@@ -124,7 +124,7 @@ enum commit_kind {
 bool saw_commit = false;
 
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
-	static sqlite3_stmt* insert_current = NULL, insert_pending;
+	static sqlite3_stmt* insert_current = NULL, *insert_pending;
 	if(insert_current == NULL) {
 		assert(category != -1); // call db_set_category first!
 		
