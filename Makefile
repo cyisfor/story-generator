@@ -61,10 +61,16 @@ descend:
 
 $(LIBXML)/$(XMLVERSION): descend
 
-setup: htmlish
-	$(MAKE) -C $<
-	ln -rs ./htmlish/html_when/libxml2 libxml2
-	ln -rs ./htmlish/html_when/ html_when
+setup: htmlish libxml2 html_when
 
-htmlish:
-	git clone --recurse-submodules https://github.com/cyisfor/htmlish.git
+libxml2: ./htmlish/html_when/libxml2
+	ln -rs $< $@
+html_when: ./htmlish/html_when
+	ln -rs $< $@
+
+./htmlish/html_when/libxml2: ./htmlish/html_when
+
+htmlish: ./htmlish/html_when
+	git clone --recurse-submodules https://github.com/cyisfor/htmlish.git pending-htmlish
+	$(MAKE) -C pending-htmlish
+	mv pending-htmlish $@
