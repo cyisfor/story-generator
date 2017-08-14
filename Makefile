@@ -75,6 +75,6 @@ setup:
 	sh setup.sh
 	$(MAKE) -C htmlish setup
 
-clone: setup
+push: setup
 	[[ -n "$(remote)" ]]
-	$(MAKE) -C htmlish clone remote=$(remote)/htmlish
+	$(MAKE) -C htmlish push remote=$(remote)/htmlish
