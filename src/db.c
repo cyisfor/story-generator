@@ -154,8 +154,14 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 }
 
 void db_caught_up(void) {
-	DECLARE_STMT(update,"UPDATE OR REPLACE commits SET kind = ? WHERE kind = ?");
-	DECLARE_STMT(nocurrent,"DELETE FROM commits WHERE kind = ?");
+	static sqlite3_stmt* update = NULL, *nocurrent;
+	if(update == NULL) {
+		assert(category != -1);
+		PREPARE(update,"UPDATE OR REPLACE commits SET kind = ? WHERE kind = ? AND category = ?");
+		PREPARE(nocurrent,"DELETE FROM commits WHERE kind = ? AND category = ?");
+		sqlite3_bind_int64(update,2,category);
+		sqlite3_bind_int64(nocurrent,2,category);
+	}
 	static bool setup = false;
 	if(setup == false) {
 		setup = true;
