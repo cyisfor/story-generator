@@ -89,7 +89,7 @@ void db_retransaction(void);
 #define CONCAT_SYM(a,b) CPPSUX(a,b)
 
 #define RESETTING(stmt) int CONCAT_SYM(resetter,__LINE__) () { \
-	INFO("Resetting " #stmt); \
+	/* INFO("Resetting " #stmt); */																	 \
 	sqlite3_reset(stmt); \
 	} \
 	__attribute__((__cleanup__(CONCAT_SYM(resetter,__LINE__))))
