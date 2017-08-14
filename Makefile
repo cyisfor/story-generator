@@ -10,6 +10,9 @@ CFLAGS+=-Io -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ilibxml2/include
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
+derp: setup
+	$(MAKE) all
+
 all: generderp test_git 
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
