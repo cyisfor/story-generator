@@ -1,4 +1,5 @@
 function sync {
+		echo $dir
 		if [[ -d $dir ]]; then
 				source=$dir
 				adjremote=1
@@ -34,7 +35,7 @@ sync
 uplink ./htmlish/ html_when
 uplink ./htmlish/html_when/ libxml2
 
-dir=/extra/home/code/packages/git/ddate/
+dir=/extra/home/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
 dest=ddate
 sync
