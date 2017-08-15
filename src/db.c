@@ -231,6 +231,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	return id;
 }
 
+// how low can we stoop?
 bool need_restart_for_chapters = false;
 
 void db_saw_chapter(bool deleted, identifier story,
@@ -242,25 +243,39 @@ void db_saw_chapter(bool deleted, identifier story,
 		db_once_trans(delete);
 	} else {
 		INFO("SAW %d:%d %d",story,chapter,timestamp);
+		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
-								 "WHERE story = ? AND chapter = ? AND timestamp != ?1"); 
+								 "WHERE story = ? AND chapter = ?"); 
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
-		sqlite3_bind_int64(update,1,timestamp);
-		sqlite3_bind_int64(update,2,story);
-		sqlite3_bind_int64(update,3,chapter);
-		db_once_trans(update);
-		if(sqlite3_changes(db) > 0) {
-			// any for_chapters iterator has to be restarted now.
-			need_restart_for_chapters = true;
+		sqlite3_bind_int64(find,1,story);
+		sqlite3_bind_int64(find,2,chapter);
+		BEGIN_TRANSACTION(saw_chapter);
+		RESETTING(find) int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_ROW:
+			// update if new timestamp is higher
+			if(sqlite3_column_int64(find) < timestamp) {
+				sqlite3_bind_int64(update,1,timestamp);
+				sqlite3_bind_int64(update,2,story);
+				sqlite3_bind_int64(update,3,chapter);
+				db_once(update);
+				assert(sqlite3_changes(db) > 0);
+				// any for_chapters iterator has to be restarted now.
+				need_restart_for_chapters = true;
+			}
 			return;
-		}
-		sqlite3_bind_int64(insert,1,timestamp);
-		sqlite3_bind_int64(insert,2,story);
-		sqlite3_bind_int64(insert,3,chapter);
-		db_once_trans(insert);
+		case SQLITE_DONE:
+			sqlite3_bind_int64(insert,1,timestamp);
+			sqlite3_bind_int64(insert,2,story);
+			sqlite3_bind_int64(insert,3,chapter);
+			db_once(insert);
+			return;
+		};
+		END_TRANSACTION(saw_chapter);
 	}
 }
 
+/* be CAREFUL none of these iterators are re-entrant! */
 
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
