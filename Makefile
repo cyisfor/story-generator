@@ -75,6 +75,10 @@ setup:
 	sh setup.sh
 	$(MAKE) -C htmlish setup
 
-push: setup
+git-tools/pushcreate:
+	$(MAKE) -C git-tools
+
+push: setup git-tools/pushcreate
 	[[ -n "$(remote)" ]]
+	./git-tools/pushcreate $(remote)
 	$(MAKE) -C htmlish push remote=$(remote)/htmlish
