@@ -174,12 +174,12 @@ int main(int argc, char *argv[])
 		// don't forget to close these!
 
 		struct stat srcinfo, destinfo;
-		bool skip(const char* srcname, const char* destname) {
+		bool skip(git_time_t srcstamp, const char* destname) {
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
-			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+			//ensure0(fstatat(srcloc,srcname,&srcinfo,0));
 
 			if(dest_exists) {
-				if(AISNEWER(destinfo,srcinfo)) {
+				if(destinfo.st_mtime > srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
 					WARN("skip %s",srcname);
@@ -231,11 +231,10 @@ int main(int argc, char *argv[])
 					db_saw_chapter(false,story,chapter_timestamp,chapter-1);
 				}
 			}
+
+			if(skip(chapter_timestamp,destname)) return;
 			char srcname[0x100];
 			snprintf(srcname,0x100,"chapter%d.hish",chapter);
-
-			if(skip(srcname,destname)) return;
-
 
 			int src = openat(srcloc, srcname, O_RDONLY, 0755);
 			ensure_ge(src,0);
