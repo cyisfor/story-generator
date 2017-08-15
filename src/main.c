@@ -173,8 +173,8 @@ int main(int argc, char *argv[])
 		}
 		// don't forget to close these!
 
+		struct stat srcinfo, destinfo;
 		bool skip(const char* srcname, const char* destname) {
-			struct stat srcinfo, destinfo;
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
 			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
 
@@ -198,6 +198,12 @@ int main(int argc, char *argv[])
 			if(countchaps != numchaps) {
 				numchaps_changed = true;
 				WARN("#chapters changed %d -> %d",numchaps,countchaps);
+				if(countchaps < numchaps) {
+					/* if we've reduced our chapters, mark the new last chapter as seen recently
+						 since it needs its next link removed
+					*/
+					db_saw_chapter(false,story,story_timestamp,countchaps);
+				}
 				numchaps = countchaps;
 			}
 		}
@@ -216,14 +222,21 @@ int main(int argc, char *argv[])
 			}
 
 			char destname[0x100] = "index.html";
-			if(chapter > 1) {
+			iof(chapter > 1) {
 				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
 			}
+			void create_one(void) {
 			char srcname[0x100];
 			snprintf(srcname,0x100,"chapter%d.hish",chapter);
 
 			if(skip(srcname,destname)) return;
+
+			/* be sure to mark the previous chapter as "seen" if we are the last chapter
+				 being exported (previous needs a "next" link) */
+			if(chapter == numchaps && chapter > 1) {
+				db_saw_chapter(false,story,chapter_timestamp,chapter-1);
+			}
 
 
 			int src = openat(srcloc, srcname, O_RDONLY, 0755);
@@ -237,6 +250,7 @@ int main(int argc, char *argv[])
 			ensure0(close(dest));
 
 			ensure0(renameat(destloc,".tempchap",destloc,destname));
+			}
 		}
 
 		// NOT story_timestamp
