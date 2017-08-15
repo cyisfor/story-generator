@@ -231,6 +231,8 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	return id;
 }
 
+bool need_restart_for_chapters = false;
+
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter) {
 	if(deleted) {
@@ -247,7 +249,11 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(update,2,story);
 		sqlite3_bind_int64(update,3,chapter);
 		db_once_trans(update);
-		if(sqlite3_changes(db) > 0) return;
+		if(sqlite3_changes(db) > 0) {
+			// any for_chapters iterator has to be restarted now.
+			need_restart_for_chapters = true;
+			return;
+		}
 		sqlite3_bind_int64(insert,1,timestamp);
 		sqlite3_bind_int64(insert,2,story);
 		sqlite3_bind_int64(insert,3,chapter);
@@ -295,6 +301,7 @@ void db_for_chapters(identifier story,
 										git_time_t since) {
 	DECLARE_STMT(find,
 							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp >= ?");
+RESTART:
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
 	for(;;) {
@@ -303,6 +310,10 @@ void db_for_chapters(identifier story,
 		case SQLITE_ROW:
 			handle(sqlite3_column_int64(find,0),
 						 sqlite3_column_int64(find,1));
+			if(need_restart_for_chapters) {
+				sqlite3_reset(find);
+				need_restart_for_chapters = false;
+			}
 			continue;
 		case SQLITE_DONE:
 			sqlite3_reset(find);
