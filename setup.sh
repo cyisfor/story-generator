@@ -3,12 +3,12 @@
 local=/home/code/git-tools
 remote=https://github.com/cyisfor/git-tools.git
 dest=git-tools
-sync
+clonepull
 
 local=/home/code/htmlish
 remote=https://github.com/cyisfor/htmlish.git
 dest=htmlish
-sync
+clonepull
 
 uplink ./htmlish/ html_when
 uplink ./htmlish/html_when/ libxml2
@@ -16,4 +16,4 @@ uplink ./htmlish/html_when/ libxml2
 local=/extra/home/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
 dest=ddate
-sync
+clonepull
