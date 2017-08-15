@@ -218,6 +218,10 @@ int main(int argc, char *argv[])
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
+				if(chapter > 2 && !finished) {
+					// two chapters before this needs updating, since it now has a "next" link
+					db_saw_chapter(false,story,chapter_timestamp,chapter-2);
+				}
 				return;
 			}
 
@@ -229,11 +233,6 @@ int main(int argc, char *argv[])
 					 being exported (previous needs a "next" link) */
 				if(chapter == numchaps) {
 					db_saw_chapter(false,story,chapter_timestamp,chapter-1);
-					if(chapter > 2 && !finished) {
-						// also the one before it, which would get updated a lot before
-						// the newest chapter becomes visible, due to a new newest chapter.
-						db_saw_chapter(false,story,chapter_timestamp,chapter-2);
-					}
 				}
 			}
 
