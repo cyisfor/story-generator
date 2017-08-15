@@ -82,8 +82,13 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error);
 
 void db_transaction(void (*run)(void));
 void db_retransaction(void);
-#define BEGIN_TRANSACTION(name) void intrans ## name(void) {
-#define END_TRANSACTION(name) }; db_transaction(intrans ## name);
+
+void db_begin(void);
+void db_commit(void);
+void db_rollback(void);
+
+#define BEGIN_TRANSACTION db_begin();
+#define END_TRANSACTION db_commit();
 
 #define CPPSUX(a,b) a ## b
 #define CONCAT_SYM(a,b) CPPSUX(a,b)

@@ -29,12 +29,34 @@ static int db_check(int res) {
 	return res;
 }
 
+
+static void db_once(sqlite3_stmt* stmt) {
+		int res = sqlite3_step(stmt);
+		sqlite3_reset(stmt);
+		db_check(res);
+}
+
+#define DECLARE_BUILTIN(name)										\
+	sqlite3_stmt *name ## _stmt = NULL;						\
+	void db_ ## name(void) {											\
+		db_once(name ## _stmt);											\
+	}	
+
+DECLARE_BUILTIN(begin);
+DECLARE_BUILTIN(commit);
+DECLARE_BUILTIN(rollback);
+
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
 #include "db-sql.gen.c"
+	PREPARE(begin_stmt,"BEGIN");
+	PREPARE(commit_stmt,"COMMIT");
+	PREPARE(rollback_stmt,"ROLLBACK");
 	char* err = NULL;
+	BEGIN_TRANSACTION;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	END_TRANSACTION;
 }
 
 
@@ -79,22 +101,12 @@ void db_close_and_exit(void) {
 	exit(0);
 }
 
-static void db_once(sqlite3_stmt* stmt) {
-		int res = sqlite3_step(stmt);
-		sqlite3_reset(stmt);
-		db_check(res);
-}
-
 static void db_once_trans(sqlite3_stmt* stmt) {
 	// because sqlite is retarded, no changes take effect outside a transaction
-	BEGIN_TRANSACTION(once);
+	BEGIN_TRANSACTION;
 	db_once(stmt);
-	END_TRANSACTION(once);
+	END_TRANSACTION;
 }
-
-DECLARE_DB_FUNC(begin, "BEGIN");
-DECLARE_DB_FUNC(commit, "COMMIT");
-DECLARE_DB_FUNC(rollback, "ROLLBACK");
 
 identifier category = -1; // this only changes once at program init
 
@@ -102,7 +114,7 @@ void db_set_category(const string name) {
 	DECLARE_STMT(find,"SELECT id FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
 	sqlite3_bind_blob(find,1,name.s,name.l,NULL);
-	BEGIN_TRANSACTION(category);
+	BEGIN_TRANSACTION;
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		category = sqlite3_column_int64(find,0);
@@ -111,7 +123,7 @@ void db_set_category(const string name) {
 	sqlite3_bind_blob(insert,1,name.s,name.l,NULL);
 	db_once(insert);
 	category = sqlite3_last_insert_rowid(db);
-	END_TRANSACTION(category);
+	END_TRANSACTION;
 }
 
 
@@ -145,12 +157,12 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	}
 	sqlite3_bind_blob(insert_current, 3, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert_current, 4, timestamp);
-	BEGIN_TRANSACTION(saw);
+	BEGIN_TRANSACTION;
 	db_once(insert_current);
 	if(saw_commit) return;
 	saw_commit = true;
 	db_once(insert_pending);
-	END_TRANSACTION(saw);
+	END_TRANSACTION;
 }
 
 void db_caught_up(void) {
@@ -166,11 +178,11 @@ void db_caught_up(void) {
 		sqlite3_bind_int(nocurrent,1,CURRENT);
 		sqlite3_bind_int64(nocurrent,2,category);
 	}
-	BEGIN_TRANSACTION(caught);
+	BEGIN_TRANSACTION;
 	db_once(nocurrent);
 	if(!saw_commit) return;
 	db_once(update);
-	END_TRANSACTION(caught);
+	END_TRANSACTION;
 }
 
 void db_last_seen_commit(struct bad* out,
@@ -211,7 +223,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 
 	identifier id = 0;
-	BEGIN_TRANSACTION(find);
+	BEGIN_TRANSACTION;
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -227,7 +239,7 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 		id = sqlite3_last_insert_rowid(db);
 		return;
 	}
-	END_TRANSACTION(find);
+	END_TRANSACTION;
 	return id;
 }
 
@@ -249,7 +261,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
 		sqlite3_bind_int64(find,1,story);
 		sqlite3_bind_int64(find,2,chapter);
-		BEGIN_TRANSACTION(saw_chapter);
+		BEGIN_TRANSACTION;
 		RESETTING(find) int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW:
@@ -271,7 +283,7 @@ void db_saw_chapter(bool deleted, identifier story,
 			db_once(insert);
 			return;
 		};
-		END_TRANSACTION(saw_chapter);
+		END_TRANSACTION;
 	}
 }
 
@@ -421,13 +433,13 @@ void db_set_chapter_title(const string title,
 	sqlite3_bind_blob(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
-	BEGIN_TRANSACTION(setchap);
+	BEGIN_TRANSACTION;
 	db_once(update);
 	if(!*title_changed) {
 		if(sqlite3_changes(db) > 0) *title_changed = true;
 		// never set title_changed to false, it goes true it stays true
 	}
-	END_TRANSACTION(setchap);
+	END_TRANSACTION;
 }
 
 void db_set_story_info(identifier story,
