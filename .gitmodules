@@ -2,3 +2,6 @@
 	path = htmlish
 	url = https://github.com/cyisfor/htmlish.git
 	ignore = untracked
+[submodule "git-tools"]
+	path = git-tools
+	url = https://github.com/cyisfor/git-tools.git
