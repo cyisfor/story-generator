@@ -80,5 +80,5 @@ git-tools/pushcreate:
 
 push: setup git-tools/pushcreate
 	[[ -n "$(remote)" ]]
-	./git-tools/pushcreate $(remote)
-	$(MAKE) -C htmlish push remote=$(remote)/htmlish
+	./git-tools/pushcreate "$(remote)"
+	$(MAKE) -C htmlish push remote="$(remote)/htmlish"
