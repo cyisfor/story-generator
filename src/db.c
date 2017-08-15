@@ -254,7 +254,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		switch(res) {
 		case SQLITE_ROW:
 			// update if new timestamp is higher
-			if(sqlite3_column_int64(find) < timestamp) {
+			if(sqlite3_column_int64(find,0) < timestamp) {
 				sqlite3_bind_int64(update,1,timestamp);
 				sqlite3_bind_int64(update,2,story);
 				sqlite3_bind_int64(update,3,chapter);
