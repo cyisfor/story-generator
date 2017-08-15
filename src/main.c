@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 				if(destinfo.st_mtime > srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
-					WARN("skip %s",srcname);
+					WARN("skip %s",destname);
 					return true;
 				}
 			} else {
