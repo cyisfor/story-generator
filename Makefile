@@ -33,8 +33,6 @@ test_git: $O
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -MM -o $@ $<
 
--include $(patsubst %, o/%.d,$(targets))
-
 o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -82,3 +80,5 @@ push: setup git-tools/pushcreate
 	[[ -n "$(remote)" ]]
 	./git-tools/pushcreate "$(remote)"
 	$(MAKE) -C htmlish push remote="$(remote)/htmlish"
+
+-include $(patsubst %, o/%.d,$(targets))
