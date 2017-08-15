@@ -239,7 +239,8 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
 	} else {
-		DECLARE_STMT(update,"UPDATE chapters SET timestamp = ? WHERE story = ? AND chapter = ?"); 
+		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
+								 "WHERE story = ? AND chapter = ?"); 
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,story);

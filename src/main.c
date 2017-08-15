@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 			}
 
 			char destname[0x100] = "index.html";
-			iof(chapter > 1) {
+			if(chapter > 1) {
 				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
 				assert(amt < 0x100);
 			}
