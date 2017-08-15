@@ -224,19 +224,17 @@ int main(int argc, char *argv[])
 			char destname[0x100] = "index.html";
 			if(chapter > 1) {
 				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
-				assert(amt < 0x100);
+				assert(amt < 0x100);				
+				/* be sure to mark the previous chapter as "seen" if we are the last chapter
+					 being exported (previous needs a "next" link) */
+				if(chapter == numchaps) {
+					db_saw_chapter(false,story,chapter_timestamp,chapter-1);
+				}
 			}
-			void create_one(void) {
 			char srcname[0x100];
 			snprintf(srcname,0x100,"chapter%d.hish",chapter);
 
 			if(skip(srcname,destname)) return;
-
-			/* be sure to mark the previous chapter as "seen" if we are the last chapter
-				 being exported (previous needs a "next" link) */
-			if(chapter == numchaps && chapter > 1) {
-				db_saw_chapter(false,story,chapter_timestamp,chapter-1);
-			}
 
 
 			int src = openat(srcloc, srcname, O_RDONLY, 0755);
@@ -250,7 +248,6 @@ int main(int argc, char *argv[])
 			ensure0(close(dest));
 
 			ensure0(renameat(destloc,".tempchap",destloc,destname));
-			}
 		}
 
 		// NOT story_timestamp
