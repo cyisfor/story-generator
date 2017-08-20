@@ -165,13 +165,12 @@ int main(int argc, char *argv[])
 			close(loc);
 			return sub;
 		}
-		int destloc = descend(AT_FDCWD, category, true);
+		CLOSING int destloc = descend(AT_FDCWD, category, true);
 		destloc = descend(destloc, location, true);
-		int srcloc = descend(AT_FDCWD, location, false);
+		CLOSING int srcloc = descend(AT_FDCWD, location, false);
 		{ string markup = {LITLEN("markup")};
 			srcloc = descend(srcloc, markup, false);
 		}
-		// don't forget to close these!
 
 		struct stat srcinfo, destinfo;
 		bool skip(git_time_t srcstamp, const char* destname) {
