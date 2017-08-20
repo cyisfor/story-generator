@@ -40,7 +40,26 @@ static void db_once(sqlite3_stmt* stmt) {
 	sqlite3_stmt *name ## _stmt = NULL;						\
 	void db_ ## name(void) {											\
 		db_once(name ## _stmt);											\
-	}	
+	}
+
+
+#define PREPARE(stmt,sql) {																	 \
+	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
+	assert(stmt != NULL);																				 \
+	add_stmt(stmt);																							 \
+	}
+
+#define DECLARE_STMT(stmt,sql)																		\
+	static sqlite3_stmt* stmt = NULL;																\
+	if(stmt == NULL) {																							\
+		PREPARE(stmt, sql);																						\
+	}
+
+#define DECLARE_DB_FUNC(name,sql) static void name(void) { \
+	DECLARE_STMT(stmt, sql);																 \
+	db_once(stmt);																					 \
+	}
+
 
 DECLARE_BUILTIN(begin);
 DECLARE_BUILTIN(commit);
@@ -68,23 +87,6 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
 	stmts[nstmt-1] = stmt;
 }
-
-#define PREPARE(stmt,sql) {																	 \
-	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
-	assert(stmt != NULL);																				 \
-	add_stmt(stmt);																							 \
-	}
-
-#define DECLARE_STMT(stmt,sql)																		\
-	static sqlite3_stmt* stmt = NULL;																\
-	if(stmt == NULL) {																							\
-		PREPARE(stmt, sql);																						\
-	}
-
-#define DECLARE_DB_FUNC(name,sql) static void name(void) { \
-	DECLARE_STMT(stmt, sql);																 \
-	db_once(stmt);																					 \
-	}
 
 void db_close_and_exit(void) {
 	size_t i;
