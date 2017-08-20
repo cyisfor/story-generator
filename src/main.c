@@ -185,7 +185,9 @@ int main(int argc, char *argv[])
 			if(dest_exists) {
 				INFO("srcstamp %d - destmtime %d = %d ",srcstamp,destinfo.st_mtime,
 						 srcstamp - destinfo.st_mtime);
-				if(destinfo.st_mtime > srcstamp) {
+				// do dest.mtime - 1, because it could have been updated in the same
+				// second as a new commit, and git doesn't have accurate timestamps
+				if(destinfo.st_mtime - 1 > srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
 					WARN("skip %s",destname);
