@@ -224,25 +224,22 @@ identifier db_find_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 
-	identifier id = 0;
 	BEGIN_TRANSACTION;
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
-		id = sqlite3_column_int64(find,0);
+		identifier id = sqlite3_column_int64(find,0);
 		sqlite3_bind_int64(update,1,timestamp);
 		sqlite3_bind_int64(update,2,id);
 		db_once_trans(update);
-		return;
+		return id;
 	} else {
 		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
-		id = sqlite3_last_insert_rowid(db);
-		return;
+		return sqlite3_last_insert_rowid(db);
 	}
 	END_TRANSACTION;
-	return id;
 }
 
 // how low can we stoop?
