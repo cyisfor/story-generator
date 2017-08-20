@@ -65,13 +65,13 @@ bool git_for_commits(db_oid until,
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 			repo_check(git_commit_tree(&cur,commit));
 			if(timestamp == 0) {
-				// eh, duplicate one I guess
-				timestamp = git_commit_time(cur);
+				// eh, duplicate one timestamp I guess
+				timestamp = git_commit_time(commit);
 			}
 			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
 			last = cur;
 			// timestamp should be for the NEWER tree
-			timestamp = git_commit_time(last);
+			timestamp = git_commit_time(commit);
 		}
 	}
 	bool ret = op();
