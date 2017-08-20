@@ -10,14 +10,6 @@
 
 #include "libxmlfixes.h"
 
-void close_ptr(int* fd) {
-	close(*fd);
-	*fd = -1;
-}
-
-#define CLOSING __attribute__((__cleanup__(close_ptr)))
-
-
 #include <git2/revparse.h>
 
 
@@ -30,6 +22,12 @@ void close_ptr(int* fd) {
 #include <assert.h>
 #include <errno.h> // ENOENT
 
+void close_ptr(int* fd) {
+	close(*fd);
+	*fd = -1;
+}
+
+#define CLOSING __attribute__((__cleanup__(close_ptr)))
 
 static bool AISNEWER(struct stat a, struct stat b) {
 	if(a.st_mtime > b.st_mtime) return true;

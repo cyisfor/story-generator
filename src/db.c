@@ -43,6 +43,16 @@ static void db_once(sqlite3_stmt* stmt) {
 	}
 
 
+/* since sqlite sucks, have to malloc copies of pointers to all statements,
+	 since the database won't close until we finalize them all. */
+sqlite3_stmt** stmts = NULL;
+size_t nstmt = 0;
+static void add_stmt(sqlite3_stmt* stmt) {
+	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
+	stmts[nstmt-1] = stmt;
+}
+
+
 #define PREPARE(stmt,sql) {																	 \
 	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
 	assert(stmt != NULL);																				 \
@@ -76,16 +86,6 @@ void db_open(const char* filename) {
 	BEGIN_TRANSACTION;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	END_TRANSACTION;
-}
-
-
-/* since sqlite sucks, have to malloc copies of pointers to all statements,
-	 since the database won't close until we finalize them all. */
-sqlite3_stmt** stmts = NULL;
-size_t nstmt = 0;
-static void add_stmt(sqlite3_stmt* stmt) {
-	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
-	stmts[nstmt-1] = stmt;
 }
 
 void db_close_and_exit(void) {
