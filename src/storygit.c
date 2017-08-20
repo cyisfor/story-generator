@@ -58,14 +58,20 @@ bool git_for_commits(db_oid until,
 	git_tree* cur = NULL;
 	git_oid commit_oid;
 	bool op() {
+		git_time_t timestamp = 0;
 		for(;;) {
 			if(0!=git_revwalk_next(&commit_oid, walker)) return true;
 			SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
-			git_time_t timestamp = git_commit_time(commit);
 			repo_check(git_commit_tree(&cur,commit));
+			if(timestamp == 0) {
+				// eh, duplicate one I guess
+				timestamp = git_commit_time(cur);
+			}
 			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
 			last = cur;
+			// timestamp should be for the NEWER tree
+			timestamp = git_commit_time(last);
 		}
 	}
 	bool ret = op();
