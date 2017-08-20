@@ -10,6 +10,13 @@
 
 #include "libxmlfixes.h"
 
+void close_ptr(int* fd) {
+	close(*fd);
+	*fd = -1;
+}
+
+#define CLOSING __attribute__((__cleanup__(close_ptr)))
+
 
 #include <git2/revparse.h>
 
@@ -107,7 +114,7 @@ int main(int argc, char *argv[])
 	};
 	db_oid last_commit, current_commit;
 	git_time_t timestamp = 0;
-	BEGIN_TRANSACTION(last_seen);
+	BEGIN_TRANSACTION;
 	if(getenv("until")) {
 		results.last = true;
 		git_object* thing1;
@@ -132,7 +139,7 @@ int main(int argc, char *argv[])
 	git_for_commits(results.last ? last_commit : NULL,
 									results.current ? current_commit : NULL,
 									on_commit);
-	END_TRANSACTION(last_seen);
+	END_TRANSACTION;
 	if(num > 0) putchar('\n');
 
 	if(getenv("recheck")) timestamp = 0;
