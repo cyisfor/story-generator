@@ -31,7 +31,7 @@ test_git: $O
 	$(LINK)
 
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
-	$(CC) $(CFLAGS) -MM -o $@ $<
+	$(CC) $(CFLAGS) -MG -MM -o $@ $<
 
 o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
