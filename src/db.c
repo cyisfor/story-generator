@@ -476,15 +476,15 @@ void db_transaction(void (*run)(void)) {
 
 	if(in_trans) return run();
 	in_trans = true;
-	begin();
+	db_begin();
 	run();
-	commit();
+	db_commit();
 	in_trans = false;
 }
 
 void db_retransaction(void) {
-	commit();
-	begin();
+	db_commit();
+	db_begin();
 }
 
 
