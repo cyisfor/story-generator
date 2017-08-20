@@ -183,6 +183,8 @@ int main(int argc, char *argv[])
 			//ensure0(fstatat(srcloc,srcname,&srcinfo,0));
 
 			if(dest_exists) {
+				INFO("srcstamp %d - destmtime %d = %d ",srcstamp,destinfo.st_mtime,
+						 srcstamp - destinfo.st_mtime);
 				if(destinfo.st_mtime > srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
