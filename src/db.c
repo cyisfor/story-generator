@@ -36,12 +36,28 @@ static void db_once(sqlite3_stmt* stmt) {
 		db_check(res);
 }
 
+
+static bool in_trans = false;
+
 #define DECLARE_BUILTIN(name)										\
 	sqlite3_stmt *name ## _stmt = NULL;						\
-	void db_ ## name(void) {											\
-		db_once(name ## _stmt);											\
-	}
+	void db_ ## name(void)
 
+DECLARE_BUILTIN(begin) {
+	if(in_trans) return;
+	in_trans = true;
+	db_once(begin_stmt); 
+}
+DECLARE_BUILTIN(commit) {
+	if(!in_trans) return;
+	db_once(commit_stmt);
+	in_trans = false;
+}
+DECLARE_BUILTIN(rollback) {
+	if(!in_trans) return;
+	db_once(commit_stmt);
+	in_trans = false;
+}
 
 /* since sqlite sucks, have to malloc copies of pointers to all statements,
 	 since the database won't close until we finalize them all. */
@@ -69,11 +85,6 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	DECLARE_STMT(stmt, sql);																 \
 	db_once(stmt);																					 \
 	}
-
-
-DECLARE_BUILTIN(begin);
-DECLARE_BUILTIN(commit);
-DECLARE_BUILTIN(rollback);
 
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
@@ -472,14 +483,10 @@ void db_set_chapters(identifier story, size_t numchaps) {
 }
 
 void db_transaction(void (*run)(void)) {
-	static bool in_trans = false;
-
 	if(in_trans) return run();
-	in_trans = true;
 	db_begin();
 	run();
 	db_commit();
-	in_trans = false;
 }
 
 void db_retransaction(void) {
