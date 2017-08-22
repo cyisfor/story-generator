@@ -183,11 +183,6 @@ int main(int argc, char *argv[])
 		bool skip(git_time_t srcstamp, const char* destname) {
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
 			if(dest_exists) {
-				INFO("srcstamp %d - destmtime %d = %d ",srcstamp,destinfo.st_mtime,
-						 srcstamp - destinfo.st_mtime);
-				// do dest.mtime - 1, because it could have been updated in the same
-				// second as a new commit, and git doesn't have accurate timestamps
-				//...except if dest mtime nanoseconds is zero.
 				if(destinfo.st_mtime >= srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
@@ -287,7 +282,7 @@ int main(int argc, char *argv[])
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 			
-			// so people requesting the HTML get its ACTUAL update date.
+			// so people requesting the HTML file get its ACTUAL update date.
 			{
 				struct timespec times[2] = {
 					{ .tv_sec = chapter_timestamp,
