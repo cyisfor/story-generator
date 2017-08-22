@@ -267,7 +267,11 @@ int main(int argc, char *argv[])
 					srcinfo.st_mtim,
 					srcinfo.st_mtim
 				};
-				if(derp) ensure0(futimens(src,times));
+				if(derp) {
+					ensure0(futimens(src,times));
+					printf("Check %s/%s\n",srcloc,srcname);
+					abort();
+				}
 				// so people requesting the HTML get its ACTUAL update date.
 				if(0!=futimens(dest,times)) {
 					perror("futimens");
