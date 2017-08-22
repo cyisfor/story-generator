@@ -144,6 +144,8 @@ int main(int argc, char *argv[])
 
 	INFO("processing...");
 
+	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
+
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
@@ -226,16 +228,23 @@ int main(int argc, char *argv[])
 			struct stat srcinfo;
 			int src;
 
-			void setupsrc(void) {
+			bool setupsrc(void) {
 				snprintf(srcname,0x100,"chapter%d.hish",chapter);
 				src = openat(srcloc, srcname, O_RDONLY, 0755);
 				ensure_ge(src,0);
-			
+				// for adjusting dest timestamp
 				ensure0(fstatat(srcloc,srcname,&srcinfo,0));
 				if(srcinfo.st_mtime > chapter_timestamp) {
 					// git ruins file modification times... we probably cloned this, and lost
 					// all timestamps. Just set the source file to have changed with the commit then.
 					srcinfo.st_mtime = chapter_timestamp;
+					return true;
+				}
+				return false;
+			}
+
+			if(fixing_srctimes) {
+				if(setupsrc()) {
 					struct timespec times[2] = {
 						srcinfo.st_mtim,
 						srcinfo.st_mtim
@@ -245,8 +254,6 @@ int main(int argc, char *argv[])
 					ensure0(futimens(src,times));
 				}
 			}
-
-			setupsrc();
 
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
@@ -273,6 +280,9 @@ int main(int argc, char *argv[])
 
 			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
+
+			if(!fixing_srctimes)
+				setupsrc();
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 			
