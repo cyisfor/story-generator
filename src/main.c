@@ -180,8 +180,6 @@ int main(int argc, char *argv[])
 		struct stat srcinfo, destinfo;
 		bool skip(git_time_t srcstamp, const char* destname) {
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
-			//ensure0(fstatat(srcloc,srcname,&srcinfo,0));
-
 			if(dest_exists) {
 				INFO("srcstamp %d - destmtime %d = %d ",srcstamp,destinfo.st_mtime,
 						 srcstamp - destinfo.st_mtime);
@@ -255,7 +253,9 @@ int main(int argc, char *argv[])
 			ensure_ge(dest,0);
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
-			{ struct timespec times[2] = {
+			{
+				ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+				struct timespec times[2] = {
 					srcinfo.st_mtim,
 					srcinfo.st_mtim
 				};
