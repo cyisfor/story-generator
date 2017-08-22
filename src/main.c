@@ -185,7 +185,6 @@ int main(int argc, char *argv[])
 			if(dest_exists) {
 				INFO("srcstamp %d - destmtime %d = %d ",srcstamp,destinfo.st_mtime,
 						 srcstamp - destinfo.st_mtime);
-				INFO("um %d",destinfo.st_mtim.tv_nsec);
 				// do dest.mtime - 1, because it could have been updated in the same
 				// second as a new commit, and git doesn't have accurate timestamps
 				//...except if dest mtime nanoseconds is zero.
@@ -291,8 +290,12 @@ int main(int argc, char *argv[])
 			// so people requesting the HTML get its ACTUAL update date.
 			{
 				struct timespec times[2] = {
-					srcinfo.st_mtim,
-					srcinfo.st_mtim
+					{ .tv_sec = chapter_timestamp,
+						.tv_nsec = 0
+					},
+					{ .tv_sec = chapter_timestamp,
+						.tv_nsec = 0
+					}
 				};
 				if(0!=futimens(dest,times)) {
 					perror("futimens");
