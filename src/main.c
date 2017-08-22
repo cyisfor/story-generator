@@ -187,7 +187,10 @@ int main(int argc, char *argv[])
 						 srcstamp - destinfo.st_mtime);
 				// do dest.mtime - 1, because it could have been updated in the same
 				// second as a new commit, and git doesn't have accurate timestamps
-				if(destinfo.st_mtime - 1 > srcstamp) {
+				//...except if dest mtime nanoseconds is zero.
+				if((destinfo.st_mtime > srcstamp &&
+						destinfo.st_mtim.tv_nsec == 0) ||
+					 (destinfo.st_mtime - 1 > srcstamp)) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
 					WARN("skip %s",destname);
