@@ -227,13 +227,10 @@ int main(int argc, char *argv[])
 				// git ruins file modification times... we probably cloned this, and lost
 				// all timestamps. Just set the source file to have changed with the commit then.
 				srcinfo.st_mtime = chapter_timestamp;
-				derp = true;
-			}
-			struct timespec srctimes[2] = {
-				srcinfo.st_mtim,
-				srcinfo.st_mtim
-			};
-			if(derp) {
+				struct timespec times[2] = {
+					srcinfo.st_mtim,
+					srcinfo.st_mtim
+				};
 				INFO("chapter %d had bad timestamp %d (->%d)",
 						 chapter, src.st_mtime, chapter_timestamp);
 				ensure0(futimens(src,times));
@@ -273,11 +270,16 @@ int main(int argc, char *argv[])
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 			
 			// so people requesting the HTML get its ACTUAL update date.
-			if(0!=futimens(dest,srctimes)) {
-				perror("futimens");
-				abort();
+			{
+				struct timespec times[2] = {
+					srcinfo.st_mtim,
+					srcinfo.st_mtim
+				};
+				if(0!=futimens(dest,times)) {
+					perror("futimens");
+					abort();
+				}
 			}
-		
 			ensure0(close(src));
 			ensure0(close(dest));
 
