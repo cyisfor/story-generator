@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 				};
 				if(derp) {
 					ensure0(futimens(src,times));
-					printf("Check %s/%s\n",srcloc,srcname);
+					printf("Check %.*s/%s\n",location.l,location.s,srcname);
 					abort();
 				}
 				// so people requesting the HTML get its ACTUAL update date.
