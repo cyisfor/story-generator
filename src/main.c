@@ -260,7 +260,10 @@ int main(int argc, char *argv[])
 					srcinfo.st_mtim
 				};
 				// so people requesting the HTML get its ACTUAL update date.
-				ensure0(futimens(dest,times));
+				if(0!=futimens(dest,times)) {
+					perror("futimens");
+					abort();
+				}
 			}
 			ensure0(close(src));
 			ensure0(close(dest));
