@@ -241,10 +241,12 @@ int main(int argc, char *argv[])
 						srcinfo.st_mtim
 					};
 					INFO("chapter %d had bad timestamp %d (->%d)",
-							 chapter, src.st_mtime, chapter_timestamp);
+							 chapter, srcinfo.st_mtime, chapter_timestamp);
 					ensure0(futimens(src,times));
 				}
 			}
+
+			setupsrc();
 
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
