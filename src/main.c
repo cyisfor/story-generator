@@ -344,11 +344,12 @@ int main(int argc, char *argv[])
 		create_contents(story, location, dest, numchaps, with_title);
 
 		{
-			struct times[2] = {
-				{ .tv_sec story_timestamp,
+			// set contents.html to a sane timestamp, not when the file was created...
+			struct timespec times[2] = {
+				{ .tv_sec = story_timestamp,
 					.tv_nsec = 0
 				},
-				{ .tv_sec story_timestamp,
+				{ .tv_sec = story_timestamp,
 					.tv_nsec = 0
 				}
 			};
