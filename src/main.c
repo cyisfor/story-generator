@@ -132,11 +132,11 @@ int main(int argc, char *argv[])
 		
 		if(results.current)
 			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
-	}
 	
-	git_for_commits(results.last ? last_commit : NULL,
-									results.current ? current_commit : NULL,
-									on_commit);
+		git_for_commits(results.last ? last_commit : NULL,
+										results.current ? current_commit : NULL,
+										on_commit);
+	}
 	END_TRANSACTION;
 	if(num > 0) putchar('\n');
 
@@ -220,7 +220,25 @@ int main(int argc, char *argv[])
 		if(!finished && numchaps > 1) --numchaps;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-			INFO("chapter %d", chapter);
+			struct stat srcinfo;
+			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+			bool derp = false;
+			if(srcinfo.st_mtime > chapter_timestamp) {
+				// git ruins file modification times... we probably cloned this, and lost
+				// all timestamps. Just set the source file to have changed with the commit then.
+				srcinfo.st_mtime = chapter_timestamp;
+				derp = true;
+			}
+			struct timespec srctimes[2] = {
+				srcinfo.st_mtim,
+				srcinfo.st_mtim
+			};
+			if(derp) {
+				INFO("chapter %d had bad timestamp %d (->%d)",
+						 chapter, src.st_mtime, chapter_timestamp);
+				ensure0(futimens(src,times));
+			}
+
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
@@ -253,29 +271,13 @@ int main(int argc, char *argv[])
 			ensure_ge(dest,0);
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
-			{
-				struct stat srcinfo;
-				ensure0(fstatat(srcloc,srcname,&srcinfo,0));
-				bool derp = false;
-				if(srcinfo.st_mtime > chapter_timestamp) {
-					// git ruins file modification times... we probably cloned this, and lost
-					// all timestamps. Just set the source file to have changed with the commit then.
-					srcinfo.st_mtime = chapter_timestamp;
-					derp = true;
-				}
-				struct timespec times[2] = {
-					srcinfo.st_mtim,
-					srcinfo.st_mtim
-				};
-				if(derp) {
-					ensure0(futimens(src,times));
-				}
-				// so people requesting the HTML get its ACTUAL update date.
-				if(0!=futimens(dest,times)) {
-					perror("futimens");
-					abort();
-				}
+			
+			// so people requesting the HTML get its ACTUAL update date.
+			if(0!=futimens(dest,srctimes)) {
+				perror("futimens");
+				abort();
 			}
+		
 			ensure0(close(src));
 			ensure0(close(dest));
 
