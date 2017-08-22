@@ -342,6 +342,19 @@ int main(int argc, char *argv[])
 		int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 		ensure_ge(dest,0);
 		create_contents(story, location, dest, numchaps, with_title);
+
+		{
+			struct times[2] = {
+				{ .tv_sec story_timestamp,
+					.tv_nsec = 0
+				},
+				{ .tv_sec story_timestamp,
+					.tv_nsec = 0
+				}
+			};
+			ensure0(futimens(dest,times));
+		}
+				
 		ensure0(close(dest));
 		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 		ensure0(close(destloc));
