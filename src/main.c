@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 			srcloc = descend(srcloc, markup, false);
 		}
 
-		struct stat srcinfo, destinfo;
+		struct stat destinfo;
 		bool skip(git_time_t srcstamp, const char* destname) {
 			bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
 			if(dest_exists) {
@@ -254,11 +254,20 @@ int main(int argc, char *argv[])
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 			{
+				struct stat srcinfo;
 				ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+				bool derp = false;
+				if(srcinfo.st_mtime > chapter_timestamp) {
+					// git ruins file modification times... we probably cloned this, and lost
+					// all timestamps. Just set the source file to have changed with the commit then.
+					srcinfo.st_mtime = chapter_timestamp;
+					derp = true;
+				}
 				struct timespec times[2] = {
 					srcinfo.st_mtim,
 					srcinfo.st_mtim
 				};
+				if(derp) ensure0(futimens(src,times));
 				// so people requesting the HTML get its ACTUAL update date.
 				if(0!=futimens(dest,times)) {
 					perror("futimens");
