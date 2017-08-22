@@ -220,20 +220,30 @@ int main(int argc, char *argv[])
 		if(!finished && numchaps > 1) --numchaps;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+
+			// this should be moved later...
+			char srcname[0x100];
 			struct stat srcinfo;
-			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
-			bool derp = false;
-			if(srcinfo.st_mtime > chapter_timestamp) {
-				// git ruins file modification times... we probably cloned this, and lost
-				// all timestamps. Just set the source file to have changed with the commit then.
-				srcinfo.st_mtime = chapter_timestamp;
-				struct timespec times[2] = {
-					srcinfo.st_mtim,
-					srcinfo.st_mtim
-				};
-				INFO("chapter %d had bad timestamp %d (->%d)",
-						 chapter, src.st_mtime, chapter_timestamp);
-				ensure0(futimens(src,times));
+			int src;
+
+			void setupsrc(void) {
+				snprintf(srcname,0x100,"chapter%d.hish",chapter);
+				src = openat(srcloc, srcname, O_RDONLY, 0755);
+				ensure_ge(src,0);
+			
+				ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+				if(srcinfo.st_mtime > chapter_timestamp) {
+					// git ruins file modification times... we probably cloned this, and lost
+					// all timestamps. Just set the source file to have changed with the commit then.
+					srcinfo.st_mtime = chapter_timestamp;
+					struct timespec times[2] = {
+						srcinfo.st_mtim,
+						srcinfo.st_mtim
+					};
+					INFO("chapter %d had bad timestamp %d (->%d)",
+							 chapter, src.st_mtime, chapter_timestamp);
+					ensure0(futimens(src,times));
+				}
 			}
 
 			if(chapter == numchaps + 1) {
@@ -258,11 +268,6 @@ int main(int argc, char *argv[])
 			}
 
 			if(skip(chapter_timestamp,destname)) return;
-			char srcname[0x100];
-			snprintf(srcname,0x100,"chapter%d.hish",chapter);
-
-			int src = openat(srcloc, srcname, O_RDONLY, 0755);
-			ensure_ge(src,0);
 
 			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
