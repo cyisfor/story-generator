@@ -46,7 +46,7 @@ bool git_for_commits(db_oid until,
 		// first one is the one we pushed, so 2 to go back 1
 		if(0==git_revwalk_next(&test, derper) &&
 			 0==git_revwalk_next(&test, derper)) {
-			git_commit_t* commit = NULL;
+			git_commit* commit = NULL;
 			// an older one exists, yay.
 			repo_check(git_revwalk_hide(walker,&test));
 			// get the timestamp, to stop if we miss the commit
