@@ -125,6 +125,9 @@ int main(int argc, char *argv[])
 		timestamp = git_commit_time(thing2);
 		git_object_free(thing1);
 		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
+		// this is needed, to jump start when a confusing merge loses the db's
+		// last known commit
+		db_saw_commit(timestamp,last_commit);
 	} else {
 		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
 		if(results.last)
