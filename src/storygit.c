@@ -33,6 +33,7 @@ bool git_for_commits(db_oid until,
 		repo_check(git_revwalk_push_head(walker));
 	}
 
+	git_time_t last_timestamp = 0;
 	if(until) {
 		// IMPORTANT: be sure to go 1 past this in the commit log
 		// since changes are from old->new, so it needs a starting old state.
@@ -45,8 +46,12 @@ bool git_for_commits(db_oid until,
 		// first one is the one we pushed, so 2 to go back 1
 		if(0==git_revwalk_next(&test, derper) &&
 			 0==git_revwalk_next(&test, derper)) {
+			git_commit_t* commit = NULL;
 			// an older one exists, yay.
 			repo_check(git_revwalk_hide(walker,&test));
+			// get the timestamp, to stop if we miss the commit
+			repo_check(git_commit_lookup(&commit, repo, &test));
+			last_timestamp = git_commit_time(commit);
 		} else {
 			// no older version, we're going back to the beginning.
 		}
@@ -72,6 +77,10 @@ bool git_for_commits(db_oid until,
 			last = cur;
 			// timestamp should be for the NEWER tree
 			timestamp = git_commit_time(commit);
+			if(timestamp < last_timestamp) {
+				// we missed the last commit we saw!
+				return true;
+			}
 		}
 	}
 	bool ret = op();
