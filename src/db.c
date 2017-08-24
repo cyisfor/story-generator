@@ -305,7 +305,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 size_t numchaps,
 																	 git_time_t timestamp),
 										git_time_t since) {
-	DECLARE_STMT(find,"SELECT id,location,finished,chapters,timestamp FROM stories WHERE timestamp AND timestamp >= ? ORDER BY timestamp");
+	DECLARE_STMT(find,"SELECT id,location,finished,chapters,timestamp FROM stories WHERE timestamp AND timestamp > ? ORDER BY timestamp");
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
@@ -337,7 +337,7 @@ void db_for_chapters(identifier story,
 																	 git_time_t timestamp),
 										git_time_t since) {
 	DECLARE_STMT(find,
-							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp >= ? ORDER BY timestamp");
+							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ? ORDER BY timestamp");
 RESTART:
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
