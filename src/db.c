@@ -342,6 +342,35 @@ void db_for_stories(void (*handle)(identifier story,
 	}
 }
 
+void db_for_undescribed_stories(void (*handle)(identifier story,
+																							 const string title,
+																							 const string description,
+																							 const string source)) {
+	DECLARE_STMT(find,"SELECT id,title,description,source FROM stories WHERE "
+							 "title IS NULL OR title = '' OR "
+							 "description IS NULL OR description = ''");
+	for(;;) {
+		RESETTING(find) int res = db_check(sqlite3_step(find));
+		if(res == SQLITE_DONE) return;
+		ensure_eq(res,SQLITE_ROW);
+		identifier story = sqlite3_column_int64(find,0);
+		string title = {
+			.s = sqlite3_column_blob(find,1),
+			.l = sqlite3_column_bytes(find,1)
+		};
+		string description = {
+			.s = sqlite3_column_blob(find,2),
+			.l = sqlite3_column_bytes(find,2)
+		};
+		string source = {
+			.s = sqlite3_column_blob(find,3),
+			.l = sqlite3_column_bytes(find,3)
+		};
+		handle(story,title,description,source);
+	}	
+}
+
+
 void db_for_chapters(identifier story,
 										void (*handle)(identifier chapter,
 																	 git_time_t timestamp),

@@ -1,8 +1,15 @@
 #include "db.h"
 #include "ensure.h"
+
 #include <sys/mman.h>
+#include <sys/wait.h> // waitpid
+#include <sys/stat.h>
+
+
 #include <stdlib.h> // mkstemp
 #include <readline/readline.h>
+#include <unistd.h> // execlp, write
+
 
 
 int main(int argc, char *argv[])
@@ -20,7 +27,7 @@ int main(int argc, char *argv[])
 
 		int t = mkstemp(tname);
 			
-		write(t,desc.s,desc.l);
+		write(t,description.s,description.l);
 		int pid = fork();
 		if(pid == 0) {
 			execlp("emacsclient","emacsclient",tname,NULL);
@@ -33,7 +40,7 @@ int main(int argc, char *argv[])
 			mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,0,0),
 			info.st_size
 		};
-		if(info.st_size == desc.l && 0==memcmp(newdesc.s,desc.s,desc.l)) {
+		if(info.st_size == description.l && 0==memcmp(newdesc.s,description.s,description.l)) {
 			puts("description unchanged");
 		}
 		rl_insert_text(title.s);
