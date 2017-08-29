@@ -44,6 +44,15 @@ int main(int argc, char *argv[])
 		if(info.st_size == description.l && 0==memcmp(newdesc.s,description.s,description.l)) {
 			puts("description unchanged");
 		}
+
+		puts("****");
+		if(title.s) {
+			puts(title.s);
+		} else {
+			puts(location.s);
+		}
+		puts("****");
+		
 		rl_insert_text(title.s);
 		string newtit = {
 			.s = readline("Title: ")
