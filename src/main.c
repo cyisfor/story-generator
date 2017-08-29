@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 				WARN("%s wasn't there\n",src.s);
 				return true;
 			}
-			db_saw_chapter(deleted,db_find_story(loc,timestamp),timestamp,chapnum);
+			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);
 			return true;
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);

@@ -230,7 +230,17 @@ void db_last_seen_commit(struct bad* out,
 	out->last = one(last,LAST);
 }
 
-identifier db_find_story(const string location, git_time_t timestamp) {
+identifier db_find_story(const string location) {
+	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
+	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
+	RESETTING(find) int res = db_check(sqlite3_step(find));
+	if(res == SQLITE_ROW) {
+		return sqlite3_column_int64(find,0);
+	}
+	return -1;
+}
+
+identifier db_get_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");

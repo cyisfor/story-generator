@@ -24,7 +24,9 @@ void db_last_seen_commit(struct bad* out,
 
 typedef int64_t identifier;
 
-identifier db_find_story(const string location, git_time_t timestamp);
+identifier db_find_story(const string location);
+identifier db_get_story(const string location, git_time_t timestamp);
+
 
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter);
@@ -49,8 +51,6 @@ void db_with_chapter_title(identifier story,
 void db_with_story_info(const identifier story, void (*handle)(const string title,
 																															 const string description,
 																															 const string source));
-
-identifier db_find_story(const string location);
 
 // for db_set_* empty strings will set the db value to NULL
 void db_set_story_info(identifier story,
