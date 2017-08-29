@@ -1,5 +1,9 @@
 #include "db.h"
 
+#include <sys/mman.h>
+#include <stdlib.h> // mkstemp
+
+
 int main(int argc, char *argv[])
 {
 	ensure_eq(argc,2);

@@ -13,7 +13,7 @@ LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 derp: setup
 	$(MAKE) all
 
-all: generate test_git 
+all: generate test_git describe
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
@@ -24,6 +24,10 @@ S=$(patsubst %,src/%.c,$N)
 
 N=main storygit repo create db note
 generate: $O
+	$(LINK)
+
+N=describe db note
+describe: $O
 	$(LINK)
 
 N=test_git storygit repo db note
