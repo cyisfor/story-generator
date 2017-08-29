@@ -50,6 +50,8 @@ void db_with_story_info(const identifier story, void (*handle)(const string titl
 																															 const string description,
 																															 const string source));
 
+identifier db_find_story(const string location);
+
 // for db_set_* empty strings will set the db value to NULL
 void db_set_story_info(identifier story,
 											 const string title,
