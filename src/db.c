@@ -346,7 +346,7 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 																							 const string title,
 																							 const string description,
 																							 const string source)) {
-	DECLARE_STMT(find,"SELECT id,title,description,source FROM stories WHERE "
+	DECLARE_STMT(find,"SELECT id,coalesce(title,location),description,source FROM stories WHERE "
 							 "title IS NULL OR title = '' OR "
 							 "description IS NULL OR description = ''");
 	for(;;) {
