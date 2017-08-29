@@ -12,12 +12,12 @@ int main(int argc, char *argv[])
 	if(NULL != getenv("db")) dbs = getenv("db");
 	db_open(dbs);
 
-	string location = { argv[1], strlen(argv[1]) };
-	identifier story = db_find_story(location);
-	char tname[] = "tmpdescriptionXXXXXX";
-	void have_info(const string title,
+	void for_story(identifier story,
+								 const string title,
 								 const string description,
 								 const string source) {
+		char tname[] = "tmpdescriptionXXXXXX";
+
 		int t = mkstemp(tname);
 			
 		write(t,desc.s,desc.l);
@@ -50,7 +50,22 @@ int main(int argc, char *argv[])
 		db_set_story_info(story,newtit,CSTR(newdesc),newsauce);
 		munmap(newdesc.s,newdesc.l);
 	}
-	db_with_story_info(story, have_info);
+	
+	if(argc == 1) {
+		db_for_undescribed_stories(for_story);
+	} else {
+		int i;
+		for(i=1;i<argc;++i) {
+			string location = { argv[i], strlen(argv[i]) };
+			identifier story = db_find_story(location);
+			void have_info(const string title,
+										 const string description,
+										 const string source) {
+				for_story(story, title, description, source);
+			}
+			db_with_story_info(story, have_info);
+		}
+	}
 	db_close_and_exit();
 	return 0;
 }
