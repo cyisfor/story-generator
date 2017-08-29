@@ -2,6 +2,7 @@
 
 #include <sys/mman.h>
 #include <stdlib.h> // mkstemp
+#include <readline.h>
 
 
 int main(int argc, char *argv[])
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 		
 		struct stat info;
 		fstat(t,&info);
-		string newdesc = {
+		mstring newdesc = {
 			mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,0,0),
 			info.st_size
 		};
@@ -46,7 +47,7 @@ int main(int argc, char *argv[])
 			newsauce.s = readline("Source: ");
 			newsauce.l = strlen(newsauce.s);
 		}
-		db_set_story_info(story,newtit,newdesc,newsauce);
+		db_set_story_info(story,newtit,CSTR(newdesc),newsauce);
 		munmap(newdesc.s,newdesc.l);
 	}
 	db_with_story_info(story, have_info);
