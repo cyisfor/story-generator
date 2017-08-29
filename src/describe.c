@@ -5,7 +5,7 @@
 #include <sys/wait.h> // waitpid
 #include <sys/stat.h>
 
-
+#include <fcntl.h> // O_*, open
 #include <stdlib.h> // mkstemp
 #include <readline/readline.h>
 #include <unistd.h> // execlp, write
@@ -37,8 +37,11 @@ int main(int argc, char *argv[])
 			execlp("emacsclient","emacsclient",tname,NULL);
 		}
 		waitpid(pid,NULL,0);
-		
-		lseek(t,0,0);
+		// emacs likes to rename files into place xp
+
+		close(t);
+		t = open(tname,O_RDONLY);
+		ensure_ge(t,0);
 		struct stat info;
 		fstat(t,&info);
 		mstring newdesc = {
