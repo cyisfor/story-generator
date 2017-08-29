@@ -1,8 +1,8 @@
 #include "db.h"
-
+#include "ensure.h"
 #include <sys/mman.h>
 #include <stdlib.h> // mkstemp
-#include <readline.h>
+#include <readline/readline.h>
 
 
 int main(int argc, char *argv[])

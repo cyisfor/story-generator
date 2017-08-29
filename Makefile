@@ -27,8 +27,8 @@ generate: $O
 	$(LINK)
 
 N=describe db note
-describe: $O
-	$(LINK)
+describe: $O 
+	$(LINK) -lreadline
 
 N=test_git storygit repo db note
 test_git: $O
