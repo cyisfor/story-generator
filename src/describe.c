@@ -14,7 +14,6 @@
 
 int main(int argc, char *argv[])
 {
-	ensure_eq(argc,2);
 	const char* dbs = "generate.sqlite";
 	if(NULL != getenv("db")) dbs = getenv("db");
 	db_open(dbs);
@@ -34,12 +33,14 @@ int main(int argc, char *argv[])
 		}
 		waitpid(pid,NULL,0);
 		
+		lseek(t,0,0);
 		struct stat info;
 		fstat(t,&info);
 		mstring newdesc = {
-			mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,0,0),
+			mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,t,0),
 			info.st_size
 		};
+		ensure_ne(newdesc.s,MAP_FAILED);
 		if(info.st_size == description.l && 0==memcmp(newdesc.s,description.s,description.l)) {
 			puts("description unchanged");
 		}
