@@ -2,6 +2,7 @@
 #define _STRING_H_
 
 #include <stdlib.h> // size_t
+#include <string.h> // memcmp
 
 typedef struct mstring {
 	char* s;
@@ -22,5 +23,7 @@ typedef struct string {
 #define LITLEN(a) a,LITSIZ(a)
 
 #define CSTR(a) *((struct string*)&a)
+
+#define ISLIT(ss,a) ((ss.l == LITSIZ(a)) ? (0 == memcmp(ss.s,a,LITSIZ(a))) : 0)
 
 #endif /* _STRING_H_ */
