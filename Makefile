@@ -40,6 +40,12 @@ o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
+	filename=o/category.gen.T prefix=category enum=CATEGORY ./str_to_enum_trie/main <$<
+
+./str_to_enum_trie/main:
+	$(MAKE) -C str_to_enum_trie main
+
 o/db.o: o/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
 
 o/db-sql.gen.c: src/db.sql o/make-sql

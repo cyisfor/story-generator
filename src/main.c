@@ -1,5 +1,7 @@
 #define _GNU_SOURCE // O_PATH
 
+#include "category.gen.h"
+
 #include "db.h"
 #include "ensure.h"
 #include "storygit.h"
@@ -49,15 +51,19 @@ int main(int argc, char *argv[])
 	
 	create_setup();
 
-	
+	bool always_finished = false;
+
 	const string get_category() {
 		if(getenv("category")!=NULL) {
 			string c = {getenv("category")};
 			c.l = strlen(c.s);
-			if(c.l == LITSIZ("censored") && 0 == memcmp(c.s,LITLEN("censored"))) {
+			switch(lookup_category(c.s)) {
+			case CATEGORY_CENSORED:
 				WARN("censored is a special category. set censored=1 instead plz");
 				setenv("censored","1",1);
-			}
+			case CATEGORY_SNEAKPEEK:
+				always_finished = true;
+			};
 			return c;
 		} else if(getenv("censored")!=NULL) {
 			return (const string){LITLEN("censored")};
@@ -218,7 +224,7 @@ int main(int argc, char *argv[])
 		// save numchaps to update story later.
 		const int savenumchaps = numchaps;
 		// XXX: if finished, numchaps, otherwise
-		if(!finished && numchaps > 1) --numchaps;
+		if(!always_finished && !finished && numchaps > 1) --numchaps;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 
@@ -257,7 +263,7 @@ int main(int argc, char *argv[])
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
-				if(chapter > 2 && !finished) {
+				if(chapter > 2 && !always_finished && !finished) {
 					// two chapters before this needs updating, since it now has a "next" link
 					db_saw_chapter(false,story,chapter_timestamp,chapter-2);
 				}
