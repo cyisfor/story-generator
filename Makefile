@@ -49,7 +49,7 @@ o/category.gen.o: o/category.gen.c
 
 o/main.o: o/category.gen.c o/category.gen.h
 
-./str_to_enum_trie/main:
+./str_to_enum_trie/main: descend
 	$(MAKE) -C str_to_enum_trie main
 
 o/db.o: o/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
