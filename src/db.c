@@ -86,6 +86,12 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	db_once(stmt);																					 \
 	}
 
+
+struct {
+	bool ye;
+	identifier i;
+} only_story = {};
+
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
@@ -97,6 +103,13 @@ void db_open(const char* filename) {
 	BEGIN_TRANSACTION;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	END_TRANSACTION;
+
+	string s = { .s = getenv("story") };
+	if(s.s != NULL) {
+		s.l = strlen(s.s);
+		only_story.i = db_find_story(s);
+		only_story.ye = true;
+	}
 }
 
 void db_close_and_exit(void) {
@@ -315,7 +328,25 @@ void db_for_stories(void (*handle)(identifier story,
 																	 size_t numchaps,
 																	 git_time_t timestamp),
 										git_time_t since) {
+	if(only_story.ye) {
+		DECLARE_STMT(find,"SELECT location,finished,chapters,timestamp FROM stories WHERE id = ?");
+		sqlite3_bind_int64(find,1,only_story.i);
+		RESETTING(find) int res = db_check(sqlite3_step(find));
+		ensure_eq(res,SQLITE_ROW);
+		const string location = {
+			.s = sqlite3_column_blob(find,1),
+			.l = sqlite3_column_bytes(find,1)
+		};
+		handle(sqlite3_column_int64(find,0),
+					 location,
+					 sqlite3_column_int(find,2) == 1,
+					 sqlite3_column_int64(find,3),
+					 sqlite3_column_int64(find,4));
+		return;
+	}
+
 	DECLARE_STMT(find,"SELECT id,location,finished,chapters,timestamp FROM stories WHERE timestamp AND timestamp > ? ORDER BY timestamp");
+
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
 		int res = sqlite3_step(find);
