@@ -17,3 +17,8 @@ local=/extra/home/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
 dest=ddate
 clonepull
+
+local=/home/code/src_to_enum_trie/
+remote=https://github.com/cyisfor/src_to_enum_trie.git
+dest=src_to_enum_trie
+clonepull
