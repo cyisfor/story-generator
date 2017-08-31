@@ -108,6 +108,7 @@ void db_open(const char* filename) {
 	if(s.s != NULL) {
 		s.l = strlen(s.s);
 		only_story.i = db_find_story(s);
+		ensure_ge(only_story.i,0);
 		only_story.ye = true;
 	}
 }

@@ -47,14 +47,6 @@ int main(int argc, char *argv[])
 	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generate.sqlite");
 
-	struct {
-		string s;
-		identifier i;
-	} filter = { .s = { .s = getenv("story") } };
-	if(filter.s.s != NULL) {
-		filter.s.l = strlen(filter.s.s);
-		filter.i = db_find_story(filter.s);
-
 	xmlSetStructuredErrorFunc(NULL,cool_xml_error_handler);
 	
 	create_setup();
