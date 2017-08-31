@@ -16,13 +16,14 @@ derp: setup
 all: generate test_git describe
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+COMPILE=$(CC) $(CFLAGS) -c -o $@ $<
 
 # bleah, accumulation side effects...
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a\
 $(foreach name,$(N),$(eval targets:=$$(targets) $(name)))
 S=$(patsubst %,src/%.c,$N)
 
-N=main storygit repo create db note
+N=main storygit repo create db note category.gen
 generate: $O
 	$(LINK)
 
@@ -38,10 +39,13 @@ o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	$(CC) $(CFLAGS) -MG -MM -o $@ $<
 
 o/%.o: src/%.c | o
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(COMPILE)
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 	file=o/category.gen.T prefix=category enum=CATEGORY ./str_to_enum_trie/main <$<
+
+o/category.gen.o: o/category.gen.c
+	$(COMPILE)
 
 o/main.o: o/category.gen.c o/category.gen.h
 
