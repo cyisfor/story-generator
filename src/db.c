@@ -335,14 +335,14 @@ void db_for_stories(void (*handle)(identifier story,
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		ensure_eq(res,SQLITE_ROW);
 		const string location = {
-			.s = sqlite3_column_blob(find,1),
-			.l = sqlite3_column_bytes(find,1)
+			.s = sqlite3_column_blob(find,0),
+			.l = sqlite3_column_bytes(find,0)
 		};
-		handle(sqlite3_column_int64(find,0),
+		handle(only_story.i,
 					 location,
-					 sqlite3_column_int(find,2) == 1,
-					 sqlite3_column_int64(find,3),
-					 sqlite3_column_int64(find,4));
+					 sqlite3_column_int(find,1) == 1,
+					 sqlite3_column_int64(find,2),
+					 sqlite3_column_int64(find,3));
 		return;
 	}
 
