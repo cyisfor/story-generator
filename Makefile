@@ -41,7 +41,9 @@ o/%.o: src/%.c | o
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
-	filename=o/category.gen.T prefix=category enum=CATEGORY ./str_to_enum_trie/main <$<
+	file=o/category.gen.T prefix=category enum=CATEGORY ./str_to_enum_trie/main <$<
+
+o/main.o: o/category.gen.c o/category.gen.h
 
 ./str_to_enum_trie/main:
 	$(MAKE) -C str_to_enum_trie main

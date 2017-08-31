@@ -1,7 +1,7 @@
 #ifndef _DB_H_
 #define _DB_H_
 
-#include "string.h"
+#include "mystring.h"
 
 #include <stdint.h> // int64_t
 #include <stdbool.h>
