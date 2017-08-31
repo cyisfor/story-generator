@@ -58,10 +58,10 @@ int main(int argc, char *argv[])
 			string c = {getenv("category")};
 			c.l = strlen(c.s);
 			switch(lookup_category(c.s)) {
-			case CATEGORY_CENSORED:
+			case CATEGORY_censored:
 				WARN("censored is a special category. set censored=1 instead plz");
 				setenv("censored","1",1);
-			case CATEGORY_SNEAKPEEK:
+			case CATEGORY_sneakpeek:
 				always_finished = true;
 			};
 			return c;
