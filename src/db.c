@@ -165,9 +165,10 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	sqlite3_bind_int(insert_current, 3, timestamp);
 	BEGIN_TRANSACTION;
 	db_once(insert_current);
-	if(saw_commit) return;
-	saw_commit = true;
-	db_once(insert_pending);
+	if(!saw_commit) {
+		saw_commit = true;
+		db_once(insert_pending);
+	}
 	END_TRANSACTION;
 }
 
