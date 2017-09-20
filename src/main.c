@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	db_open("generate.sqlite");
 
 	xmlSetStructuredErrorFunc(NULL,cool_xml_error_handler);
-	
+
 	create_setup();
 
 	bool always_finished = false;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
 		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
-		
+
 		memcpy(last_commit, git_object_id(thing1)->id,sizeof(db_oid));
 		git_object_free(thing1);
 		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
@@ -115,10 +115,10 @@ int main(int argc, char *argv[])
 		db_last_seen_commit(&results,last_commit,current_commit);
 		if(results.last)
 			INFO("last seen commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
-		
+
 		if(results.current)
 			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
-	
+
 		git_for_commits(results.last ? last_commit : NULL,
 										results.current ? current_commit : NULL,
 										on_commit);
@@ -128,11 +128,11 @@ int main(int argc, char *argv[])
 		putchar('\n');
 	}
 	END_TRANSACTION;
-	
+
 	INFO("processing...");
 
 	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
-	
+
 	const string get_category() {
 		if(getenv("category")!=NULL) {
 			string c = {getenv("category")};
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 	const string scategory = get_category();
 	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
-	
+
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 			char destname[0x100] = "index.html";
 			if(chapter > 1) {
 				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
-				assert(amt < 0x100);				
+				assert(amt < 0x100);
 				/* be sure to mark the previous chapter as "seen" if we are the last chapter
 					 being exported (previous needs a "next" link) */
 				if(chapter == numchaps) {
@@ -289,7 +289,28 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if(skip(chapter_timestamp,destname)) return;
+			if(skip(chapter_timestamp,destname)) {
+				// mleh
+				int dest = openat(destloc,destname,O_WRONLY);
+				if(dest >= 0) {
+					// so people requesting the HTML file get its ACTUAL update date.
+					struct timespec times[2] = {
+						{ .tv_sec = chapter_timestamp,
+							.tv_nsec = 0
+						},
+						{ .tv_sec = chapter_timestamp,
+							.tv_nsec = 0
+						}
+					};
+					if(0!=futimens(dest,times)) {
+						perror("futimens");
+						abort();
+					}
+					close(dest);
+				}
+			}
+				return;
+			}
 
 			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 			ensure_ge(dest,0);
@@ -298,7 +319,7 @@ int main(int argc, char *argv[])
 				setupsrc();
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
-			
+
 			// so people requesting the HTML file get its ACTUAL update date.
 			{
 				struct timespec times[2] = {
@@ -372,7 +393,7 @@ int main(int argc, char *argv[])
 			};
 			ensure0(futimens(dest,times));
 		}
-				
+
 		ensure0(close(dest));
 		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 		ensure0(close(destloc));
