@@ -194,7 +194,7 @@ void db_caught_up_commits(void) {
 identifier db_get_category(const string name, git_time_t* timestamp) {
 	DECLARE_STMT(find,"SELECT id,timestamp FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
-	sqlite3_bind_blob(find,1,name.s,name.l,NULL);
+	sqlite3_bind_text(find,1,name.s,name.l,NULL);
 	RESETTING(find) int res = sqlite3_step(find);
 	TRANSACTION; 
 	if(res == SQLITE_ROW) {
@@ -248,7 +248,7 @@ void db_caught_up_category(identifier category) {
 	
 identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
+	sqlite3_bind_text(find,1,location.s,location.l,NULL);
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		return sqlite3_column_int64(find,0);
@@ -261,7 +261,7 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 
-	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
+	sqlite3_bind_text(find,1,location.s,location.l,NULL);
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -271,7 +271,7 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 		db_once_trans(update);
 		return id;
 	} else {
-		sqlite3_bind_blob(insert,1,location.s, location.l, NULL);
+		sqlite3_bind_text(insert,1,location.s, location.l, NULL);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
 		return sqlite3_last_insert_rowid(db);
@@ -511,7 +511,7 @@ void db_set_chapter_title(const string title,
 													identifier story, identifier chapter,
 													bool* title_changed) {
 	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ?");
-	sqlite3_bind_blob(update,1,title.s,title.l,NULL);
+	sqlite3_bind_text(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
 	BEGIN_TRANSACTION;
@@ -535,7 +535,7 @@ void db_set_story_info(identifier story,
 		if(thing.l == 0 || thing.s == NULL) {
 			sqlite3_bind_null(update,col);
 		} else {
-			sqlite3_bind_blob(update,col,thing.s,thing.l,NULL);
+			sqlite3_bind_text(update,col,thing.s,thing.l,NULL);
 		}
 	}
 	one(1,title);
