@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 			 but we can openat(destloc,".") sooo
 		*/
 		{
-			int wr = openat(destloc,".",O_WRONLY|O_DIRECTORY);
+			int wr = openat(destloc,".",O_DIRECTORY);
 			ensure0(close(destloc));
 			ensure_ge(wr,0);
 			close_with_time(wr,max_timestamp);
