@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %d %.*s\r",++counter, 2*sizeof(db_oid),db_oid_str(oid));
+		printf("commit %d %d %.*s\n",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
