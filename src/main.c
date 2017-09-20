@@ -39,6 +39,23 @@ static bool AISNEWER(struct stat a, struct stat b) {
 }
 
 
+void close_with_time(int dest, git_time_t timestamp) {
+	// so people requesting the HTML file get its ACTUAL update date.
+	struct timespec times[2] = {
+		{ .tv_sec = timestamp,
+			.tv_nsec = 0
+		},
+		{ .tv_sec = timestamp,
+			.tv_nsec = 0
+		}
+	};
+	if(0!=futimens(dest,times)) {
+		perror("futimens");
+		abort();
+	}
+	ensure0(close(dest));
+}
+
 int main(int argc, char *argv[])
 {
 	struct stat info;
@@ -236,8 +253,11 @@ int main(int argc, char *argv[])
 		// XXX: if finished, numchaps, otherwise
 		if(!always_finished && !finished && numchaps > 1) --numchaps;
 
-		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+		git_time_t max_timestamp = timestamp;
 
+		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			if(chapter_timestamp > max_timestamp)
+				max_timestamp = chapter_timestamp;
 			// this should be moved later...
 			char srcname[0x100];
 			struct stat srcinfo;
@@ -296,20 +316,7 @@ int main(int argc, char *argv[])
 					// mleh
 					int dest = openat(destloc,destname,O_WRONLY);
 					if(dest >= 0) {
-						// so people requesting the HTML file get its ACTUAL update date.
-						struct timespec times[2] = {
-							{ .tv_sec = chapter_timestamp,
-								.tv_nsec = 0
-							},
-							{ .tv_sec = chapter_timestamp,
-								.tv_nsec = 0
-							}
-						};
-						if(0!=futimens(dest,times)) {
-							perror("futimens");
-							abort();
-						}
-						close(dest);
+						close_with_time(dest,chapter_timestamp);
 					}
 				}
 			}
@@ -322,22 +329,10 @@ int main(int argc, char *argv[])
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
 
-			// so people requesting the HTML file get its ACTUAL update date.
-			{
-				struct timespec times[2] = {
-					{ .tv_sec = chapter_timestamp,
-						.tv_nsec = 0
-					},
-					{ .tv_sec = chapter_timestamp,
-						.tv_nsec = 0
-					}
-				};
-				if(0!=futimens(dest,times)) {
-					perror("futimens");
-					abort();
-				}
-			}
+
+
 			ensure0(close(src));
+			clote_with_time(dest,chapter_timestamp);
 			ensure0(close(dest));
 
 			ensure0(renameat(destloc,".tempchap",destloc,destname));
@@ -349,6 +344,8 @@ int main(int argc, char *argv[])
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));
 
+
+
 		if(!(numchaps_changed || title_changed)) {
 			// no chapters added or removed, and no chapter had an embedded title that changed.
 			struct stat info;
@@ -356,6 +353,10 @@ int main(int argc, char *argv[])
 			bool contents_exist = (0 == fstatat(destloc,"contents.html",&info,0));
 			if(contents_exist) {
 				WARN("not recreating contents of %d", story);
+				int dest = openat(destloc,"contents.html",O_WRONLY);
+				if(dest >= 0) {
+					close_with_time(dest, max_timestamp);
+				}
 				return;
 			}
 		}
@@ -383,22 +384,9 @@ int main(int argc, char *argv[])
 		ensure_ge(dest,0);
 		create_contents(story, location, dest, numchaps, with_title);
 
-		{
-			// set contents.html to a sane timestamp, not when the file was created...
-			struct timespec times[2] = {
-				{ .tv_sec = story_timestamp,
-					.tv_nsec = 0
-				},
-				{ .tv_sec = story_timestamp,
-					.tv_nsec = 0
-				}
-			};
-			ensure0(futimens(dest,times));
-		}
-
-		ensure0(close(dest));
+		close_with_time(dest,max_timestamp);
 		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
-		ensure0(close(destloc));
+		close_with_time(destloc,max_timestamp);
 
 		if(numchaps_changed) {
 			db_set_chapters(story,savenumchaps);
