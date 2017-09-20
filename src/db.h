@@ -19,8 +19,10 @@ struct bad {
 	bool current;
 };
 void db_last_seen_commit(struct bad* out,
-												 db_oid last, db_oid current,
-												 git_time_t* timestamp);
+												 db_oid last, db_oid current);
+
+identifier db_get_category(const string name, git_time_t* timestamp);
+void db_caught_up_category(identifier category);
 
 typedef int64_t identifier;
 

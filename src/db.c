@@ -147,7 +147,6 @@ bool saw_commit = false;
 void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	static sqlite3_stmt* insert_current = NULL, *insert_pending;
 	if(insert_current == NULL) {
-		assert(category != -1); // call db_set_category first!
 		
 		PREPARE(insert_current,
 						"INSERT OR REPLACE INTO commits (kind,oid,timestamp) \n"
@@ -190,8 +189,6 @@ void db_caught_up_commits(void) {
 	END_TRANSACTION;
 }
 
-
-identifier category = -1; // this only changes once at program init
 
 identifier db_get_category(const string name, git_time_t* timestamp) {
 	DECLARE_STMT(find,"SELECT id,timestamp FROM categories WHERE category = ?");
@@ -244,7 +241,7 @@ void db_last_seen_commit(struct bad* out,
 
 
 
-void db_category_caughtup(identifier category) {
+void db_caught_up_category(identifier category) {
 	DECLARE_STMT(update,"UPDATE categories SET timestamp = ? WHERE id = ?");
 
 	sqlite3_bind_int64(update,1,time(NULL));
