@@ -157,6 +157,8 @@ int main(int argc, char *argv[])
 	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
 
+	bool adjust_times = getenv("adjust_times")!=NULL;
+
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
@@ -290,26 +292,26 @@ int main(int argc, char *argv[])
 			}
 
 			if(skip(chapter_timestamp,destname)) {
-				// mleh
-				int dest = openat(destloc,destname,O_WRONLY);
-				if(dest >= 0) {
-					// so people requesting the HTML file get its ACTUAL update date.
-					struct timespec times[2] = {
-						{ .tv_sec = chapter_timestamp,
-							.tv_nsec = 0
-						},
-						{ .tv_sec = chapter_timestamp,
-							.tv_nsec = 0
+				if(adjust_times) {
+					// mleh
+					int dest = openat(destloc,destname,O_WRONLY);
+					if(dest >= 0) {
+						// so people requesting the HTML file get its ACTUAL update date.
+						struct timespec times[2] = {
+							{ .tv_sec = chapter_timestamp,
+								.tv_nsec = 0
+							},
+							{ .tv_sec = chapter_timestamp,
+								.tv_nsec = 0
+							}
+						};
+						if(0!=futimens(dest,times)) {
+							perror("futimens");
+							abort();
 						}
-					};
-					if(0!=futimens(dest,times)) {
-						perror("futimens");
-						abort();
+						close(dest);
 					}
-					close(dest);
 				}
-			}
-				return;
 			}
 
 			int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
