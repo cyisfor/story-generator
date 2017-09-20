@@ -150,7 +150,7 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 		
 		PREPARE(insert_current,
 						"INSERT OR REPLACE INTO commits (kind,oid,timestamp) \n"
-						"VALUES (?,?,?,?)");
+						"VALUES (?,?,?)");
 		// Note: insert pending uses what was inserted for insert_current, but changes kind
 		PREPARE(insert_pending,
 						"INSERT OR IGNORE INTO commits (oid,timestamp,kind) \n"
@@ -161,8 +161,8 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 		sqlite3_bind_int(insert_pending, 1, PENDING);
 		sqlite3_bind_int(insert_pending, 2, CURRENT);
 	}
-	sqlite3_bind_blob(insert_current, 3, commit, sizeof(db_oid), NULL);
-	sqlite3_bind_int(insert_current, 4, timestamp);
+	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
+	sqlite3_bind_int(insert_current, 3, timestamp);
 	BEGIN_TRANSACTION;
 	db_once(insert_current);
 	if(saw_commit) return;
