@@ -188,7 +188,10 @@ int main(int argc, char *argv[])
 		if(srcloc < 0) return; // glorious moved
 		{ string markup = {LITLEN("markup")};
 			srcloc = descend(srcloc, markup, false);
-			if(srcloc < 0) return; // ehhh... something got their markup directory removed?
+			if(srcloc < 0) {
+				WARN("ehhh... something got their markup directory removed? %s",location);
+				return;
+			}
 		}
 		CLOSING int destloc = descend(AT_FDCWD, scategory, true);
 		destloc = descend(destloc, location, true);
