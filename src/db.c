@@ -193,7 +193,7 @@ void db_caught_up_commits(void) {
 
 identifier db_get_category(const string name, git_time_t* timestamp) {
 	DECLARE_STMT(find,"SELECT id,timestamp FROM categories WHERE category = ?");
-	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?,?)");
+	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
 	sqlite3_bind_blob(find,1,name.s,name.l,NULL);
 	RESETTING(find) int res = sqlite3_step(find);
 	TRANSACTION; 

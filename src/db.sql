@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS categories (
 			 id INTEGER PRIMARY KEY,
 			 category TEXT NOT NULL UNIQUE,
-			 timestamp INTEGER NOT NULL);
+			 timestamp INTEGER NOT NULL DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS commits (
 			 oid BLOB NOT NULL,
