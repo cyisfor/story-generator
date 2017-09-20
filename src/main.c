@@ -385,7 +385,15 @@ int main(int argc, char *argv[])
 
 		close_with_time(dest,max_timestamp);
 		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
-		close_with_time(destloc,max_timestamp);
+		/* this is tricky. We can't "upgrade" destloc to a O_WRONLY,
+			 but we can openat(destloc,".") sooo
+		*/
+		{
+			int wr = openat(destloc,".",O_WRONLY|O_DIRECTORY);
+			ensure0(close(destloc));
+			ensure_ge(wr,0);
+			close_with_time(wr,max_timestamp);
+		}
 
 		if(numchaps_changed) {
 			db_set_chapters(story,savenumchaps);
