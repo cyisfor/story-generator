@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 			assert(name.s[name.l] == '\0');
 			int sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
 			if(!create) {
-				ensure_gt(sub,0);
+				return sub;
 			} else if(sub < 0) {
 				ensure_eq(errno,ENOENT);
 				// mkdir if not exists is a painless operation
@@ -183,14 +183,15 @@ int main(int argc, char *argv[])
 			close(loc);
 			return sub;
 		}
-		CLOSING int destloc = descend(AT_FDCWD, scategory, true);
-		ensure_gt(destloc,0);
-		destloc = descend(destloc, location, true);
-		if(destloc < 0) return; // glorious is moved
+
 		CLOSING int srcloc = descend(AT_FDCWD, location, false);
+		if(srcloc < 0) return; // glorious moved
 		{ string markup = {LITLEN("markup")};
 			srcloc = descend(srcloc, markup, false);
+			if(srcloc < 0) return; // ehhh... something got their markup directory removed?
 		}
+		CLOSING int destloc = descend(AT_FDCWD, scategory, true);
+		destloc = descend(destloc, location, true);
 
 		struct stat destinfo;
 		bool skip(git_time_t srcstamp, const char* destname) {
