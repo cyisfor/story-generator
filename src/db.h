@@ -107,4 +107,12 @@ void db_rollback(void);
 	} \
 	__attribute__((__cleanup__(CONCAT_SYM(resetter,__LINE__))))
 
+#define TRANSACTING int CONCAT_SYM(committer,__LINE__) () { \
+	/* INFO("Resetting " #stmt); */																	 \
+	db_commit(); \
+	} \
+	db_begin(); \
+	__attribute__((__cleanup__(CONCAT_SYM(resetter,__LINE__))))
+
+
 #endif /* _DB_H_ */

@@ -195,7 +195,8 @@ identifier db_get_category(const string name, git_time_t* timestamp) {
 	DECLARE_STMT(find,"SELECT id,timestamp FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?,?)");
 	sqlite3_bind_blob(find,1,name.s,name.l,NULL);
-	TRANSACTING RESETTING(find) int res = sqlite3_step(find);
+	RESETTING(find) int res = sqlite3_step(find);
+	TRANSACTION; 
 	if(res == SQLITE_ROW) {
 		*timestamp = sqlite3_column_int64(find,1);
 		return sqlite3_column_int64(find,0);
@@ -261,7 +262,8 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
 
 	sqlite3_bind_blob(find,1,location.s,location.l,NULL);
-	TRANSACTING RESETTING(find) int res = db_check(sqlite3_step(find));
+	TRANSACTION;
+	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		identifier id = sqlite3_column_int64(find,0);
 		sqlite3_bind_int64(update,1,timestamp);
@@ -294,7 +296,8 @@ void db_saw_chapter(bool deleted, identifier story,
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
 		sqlite3_bind_int64(find,1,story);
 		sqlite3_bind_int64(find,2,chapter);
-		TRANSACTING RESETTING(find) int res = sqlite3_step(find);
+		TRANSACTION;
+		RESETTING(find) int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW:
 			// update if new timestamp is higher
