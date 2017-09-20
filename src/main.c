@@ -184,7 +184,9 @@ int main(int argc, char *argv[])
 			return sub;
 		}
 		CLOSING int destloc = descend(AT_FDCWD, scategory, true);
+		ensure_gt(destloc,0);
 		destloc = descend(destloc, location, true);
+		if(destloc < 0) return; // glorious is moved
 		CLOSING int srcloc = descend(AT_FDCWD, location, false);
 		{ string markup = {LITLEN("markup")};
 			srcloc = descend(srcloc, markup, false);
