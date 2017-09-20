@@ -52,28 +52,6 @@ int main(int argc, char *argv[])
 	create_setup();
 
 	bool always_finished = false;
-
-	const string get_category() {
-		if(getenv("category")!=NULL) {
-			string c = {getenv("category")};
-			c.l = strlen(c.s);
-			switch(lookup_category(c.s)) {
-			case CATEGORY_censored:
-				WARN("censored is a special category. set censored=1 instead plz");
-				setenv("censored","1",1);
-			case CATEGORY_sneakpeek:
-				always_finished = true;
-			};
-			return c;
-		} else if(getenv("censored")!=NULL) {
-			return (const string){LITLEN("censored")};
-		} else {
-			return (const string){LITLEN("html")};
-		}
-	}
-	const string category = get_category();
-	db_set_category(category);
-
 	size_t num = 0;
 	size_t counter = 0;
 	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
@@ -127,15 +105,15 @@ int main(int argc, char *argv[])
 		git_commit* thing2 = (git_commit*)thing1;
 		
 		memcpy(last_commit, git_object_id(thing1)->id,sizeof(db_oid));
-		//arrgh we need a timestamp too
-		timestamp = git_commit_time(thing2);
 		git_object_free(thing1);
 		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
 		// this is needed, to jump start when a confusing merge loses the db's
 		// last known commit
+		//arrgh we need a timestamp too
+		git_time_t timestamp = git_commit_time(thing2);
 		db_saw_commit(timestamp,last_commit);
 	} else {
-		db_last_seen_commit(&results,last_commit,current_commit,&timestamp);
+		db_last_seen_commit(&results,last_commit,current_commit);
 		if(results.last)
 			INFO("last seen commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
 		
@@ -146,15 +124,39 @@ int main(int argc, char *argv[])
 										results.current ? current_commit : NULL,
 										on_commit);
 	}
+	if(num > 0) {
+		db_caught_up_commits();
+		putchar('\n');
+	}
 	END_TRANSACTION;
-	if(num > 0) putchar('\n');
-
-	if(getenv("recheck")) timestamp = 0;
-
+	
 	INFO("processing...");
 
 	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
-
+	
+	const string get_category() {
+		if(getenv("category")!=NULL) {
+			string c = {getenv("category")};
+			c.l = strlen(c.s);
+			switch(lookup_category(c.s)) {
+			case CATEGORY_censored:
+				WARN("censored is a special category. set censored=1 instead plz");
+				setenv("censored","1",1);
+			case CATEGORY_sneakpeek:
+				always_finished = true;
+			};
+			return c;
+		} else if(getenv("censored")!=NULL) {
+			return (const string){LITLEN("censored")};
+		} else {
+			return (const string){LITLEN("html")};
+		}
+	}
+	git_time_t timestamp;
+	
+	identifier category = db_get_category(get_category(), &timestamp);
+	if(getenv("recheck")) timestamp = 0;
+	
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
@@ -377,7 +379,7 @@ int main(int argc, char *argv[])
 
 	INFO("stories since %d",timestamp);
 	db_for_stories(for_story, timestamp);
-	db_caught_up();
+	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();
 	return 0;
