@@ -95,25 +95,24 @@ void db_begin(void);
 void db_commit(void);
 void db_rollback(void);
 
-#define BEGIN_TRANSACTION db_begin();
-#define END_TRANSACTION db_commit();
+#define BEGIN_TRANSACTION db_begin()
+#define END_TRANSACTION db_commit()
 
 #define CPPSUX(a,b) a ## b
 #define CONCAT_SYM(a,b) CPPSUX(a,b)
 
-#define RESETTING(stmt) int CONCAT_SYM(resetter,__LINE__) () { \
-	/* INFO("Resetting " #stmt); */																	 \
-	sqlite3_reset(stmt); \
-	} \
+#define RESETTING(stmt) int CONCAT_SYM(resetter,__LINE__) () {	\
+		/* INFO("Resetting " #stmt); */															\
+		sqlite3_reset(stmt);																				\
+	}																															\
 	__attribute__((__cleanup__(CONCAT_SYM(resetter,__LINE__))))
 
-#define TRANSACTION int CONCAT_SYM(committer,__LINE__) () { \
-	/* INFO("Resetting " #stmt); */																	 \
-	db_commit(); \
-	} \
-	db_begin(); \
-	__attribute__((__cleanup__(CONCAT_SYM(committer,__LINE__)))) \
+#define TRANSACTION int CONCAT_SYM(committer,__LINE__) () {			\
+		/* INFO("Resetting " #stmt); */															\
+		db_commit();																								\
+	}																															\
+	db_begin();																										\
+	__attribute__((__cleanup__(CONCAT_SYM(committer,__LINE__))))	\
 	int CONCAT_SYM(sentinel,__LINE__)
-
 
 #endif /* _DB_H_ */
