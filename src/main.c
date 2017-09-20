@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 			close(loc);
 			return sub;
 		}
-		CLOSING int destloc = descend(AT_FDCWD, scategory.s, true);
+		CLOSING int destloc = descend(AT_FDCWD, scategory, true);
 		destloc = descend(destloc, location, true);
 		CLOSING int srcloc = descend(AT_FDCWD, location, false);
 		{ string markup = {LITLEN("markup")};
