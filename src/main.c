@@ -95,7 +95,6 @@ int main(int argc, char *argv[])
 		.current = false
 	};
 	db_oid last_commit, current_commit;
-	git_time_t timestamp = 0;
 	BEGIN_TRANSACTION;
 	if(getenv("until")) {
 		results.last = true;
@@ -153,8 +152,9 @@ int main(int argc, char *argv[])
 		}
 	}
 	git_time_t timestamp;
-	
-	identifier category = db_get_category(get_category(), &timestamp);
+
+	const string scategory = get_category();
+	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
 	
 	void for_story(identifier story,
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 			close(loc);
 			return sub;
 		}
-		CLOSING int destloc = descend(AT_FDCWD, category, true);
+		CLOSING int destloc = descend(AT_FDCWD, scategory.s, true);
 		destloc = descend(destloc, location, true);
 		CLOSING int srcloc = descend(AT_FDCWD, location, false);
 		{ string markup = {LITLEN("markup")};
