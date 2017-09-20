@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		.current = false
 	};
 	db_oid last_commit, current_commit;
-	TRANSACTION;
+	BEGIN_TRANSACTION;
 	if(getenv("until")) {
 		results.last = true;
 		git_object* thing1;
@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
 		db_caught_up_commits();
 		putchar('\n');
 	}
+	END_TRANSACTION;
 	
 	INFO("processing...");
 

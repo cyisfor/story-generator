@@ -96,7 +96,7 @@ void db_commit(void);
 void db_rollback(void);
 
 #define BEGIN_TRANSACTION db_begin()
-#define END_TRANSACTION db_commit()
+#define END_TRANSACTION INFO(__FILE__ " ENDTRANS %d",__LINE__); db_commit()
 
 #define CPPSUX(a,b) a ## b
 #define CONCAT_SYM(a,b) CPPSUX(a,b)
