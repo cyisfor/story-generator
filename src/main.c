@@ -332,8 +332,7 @@ int main(int argc, char *argv[])
 
 
 			ensure0(close(src));
-			clote_with_time(dest,chapter_timestamp);
-			ensure0(close(dest));
+			close_with_time(dest,chapter_timestamp);
 
 			ensure0(renameat(destloc,".tempchap",destloc,destname));
 		}
