@@ -197,9 +197,8 @@ identifier db_get_category(const string name, git_time_t* timestamp) {
 	BEGIN_TRANSACTION;
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
-		category = sqlite3_column_int64(find,0);
 		*timestamp = sqlite3_column_int64(find,1);
-		return;
+		return sqlite3_column_int64(find,0);
 	}
 	*timestamp = 0;
 	sqlite3_bind_text(insert,1,name.s,name.l,NULL);
@@ -213,9 +212,7 @@ void db_last_seen_commit(struct bad* out,
 												 db_oid last, db_oid current) {
 	static sqlite3_stmt* find = NULL;
 	if(find == NULL) {
-		assert(category != -1);
-		PREPARE(find,"SELECT oid,timestamp FROM commits WHERE kind = ? AND category = ?");
-		sqlite3_bind_int64(find,2,category);
+		PREPARE(find,"SELECT oid,timestamp FROM commits WHERE kind = ?");
 	}
 
 	bool one(db_oid dest, enum commit_kind kind) {
