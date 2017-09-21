@@ -289,7 +289,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
 	} else {
-		INFO("SAW %d:%d %d",story,chapter,timestamp);
+		INFO("SAW %d:%d",story,chapter);
 		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
 								 "WHERE story = ? AND chapter = ?"); 
