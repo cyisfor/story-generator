@@ -561,8 +561,8 @@ void db_transaction(void (*run)(void)) {
 }
 
 void db_retransaction(void) {
-	assert(in_trans);
-	db_commit();
+	if(in_trans)
+		db_commit();
 	db_begin();
 }
 

@@ -25,6 +25,8 @@ bool git_for_commits(db_oid until,
 	repo_check(git_revwalk_new(&walker, repo));
 
 	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
+	git_revwalk_sorting(walker, GIT_SORT_TIME);
+	
 	// XXX: todo revparse HEAD~10 etc
 	if(since) {
 		SPAM("since %s\n",db_oid_str(since));
