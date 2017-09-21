@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 			return true;
 		}
 
-		printf("commit %d %d %.*s\n",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
+		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			//fputc('\n',stdout);
 			struct stat derp;
 			if(0!=stat(src.s,&derp)) {
-				WARN("%s wasn't there\n",src.s);
+				WARN("%s wasn't there",src.s);
 				return true;
 			}
 			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);

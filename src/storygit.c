@@ -68,7 +68,7 @@ bool git_for_commits(db_oid until,
 		git_time_t timestamp = 0;
 		for(;;) {
 			if(0!=git_revwalk_next(&commit_oid, walker)) return true;
-			SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
+			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 			repo_check(git_commit_tree(&cur,commit));
 			if(timestamp == 0) {
