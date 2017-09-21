@@ -12,3 +12,12 @@ void spamf(const char* file, int flen, int line, const char* fmt, ...);
 #else
 #define SPAM(...)
 #endif
+
+struct note_options {
+	bool show_method;
+	bool show_location;
+};
+
+extern struct note_options note_options;
+
+void note_init(void);
