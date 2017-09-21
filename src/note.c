@@ -4,11 +4,6 @@
 #include <stdlib.h> // abort, getenv
 #include <stdarg.h> // va_*
 
-struct note_options {
-	bool show_method;
-	bool show_location;
-};
-
 struct note_options note_options = {};
 
 static void note(const char* how, int hlen,
