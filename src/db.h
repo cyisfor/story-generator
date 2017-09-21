@@ -63,8 +63,8 @@ void db_with_story_info(const identifier story, void (*handle)(const string titl
 void db_set_story_info(identifier story,
 											 const string title,
 											 const string description,
-											 const string source);
-
+											 const string source)
+;
 void db_set_chapters(identifier story, size_t numchaps);
 
 void db_get_chapter_title(string* dest, identifier story, identifier chapter);
@@ -95,8 +95,8 @@ void db_begin(void);
 void db_commit(void);
 void db_rollback(void);
 
-#define BEGIN_TRANSACTION INFO("BT " __FILE__ ":%d\n",__LINE__); db_begin()
-#define END_TRANSACTION INFO("ET " __FILE__ ":%d\n",__LINE__); db_commit()
+#define BEGIN_TRANSACTION db_begin()
+#define END_TRANSACTION db_commit()
 
 #define CPPSUX(a,b) a ## b
 #define CONCAT_SYM(a,b) CPPSUX(a,b)
