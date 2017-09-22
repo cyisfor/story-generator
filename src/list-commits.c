@@ -31,6 +31,21 @@ int main(int argc, char *argv[])
 		char buf[0x10];
 		fwrite(buf,itoa(buf,0x10,++counter),1,stderr);
 		fputc('\n',stderr);
+
+		enum gfc_action on_chapter(
+			long int chapnum,
+			bool deleted,
+			const string loc,
+			const string src)
+		{
+			fputc(' ',stderr);
+			fwrite(src.s,src.l,1,stderr);
+			fputc('\n',stderr);
+			return GFC_CONTINUE;
+		}
+		
+		git_for_chapters_changed(last,cur,on_chapter);
+		fputc('\n',stderr);
 		return GFC_CONTINUE;
 	}
 	
