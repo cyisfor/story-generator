@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("</a></li>"));
 	}
 
-	git_for_recent_chapters(100, on_chapter);
+	db_for_recent_chapters(100, on_chapter);
 
 	write(1,LITLEN("</ul></body></html>"));
 	

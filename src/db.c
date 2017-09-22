@@ -333,7 +333,7 @@ void db_for_recent_chapters(int limit,
 	DECLARE_STMT(find,"SELECT story,chapter,"
 							 "(select title from stories where stories.id = story),"
 							 "(select location from stories where stories.id = story),"
-							 "chapters,timestamp FROM chapters WHERE (select finished from stories where stories.id = story) OR chapter < (select count(1) from chapters as sub where sub.story = chapters.story) ORDER BY timestamp DESC LIMIT ?");
+							 "timestamp FROM chapters WHERE (select finished from stories where stories.id = story) OR chapter < (select count(1) from chapters as sub where sub.story = chapters.story) ORDER BY timestamp DESC LIMIT ?");
 	RESETTING(find) int res;
 
 	sqlite3_bind_int(find,1,limit);
