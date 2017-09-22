@@ -33,6 +33,15 @@ identifier db_get_story(const string location, git_time_t timestamp);
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter);
 
+
+struct storycache;
+
+struct storycache* db_start_storycache(void);
+// return true if it's in the cache, add it if not in the cache.
+bool db_in_storycache(struct storycache* cache, identifier story, size_t chapter);
+void db_storycache_free(struct storycache* cache);
+
+
 /* be CAREFUL none of these iterators are re-entrant! */
 
 void db_for_recent_chapters(int limit,

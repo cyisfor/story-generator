@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
 	db_for_recent_chapters(100, on_chapter);
 
 	write(1,LITLEN("</table></body></html>"));
+
+	db_storycache_free(cache);
 	
 	return 0;
 }
