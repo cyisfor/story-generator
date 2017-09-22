@@ -53,7 +53,7 @@ bool git_for_commits(const db_oid until,
 																		git_tree* last,
 																		git_tree* cur)) {
 
-	struct item me = {}
+	struct item me = {};
 	struct item* branches = NULL;
 	size_t nbranches = 0;
 
@@ -79,13 +79,13 @@ bool git_for_commits(const db_oid until,
 			struct item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent.commit))) continue;
-			repo_check(git_commit_tree(&parent.tree, parent));
+			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			parent.oid = git_commit_id(parent.commit);
 			parent.time = git_commit_time(parent.commit);
 			bool ok = handle(DB_OID(*me.oid),
 											 DB_OID(*parent.oid),
 											 me.time,
-											 partree,
+											 parent.tree,
 											 me.tree);
 						 
 			if(!ok) {
