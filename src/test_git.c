@@ -5,17 +5,21 @@
 int main(int argc, char *argv[])
 {
 
-	bool on_commit(db_oid commit,
-								 git_time_t timestamp,
-								 git_tree* last,
-								 git_tree* cur) {
+	enum gfc_action on_commit(
+		db_oid commit,
+		git_time_t timestamp,
+		git_tree* last,
+		git_tree* cur)
+	{
 
 		printf("timestamp %d\n",timestamp);
 		
-		bool on_chapter(long int num,
-										bool deleted,
-										const string location,
-										const string path) {
+		enum gfc_action on_chapter(
+			long int num,
+			bool deleted,
+			const string location,
+			const string path)
+		{
 			printf("%2d ",num);
 			int i;
 			for(i=0;i<20-location.l;++i) putchar(' ');
@@ -23,10 +27,9 @@ int main(int argc, char *argv[])
 			putchar(' ');
 			STRPRINT(path);
 			putchar('\n');
-			return true;
+			return GFC_CONTINUE;
 		}
-		git_for_chapters_changed(last,cur,on_chapter);
-		return true;
+		return git_for_chapters_changed(last,cur,on_chapter);
 	}
 
 	puts("chapter location name");
