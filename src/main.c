@@ -342,7 +342,15 @@ int main(int argc, char *argv[])
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));
 
-
+		void destloc_done() {
+			/* this is tricky. We can't "upgrade" destloc to a O_WRONLY,
+				 but we can openat(destloc,".") sooo
+			*/
+			int wr = openat(destloc,".",O_DIRECTORY);
+			ensure0(close(destloc));
+			ensure_ge(wr,0);
+			close_with_time(wr,max_timestamp);
+		}
 
 		if(!(numchaps_changed || title_changed)) {
 			// no chapters added or removed, and no chapter had an embedded title that changed.
@@ -355,6 +363,7 @@ int main(int argc, char *argv[])
 				if(dest >= 0) {
 					close_with_time(dest, max_timestamp);
 				}
+				destloc_done();
 				return;
 			}
 		}
@@ -384,16 +393,8 @@ int main(int argc, char *argv[])
 
 		close_with_time(dest,max_timestamp);
 		ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
-		/* this is tricky. We can't "upgrade" destloc to a O_WRONLY,
-			 but we can openat(destloc,".") sooo
-		*/
-		{
-			int wr = openat(destloc,".",O_DIRECTORY);
-			ensure0(close(destloc));
-			ensure_ge(wr,0);
-			close_with_time(wr,max_timestamp);
-		}
 
+		destloc_done();
 		if(numchaps_changed) {
 			db_set_chapters(story,savenumchaps);
 		}
