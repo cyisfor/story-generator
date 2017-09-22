@@ -167,15 +167,15 @@ git_for_commits(const db_oid until,
 											 me.tree);
 			switch(op) {
 			case GFC_STOP:
-				freeitem(parent);
-				freeitem(me);
+				freeitem(&parent);
+				freeitem(&me);
 				for(i=0;i<ntodo;++i) {
-					freeitem(todo[i]);
+					freeitem(&todo[i]);
 				}
 				free(todo);
 				return false;
 			case GFC_SKIP:
-				freeitem(parent);
+				freeitem(&parent);
 				if(alreadyhere) {
 					// ugh... need to remove this from the list
 					int j;
@@ -199,7 +199,7 @@ git_for_commits(const db_oid until,
 			//if(alreadyhere) blah blah meh
 			todo[ntodo-1] = parent;
 		}
-		freeitem(me);
+		freeitem(&me);
 		// if we pushed all the parents, and still no todo, we're done, yay!
 		if(ntodo == 0) break;
 
