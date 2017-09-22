@@ -71,16 +71,17 @@ bool git_for_commits(const db_oid until,
 		int nparents = git_commit_parentcount(me.commit);
 		int i;
 		for(i = 0; i < nparents; ++i) {
-			git_commit* parent;
+			git_commit* parent = NULL;
+			git_tree* partree;
 			repo_check(git_commit_parent(&parent, me.commit, i));
 
 			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent))) continue;
-			git_tree* partree = git_commit_tree(parent);
+			repo_check(git_commit_tree(&partree, parent));
 			// XXX: could save this tree somehow, when parent becomes "me"
-			bool ok = handle(me.oid,
+			bool ok = handle(DB_OID(*me.oid),
 											 me.time,
-												partree,
-												me.tree);
+											 partree,
+											 me.tree);
 						 
 			git_tree_free(partree); // see?
 
