@@ -323,6 +323,16 @@ void db_saw_chapter(bool deleted, identifier story,
 
 /* be CAREFUL none of these iterators are re-entrant! */
 
+void db_for_recent_chapters(const char* until,
+														void (*handle)(identifier story,
+																					 string title,
+																					 size_t chapnum,
+																					 size_t numchaps,
+																					 git_time_t timestamp)) {
+
+	DECLARE_STMT(find,"SELECT id,story,(select COALESCE(title,location) from stories where stories.id = story),chapters,timestamp FROM chapters WHERE (select finished from stories where stories.id = story) OR chapter < (select count(1) from chapters as sub where sub.story = chapters.story) ORDER BY timestamp DESC");
+}
+
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
 																	 bool finished,
