@@ -328,6 +328,77 @@ void db_saw_chapter(bool deleted, identifier story,
 	}
 }
 
+struct storycache* db_start_storycache(void) {
+	static int counter = 0;
+#define PREFIX "CREATE TEMPORARY TABLE storycache"
+	{
+		sqlite3_stmt* create;
+		char sql[] = PREFIX "XXXX ("
+			"story INTEGER,"
+			"chapter INTEGER,"
+			"PRIMARY_KEY(story,chapter)) WITHOUT ROWID";
+		ssize_t amt =
+			snprintf(sql+sizeof(PREFIX)-1,
+							 sizeof(sql)-sizeof(PREFIX),
+							 "%d",++counter);
+		db_check(sqlite3_prepare_v2(db, buf, amt, &create, NULL));
+		assert(create != NULL);
+
+		db_check(sqlite3_step(create));
+		sqlite3_finalize(create);
+	}
+#undef PREFIX
+
+	struct storycache* cache = calloc(1, sizeof(struct storycache));
+	{
+#define PREFIX "SELECT 1 FROM storycache"
+		char sql[] = PREFIX "XXXX WHERE story = ? AND chapter = ?";
+		ssize_t amt =
+		snprintf(sql+sizeof(PREFIX)-1,
+					 sizeof(sql)-sizeof(PREFIX),
+					 "%d",counter);
+#undef PREFIX
+		db_check(sqlite3_prepare_v2(db, sql, amt, &cache->find, NULL));
+		assert(cache->find != NULL);
+		//add_stmt(cache->find); ehhh....
+	}
+	{
+#define PREFIX "INSERT INTO storycache"
+		char sql[] = PREFIX "XXXX (story,chapter) VALUES (?,?)";
+		ssize_t amt =
+			snprintf(sql+sizeof(PREFIX)-1,
+							 sizeof(sql)-sizeof(PREFIX),
+							 "%d",counter);
+#undef PREFIX
+		db_check(sqlite3_prepare_v2(db, sql, amt, &cache->insert, NULL));
+		assert(cache->insert != NULL);
+		//add_stmt(cache->insert); ehhh....
+	}
+	return cache;
+}
+
+// return true if it's in the cache, add it if not in the cache->
+bool db_in_storycache(struct storycache* cache, identifier story, size_t chapter) {
+	sqlite3_bind_int64(cache->find, 1, story);
+	sqlite3_bind_int64(cache->find, 2, chapter);
+	TRANSACTION;
+	int res = db_check(sqlite3_step(cache->find));
+	sqlite3_reset(cache->find);
+	if(res == SQLITE_ROW) return true;
+	sqlite3_bind_int64(cache->insert, 1, story);
+	sqlite3_bind_int64(cache->insert, 2, chapter);
+	db_check(sqlite3_step(cache->insert));
+	sqlite3_reset(cache->insert);
+	return false;
+}
+	
+void db_storycache_free(struct storycache* cache) {
+	sqlite3_finalize(cache->find);
+	sqlite3_finalize(cache->insert);
+	free(cache);
+}
+
+
 /* be CAREFUL none of these iterators are re-entrant! */
 
 void db_for_recent_chapters(int limit,

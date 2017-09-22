@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
 	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	db_open("generate.sqlite");
+
+	struct storycache* cache = db_start_storycache();
 	
 	write(1,LITLEN(
 					"<!DOCTYPE html>\n"
@@ -31,6 +33,9 @@ int main(int argc, char *argv[])
 									const string title,
 									const string location,
 									git_time_t timestamp) {
+
+		if(db_in_storycache(cache,story,chapnum)) return;
+		
 		write(1,LITLEN("<tr><td>"));
 
 		char num[0x10];
