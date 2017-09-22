@@ -1,5 +1,12 @@
+#include "db_oid/base.h"
+#include "db_oid/gen.h"
+#include "ensure.h"
 #include "repo.h"
 #include "storygit.h"
+
+#include <stdio.h>
+#include <sys/stat.h>
+
 
 int main(int argc, char *argv[])
 {
