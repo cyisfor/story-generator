@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 					"<link rel=stylesheet href=log.css />\n"
 					"<title>Recent updates.</title>\n"
 					"</head>\n<body>\n"
-					"<ul class=chaps>\n"
+					"<table class=chaps>\n"
 					));
 
 	void on_chapter(identifier story,
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 									const string title,
 									const string location,
 									git_time_t timestamp) {
-		write(1,LITLEN("<li><a href=\""));
+		write(1,LITLEN("<tr><td><a href=\""));
 		write(1,location.s,location.l);
 		write(1,LITLEN("/"));
 
@@ -47,9 +47,6 @@ int main(int argc, char *argv[])
 			assert(amt < 0x100);
 		}
 		write(1,destname,amt);
-		write(1,LITLEN("\" title=\""));
-		char* s = ctime(&timestamp);
-		write(1,s,strlen(s)-1);
 		write(1,LITLEN("\">"));
 
 		if(title.s)
@@ -57,12 +54,15 @@ int main(int argc, char *argv[])
 		else
 			write(1,location.s,location.l);
 		
-		write(1,LITLEN("</a></li>\n"));
+		write(1,LITLEN("</a></td><td>"));
+		char* s = ctime(&timestamp);
+		write(1,s,strlen(s)-1);
+		write(1,LITLEN("</tr>\n"));
 	}
 
 	db_for_recent_chapters(100, on_chapter);
 
-	write(1,LITLEN("</ul></body></html>"));
+	write(1,LITLEN("</table></body></html>"));
 	
 	return 0;
 }
