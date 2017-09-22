@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("<tr><td>"));
 
 		char num[0x10];
-		int numlen = snprintf(destname,0x100, "%d",chapnum);
+		int numlen = snprintf(num,0x100, "%d",chapnum);
 		write(1, num, numlen);
 
 		write(1,LITLEN("</td><td><a href=\""));
@@ -60,10 +60,7 @@ int main(int argc, char *argv[])
 		else
 			write(1,location.s,location.l);
 
-		write(1, LITLEN("</a></td><td>"));
-		write(1, destname, snprintf(destname,0x100, "%d",chapnum));
-		
-		write(1,LITLEN("</tr>\n"));
+		write(1, LITLEN("</a></td></tr>\n"));
 	}
 
 	db_for_recent_chapters(100, on_chapter);
