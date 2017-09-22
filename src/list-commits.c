@@ -27,7 +27,9 @@ int main(int argc, char *argv[])
 		fputs(db_oid_str(commit),stdout);
 		putchar(' ');
 		char buf[0x10];
-		fwrite(buf,itoa(buf,0x10,++counter),1,stdout);
+		size_t derp = itoa(buf,0x10,++counter);
+		printf("\nDERP %d\n",derp);
+		fwrite(buf,derp,1,stdout);
 		putchar('\n');
 		return GFC_CONTINUE;
 	}

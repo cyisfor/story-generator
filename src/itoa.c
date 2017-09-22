@@ -1,8 +1,8 @@
 #include "itoa.h"
 
 /* itoa: convert n to characters in s */
-ssize_t itoa(char s[], size_t space, unsigned int n) {
-   int i,j;
+size_t itoa(char s[], size_t space, unsigned int n) {
+   size_t i,j;
 
    i = 0;
    do {  /* generate digits in reverse order */
