@@ -7,6 +7,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h> // chdir, write
+#include <assert.h>
 
 int main(int argc, char *argv[])
 {
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 										const string loc,
 										const string src) {
 			if(deleted) return true;
-			identifier story = db_find(loc);
+			identifier story = db_find_story(loc);
 			int num = db_count_chapters(story);
 			if(chapnum == num) return true;
 
@@ -61,7 +62,7 @@ int main(int argc, char *argv[])
 			write(1,LITLEN("\">"));
 			write(1,loc.s,loc.l);
 			write(1,LITLEN(" "));
-			write(1,destname,snprintf(destname, "%d", chapnum));
+			write(1,destname,snprintf(destname, 0x100, "%d", chapnum));
 			write(1,LITLEN("</a></li>\n"));
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("</ul>\n</li>"));
 	}
 
-	git_for_commits(DB_OID(git_object_id(until)),NULL,on_commit);
+	git_for_commits(DB_OID(*git_object_id(until)),NULL,on_commit);
 
 	write(1,LITLEN("</ul></body></html>"));
 	
