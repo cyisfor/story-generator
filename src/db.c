@@ -328,6 +328,11 @@ void db_saw_chapter(bool deleted, identifier story,
 	}
 }
 
+struct storycache {
+	sqlite3_stmt* find;
+	sqlite3_stmt* insert;
+};
+
 struct storycache* db_start_storycache(void) {
 	static int counter = 0;
 #define PREFIX "CREATE TEMPORARY TABLE storycache"
@@ -341,7 +346,7 @@ struct storycache* db_start_storycache(void) {
 			snprintf(sql+sizeof(PREFIX)-1,
 							 sizeof(sql)-sizeof(PREFIX),
 							 "%d",++counter);
-		db_check(sqlite3_prepare_v2(db, buf, amt, &create, NULL));
+		db_check(sqlite3_prepare_v2(db, sql, amt, &create, NULL));
 		assert(create != NULL);
 
 		db_check(sqlite3_step(create));
