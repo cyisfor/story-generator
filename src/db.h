@@ -33,6 +33,14 @@ identifier db_get_story(const string location, git_time_t timestamp);
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter);
 
+/* be CAREFUL none of these iterators are re-entrant! */
+
+void db_for_recent_chapters(int limit,
+														void (*handle)(identifier story,
+																					 size_t chapnum,
+																					 const string title,
+																					 const string location,
+																					 git_time_t timestamp));
 
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,

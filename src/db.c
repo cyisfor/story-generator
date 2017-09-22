@@ -323,14 +323,45 @@ void db_saw_chapter(bool deleted, identifier story,
 
 /* be CAREFUL none of these iterators are re-entrant! */
 
-void db_for_recent_chapters(const char* until,
+void db_for_recent_chapters(int limit,
 														void (*handle)(identifier story,
-																					 string title,
 																					 size_t chapnum,
-																					 size_t numchaps,
+																					 const string title,
+																					 const string location,
 																					 git_time_t timestamp)) {
 
-	DECLARE_STMT(find,"SELECT id,story,(select COALESCE(title,location) from stories where stories.id = story),chapters,timestamp FROM chapters WHERE (select finished from stories where stories.id = story) OR chapter < (select count(1) from chapters as sub where sub.story = chapters.story) ORDER BY timestamp DESC");
+	DECLARE_STMT(find,"SELECT story,chapter,"
+							 "(select title from stories where stories.id = story),"
+							 "(select location from stories where stories.id = story),"
+							 "chapters,timestamp FROM chapters WHERE (select finished from stories where stories.id = story) OR chapter < (select count(1) from chapters as sub where sub.story = chapters.story) ORDER BY timestamp DESC LIMIT ?");
+	RESETTING(find) int res;
+
+	sqlite3_bind_int(find,1,limit);
+
+	for(;;) {
+		res = db_check(sqlite3_step(find));
+		switch(res) {
+		case SQLITE_ROW: {
+			const string title = {
+				.s = sqlite3_column_blob(find,2),
+				.l = sqlite3_column_bytes(find,2)
+			};
+			const string location = {
+				.s = sqlite3_column_blob(find,3),
+				.l = sqlite3_column_bytes(find,3)
+			};
+			handle(
+				sqlite3_column_int64(find,0),
+				sqlite3_column_int64(find,1),
+				title,
+				location,
+				sqlite3_column_int64(find,4));
+			continue;
+		}
+		case SQLITE_DONE:
+			return;
+		};
+	}
 }
 
 void db_for_stories(void (*handle)(identifier story,
