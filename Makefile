@@ -1,3 +1,5 @@
+VPATH = o
+
 P=libgit2 sqlite3
 PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
@@ -45,8 +47,7 @@ test_git: $O
 
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	(echo -n o/; \
-		$(CC) $(CFLAGS) -MG -MM -o - $< | \
-			sed -e 's%\([^ ]*\)\.gen%o/\1.gen%g' -e 's%o/o/%o/%g' )> $@.temp
+		$(CC) $(CFLAGS) -MG -MM -o - $< ) > $@.temp
 	mv $@.temp $@
 
 o/%.o: src/%.c | o
