@@ -44,8 +44,9 @@ test_git: $O
 	$(LINK)
 
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
-	(echo -n o/; $(CC) $(CFLAGS) -MG -MM -o - $<) > $@.temp
-	sed -i -e 's%\([^ ]*\)\.gen%o/\1.gen%g' $@.temp
+	(echo -n o/; \
+		$(CC) $(CFLAGS) -MG -MM -o - $< | \
+			sed -e 's%\([^ ]*\)\.gen%o/\1.gen%g' )> $@.temp
 	mv $@.temp $@
 
 o/%.o: src/%.c | o
