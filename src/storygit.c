@@ -44,7 +44,7 @@ bool git_for_commits(const db_oid until,
 		git_commit* commit;
 		git_tree* tree;
 		git_time_t time;	
-		git_oid* oid;
+		const git_oid* oid;
 	} me = {
 			NULL,
 			NULL,
@@ -64,9 +64,9 @@ bool git_for_commits(const db_oid until,
 	}
 
 	for(;;) {
-		me.time = git_commit_time(me);
-		me.oid = git_commit_id(me);
-		repo_check(git_commit_tree(&me.tree,me));
+		me.time = git_commit_time(me.commit);
+		me.oid = git_commit_id(me.commit);
+		repo_check(git_commit_tree(&me.tree,me.commit));
 		
 		int nparents = git_commit_parentcount(me.commit);
 		int i;
