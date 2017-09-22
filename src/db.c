@@ -130,9 +130,14 @@ void db_close_and_exit(void) {
 
 static int db_once_trans(sqlite3_stmt* stmt) {
 	// because sqlite is retarded, no changes take effect outside a transaction
-	BEGIN_TRANSACTION;
+	bool wasintrans = in_trans;
+	if(!in_trans) {
+		BEGIN_TRANSACTION;
+	}
 	int ret = db_once(stmt);
-	END_TRANSACTION;
+	if(!wasintrans) {
+		END_TRANSACTION;
+	}
 	return ret;
 }
 
