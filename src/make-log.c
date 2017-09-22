@@ -53,8 +53,11 @@ int main(int argc, char *argv[])
 			write(1,title.s,title.l);
 		else
 			write(1,location.s,location.l);
+
+		write(1, LITLEN("</a></td><td>"));
+		write(1, destname, snprintf(destname,0x100, "%d",chapnum));
 		
-		write(1,LITLEN("</a></td><td>"));
+		write(1,LITLEN("</td><td>"));
 		char* s = ctime(&timestamp);
 		write(1,s,strlen(s)-1);
 		write(1,LITLEN("</tr>\n"));
