@@ -124,13 +124,13 @@ bool git_for_commits(const db_oid until,
 						here = j;
 					}
 					if(++j==ntodo) break;
-				} while(parent.time == ntodo[j].time);
+				} while(parent.time == todo[j].time);
 			}
 			if(ntodo < 10) {
 				void findit(void) {
 					int j=0;
 					for(;j<ntodo;++j) {
-						if(parent.time == ntodo[j].time) {
+						if(parent.time == todo[j].time) {
 							return findit_sametime(j);
 						}
 					}
