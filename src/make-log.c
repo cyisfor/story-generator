@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
 		void start(void) {
 			write(1,LITLEN("<li><div class=date>"));
 			char* s = ctime(&timestamp);
-			write(1,s,strlen(s));
-			write(1,LITLEN("<li></div>\n<ul class=chaps>"));
+			write(1,s,strlen(s)-1);
+			write(1,LITLEN("</li></div>\n<ul class=chaps>"));
 		}
 		bool started = false;
 
