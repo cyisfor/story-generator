@@ -34,7 +34,7 @@ struct item {
 
 
 int later_branches_last(const void* a, const void* b) {
-	printf("um %p %p\n",a,b);
+//	printf("um %p %p\n",a,b);
 	git_time_t ta = git_commit_time(((struct item*) a)->commit);
 	git_time_t tb = git_commit_time(((struct item*) b)->commit);
 	return ta - tb;
@@ -77,6 +77,7 @@ bool git_for_commits(const db_oid until,
 	
 	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
+		INFO("%.*s nparents %d\n",sizeof(db_oid),DB_OID(*me.oid),nparents);
 		int i;
 		for(i = 0; i < nparents; ++i) {
 			struct item parent = {};
