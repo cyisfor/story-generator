@@ -271,7 +271,7 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 			return one_file(delta->old_file.path,true);
 		case GIT_DELTA_RENAMED:
 			{ result = one_file(delta->old_file.path,true);
-				if(result!=GFC_CONTINUE) return false;
+				if(result!=GFC_CONTINUE) return result;
 			}
 			// fall through
 		case GIT_DELTA_ADDED:
@@ -279,7 +279,7 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 		case GIT_DELTA_COPIED:
 			// note: with copied, the old file didn't change, so disregard it.
 			result = one_file(delta->new_file.path,false);
-			return result==GFC_CONTINUE;
+			return result;
 		default:
 			ERROR("bad delta status %d",delta->status);
 			abort();
