@@ -3,7 +3,10 @@
 #include "ensure.h"
 #include "db.h"
 
+#include <git2/revparse.h>
+
 #include <sys/stat.h>
+#include <unistd.h> // chdir, write
 
 int main(int argc, char *argv[])
 {
@@ -50,8 +53,8 @@ int main(int argc, char *argv[])
 
 			char destname[0x100] = "index.html";
 			int amt = LITSIZ("index.html");
-			if(chapter > 1) {
-				amt = snprintf(destname,0x100, "chapter%d.html",chapter);
+			if(chapnum > 1) {
+				amt = snprintf(destname,0x100, "chapter%d.html",chapnum);
 				assert(amt < 0x100);
 			}
 			write(1,destname,amt);
