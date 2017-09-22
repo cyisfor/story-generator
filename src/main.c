@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 		// XXX: if finished, numchaps, otherwise
 		if(!always_finished && !finished && numchaps > 1) --numchaps;
 
-		git_time_t max_timestamp = timestamp;
+		git_time_t max_timestamp = story_timestamp;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
 			if(chapter_timestamp > max_timestamp)
@@ -329,8 +329,6 @@ int main(int argc, char *argv[])
 				setupsrc();
 
 			create_chapter(src,dest,chapter,numchaps,story,&title_changed);
-
-
 
 			ensure0(close(src));
 			close_with_time(dest,chapter_timestamp);
