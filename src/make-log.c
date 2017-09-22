@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("</ul>\n</li>"));
 	}
 
-	git_for_commits(DB_OID(*git_object_id(until)),NULL,on_commit);
+	git_for_commits(git_object_id(until)->id,NULL,on_commit);
 
 	write(1,LITLEN("</ul></body></html>"));
 	
