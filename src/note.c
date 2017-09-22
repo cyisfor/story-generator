@@ -44,6 +44,6 @@ HEAD(error) {
 }
 
 void note_init(void) {
-	note_options.show_method = (NULL==getenv("note.hidemethod"));
-	note_options.show_location = (NULL!=getenv("note.location"));
+	note_options.show_method = (NULL==getenv("note_hidemethod"));
+	note_options.show_location = (NULL!=getenv("note_location"));
 }
