@@ -3,6 +3,7 @@
 #include "ensure.h"
 #include "repo.h"
 #include "storygit.h"
+#include <unistd.h> // chdir
 
 #include <stdio.h>
 #include <sys/stat.h>
