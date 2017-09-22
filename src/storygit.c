@@ -30,6 +30,12 @@ struct item {
 	git_tree* tree;
 	git_time_t time;	
 	const git_oid* oid;
+	bool checked;
+	/* A - B - C - F - G
+		  \     /
+			 D - E
+	  when you traverse ABCFG, then DE, don't also do another CFG
+	*/
 };
 
 
@@ -74,6 +80,10 @@ bool git_for_commits(const db_oid until,
 	repo_check(git_commit_tree(&me.tree,me.commit));
 	me.time = git_commit_time(me.commit);
 	me.oid = git_commit_id(me.commit);
+
+	/* ugh.... have to search for if a git commit has been visited or not
+		 can't just say commit->visited = true, since commit is opaque
+	*/
 	
 	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
