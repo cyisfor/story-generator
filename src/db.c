@@ -281,7 +281,9 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 		sqlite3_bind_text(insert,1,location.s, location.l, NULL);
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
-		return sqlite3_last_insert_rowid(db);
+		identifier story = sqlite3_last_insert_rowid(db);
+		INFO("creating story %s: %lu",location.l,location.s,story);
+		return story;
 	}
 }
 
@@ -323,6 +325,7 @@ void db_saw_chapter(bool deleted, identifier story,
 			sqlite3_bind_int64(insert,2,story);
 			sqlite3_bind_int64(insert,3,chapter);
 			db_once(insert);
+			INFO("creating chapter %lu:%lu",story,chapter);
 			return;
 		};
 	}
