@@ -25,7 +25,7 @@
 	 commits are received in default order, which is ordered by time.
 */
 
-enum gfc_action { GFC_CONTINUE, GFC_STOP, GFC_SKIP };
+enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
 enum gfc_action
 git_for_commits(const db_oid until,

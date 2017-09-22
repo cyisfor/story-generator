@@ -271,9 +271,8 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 			one_file(delta->old_file.path,true);
 			return result;
 		case GIT_DELTA_RENAMED:
-			{ one_file(delta->old_file.path,true);
-				if(result!=GFC_CONTINUE) return result;
-			}
+			one_file(delta->old_file.path,true);
+			if(result!=GFC_CONTINUE) return result;
 			// fall through
 		case GIT_DELTA_ADDED:
 		case GIT_DELTA_MODIFIED:
