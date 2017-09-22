@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		else
 			write(1,location.s,location.l);
 		
-		write(1,LITLEN("</a></li>"));
+		write(1,LITLEN("</a></li>\n"));
 	}
 
 	db_for_recent_chapters(100, on_chapter);
