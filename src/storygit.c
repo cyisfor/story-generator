@@ -298,8 +298,8 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 	};
 
 	repo_check(git_diff_tree_to_tree(&diff,repo,from,to,&opts));
-	if(0 == git_diff_foreach(diff,
-													 file_changed,
-													 NULL, NULL, NULL, NULL)) return true;
+	git_diff_foreach(diff,
+									 file_changed,
+									 NULL, NULL, NULL, NULL);
 	return result;
 }
