@@ -24,13 +24,13 @@ int main(int argc, char *argv[])
 		git_tree* last,
 		git_tree* cur) {
 
-		fputs(db_oid_str(parent),stdout);
-		fputs(" -> ",stdout);
-		fputs(db_oid_str(commit),stdout);
-		putchar(' ');
+		fputs(db_oid_str(parent),stderr);
+		fputs(" -> ",stderr);
+		fputs(db_oid_str(commit),stderr);
+		fput(' ',stderr);
 		char buf[0x10];
-		fwrite(buf,itoa(buf,0x10,++counter),1,stdout);
-		putchar('\n');
+		fwrite(buf,itoa(buf,0x10,++counter),1,stderr);
+		fput('\n',stderr);
 		return GFC_CONTINUE;
 	}
 	
