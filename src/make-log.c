@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 					"<html>\n"
 					"<head>\n"
 					"<meta charset=utf-8/>\n"
+					"<link rel=stylesheet href=log.css/>\n"
 					"<title>Recent updates.</title>\n"
 					"</head>\n<body>\n"
 					"<ul class=commits>\n"

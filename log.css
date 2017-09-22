@@ -1,0 +1,7 @@
+ul.commits {
+		list-style-type: none;
+}
+
+ul.commits div.date {
+		color: olive;
+}
