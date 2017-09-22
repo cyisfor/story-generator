@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 		}
 
 		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
+		int chapspercom = 0;
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -88,6 +89,9 @@ int main(int argc, char *argv[])
 				db_retransaction();
 /*				putchar('\n');
 					exit(23); */
+			}
+			if(++chapspercom == 5) {
+				puts("huh? lots of chapters in this commit...");
 			}
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
