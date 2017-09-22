@@ -30,6 +30,21 @@ int later_branches_last(const void* a, const void* b) {
 	return ta - tb;
 }
 
+struct item {
+	git_commit* commit;
+	git_tree* tree;
+	git_time_t time;	
+	const git_oid* oid;
+};
+
+void freeitem(struct item i) {
+	git_commit_free(i.commit);
+	git_tree_free(i.tree);
+	i.commit = NULL; // debugging
+}
+	
+
+
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
 										 bool (*handle)(const db_oid commit,
@@ -38,20 +53,9 @@ bool git_for_commits(const db_oid until,
 																		git_tree* last,
 																		git_tree* cur)) {
 
-	git_commit** branches = NULL;
+	struct item me = {}
+	struct item* branches = NULL;
 	size_t nbranches = 0;
-
-	struct {
-		git_commit* commit;
-		git_tree* tree;
-		git_time_t time;	
-		const git_oid* oid;
-	} me = {
-			NULL,
-			NULL,
-			0,
-			NULL
-	};
 
 	if(until) {
 		SPAM("until %s\n",db_oid_str(since));
@@ -64,32 +68,33 @@ bool git_for_commits(const db_oid until,
 		git_reference_free(ref);
 	}
 
-	for(;;) {
-		me.time = git_commit_time(me.commit);
-		me.oid = git_commit_id(me.commit);
-		repo_check(git_commit_tree(&me.tree,me.commit));
-		
+	repo_check(git_commit_tree(&me.tree,me.commit));
+	me.time = git_commit_time(me.commit);
+	me.oid = git_commit_id(me.commit);
+	
+	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
 		int i;
 		for(i = 0; i < nparents; ++i) {
-			git_commit* parent = NULL;
-			git_tree* partree;
-			repo_check(git_commit_parent(&parent, me.commit, i));
-
-			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent))) continue;
-			repo_check(git_commit_tree(&partree, parent));
-			// XXX: could save this tree somehow, when parent becomes "me"
+			struct item parent = {};
+			repo_check(git_commit_parent(&parent.commit, me.commit, i));
+			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent.commit))) continue;
+			repo_check(git_commit_tree(&parent.tree, parent));
+			parent.oid = git_commit_id(parent.commit);
+			parent.time = git_commit_time(parent.commit);
 			bool ok = handle(DB_OID(*me.oid),
+											 DB_OID(*parent.oid),
 											 me.time,
 											 partree,
 											 me.tree);
 						 
-			git_tree_free(partree); // see?
-
 			if(!ok) {
-				git_commit_free(parent);
-				for(i=0;i<nbranches;++i)
-					git_commit_free(branches[i]);
+				freeitem(parent);
+				freeitem(me);
+				for(i=0;i<nbranches;++i) {
+					freeitem(branches[i]);
+				}
+				free(branches);
 				return false;
 			}
 			/* note: parents can branch, so nbranches is 3 in that case,
@@ -99,16 +104,14 @@ bool git_for_commits(const db_oid until,
 			branches = realloc(branches,sizeof(*branches)*nbranches);
 			branches[nbranches-1] = parent;
 		}
-		git_tree_free(me.tree);
-		git_commit_free(me.commit);
-		me.commit = NULL; // debugging
+		freeitem(me);
 		// if we pushed all the parents, and still no branches, we're done, yay!
 		if(nbranches == 0) break;
 
 		qsort(branches, nbranches, sizeof(git_commit*), later_branches_last);
 		// branches[nbranches] should be the most recent now.
 		// pop it off, to examine its parents
-		me.commit = branches[--nbranches];
+		me = branches[--nbranches];
 	}
 
 	assert(0 == nbranches);
