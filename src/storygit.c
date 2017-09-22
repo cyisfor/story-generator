@@ -268,7 +268,8 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {
 		case GIT_DELTA_DELETED:
-			return one_file(delta->old_file.path,true);
+			result = one_file(delta->old_file.path,true);
+			return result;
 		case GIT_DELTA_RENAMED:
 			{ result = one_file(delta->old_file.path,true);
 				if(result!=GFC_CONTINUE) return result;
