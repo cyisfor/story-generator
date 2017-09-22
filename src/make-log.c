@@ -34,10 +34,13 @@ int main(int argc, char *argv[])
 		if(last == NULL) {
 			return true;
 		}
-		write(1,LITLEN("<li><div class=date>"));
-		char* s = ctime(&timestamp);
-		write(1,s,strlen(s));
-		write(1,LITLEN("<li></div>\n<ul class=chaps>"));
+		void start(void) {
+			write(1,LITLEN("<li><div class=date>"));
+			char* s = ctime(&timestamp);
+			write(1,s,strlen(s));
+			write(1,LITLEN("<li></div>\n<ul class=chaps>"));
+		}
+		bool started = false;
 
 		bool on_chapter(long int chapnum,
 										bool deleted,
@@ -47,6 +50,11 @@ int main(int argc, char *argv[])
 			identifier story = db_find_story(loc);
 			int num = db_count_chapters(story);
 			if(chapnum == num) return true;
+
+			if(!started) {
+				start();
+				started = true;
+			}
 
 			write(1,LITLEN("<li><a href=\""));
 			write(1,loc.s,loc.l);
@@ -66,8 +74,8 @@ int main(int argc, char *argv[])
 			write(1,LITLEN("</a></li>\n"));
 		}
 		bool ret = git_for_chapters_changed(last,cur,on_chapter);
-
-		write(1,LITLEN("</ul>\n</li>"));
+		if(started)
+			write(1,LITLEN("</ul>\n</li>"));
 	}
 
 	git_for_commits(git_object_id(until)->id,NULL,on_commit);
