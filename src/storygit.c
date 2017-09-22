@@ -92,17 +92,50 @@ bool git_for_commits(const db_oid until,
 		for(i = 0; i < nparents; ++i) {
 			struct item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
-			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent.commit))) continue;
-			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			parent.oid = git_commit_id(parent.commit);
+
+			if(until && git_oid_equal(GIT_OID(until), parent.oid)) continue;
+
 			parent.time = git_commit_time(parent.commit);
-			bool ok = handle(DB_OID(*me.oid),
+			
+			/* When two branches converge, the timestamp of the original common commit will be
+				 earlier than any of the timestamps along either branch, so if we find the earlier
+				 commits in all branches, by the time we hit the convergence, the common commit
+				 will NECESSARILY be in the todo list, since it can't be processed until all
+				 later commits in all branches are processed. So we just have to avoid dupes
+				 in the todo list, and the nodes will all be visited exactly once.
+
+				 Could binary search since it's sorted, but unless you're a horrible team,
+				 there will only be one branch per coder, and 1-3 for development, so
+				 only binary search if nbranches is large enough for the overhead of that
+				 search to be lower.
+			*/
+
+			bool alreadyhere = false;
+			if(nbranches < 10) {
+				int j=0;
+				
+				for(;j<nbranches;++j) {
+					if(git_oid_equal(parent.oid, branches[j].oid)) {
+						git_commit_free(parent.commit);
+						// tree isn't allocated yet
+						parent = branches[j];
+						// WHEN I AM
+						alreadyhere = true;
+						break;
+					}
+				}
+			} else {
+				int j = nbranches / 2;
+
+			repo_check(git_commit_tree(&parent.tree, parent.commit));
+			struct action op = handle(DB_OID(*me.oid),
 											 DB_OID(*parent.oid),
 											 me.time,
 											 parent.tree,
 											 me.tree);
-						 
-			if(!ok) {
+			switch(op) {
+			case STOP:
 				freeitem(parent);
 				freeitem(me);
 				for(i=0;i<nbranches;++i) {
@@ -110,7 +143,12 @@ bool git_for_commits(const db_oid until,
 				}
 				free(branches);
 				return false;
+			case SKIP:
+				freeitem(parent);
+				continue;
 			}
+
+			
 			/* note: parents can branch, so nbranches is 3 in that case,
 				 then 4 if a grandparent branches, etc */
 			
