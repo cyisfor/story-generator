@@ -213,11 +213,13 @@ bool git_for_commits(const db_oid until,
 }
 
 // note: this is the DIFF not the changes of each commit in between.
-bool git_for_chapters_changed(git_tree* from, git_tree* to,
-															bool (*handle)(long int num,
-																						 bool deleted,
-																						 const string location,
-																						 const string name)) {
+enum gfc_action
+git_for_chapters_changed(git_tree* from, git_tree* to,
+												 enum gfc_action
+												 (*handle)(long int num,
+																	 bool deleted,
+																	 const string location,
+																	 const string name)) {
 	if(from == NULL) return true;
 	assert(to != NULL);
 	int file_changed(const git_diff_delta *delta,
@@ -229,7 +231,9 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 		/* either deleted, pass old_file, true
 			 renamed, old_file, true, new_file, false
 			 otherwise, new_file, false */
-		bool one_file(const char* spath, bool deleted) {
+		enum gfc_action
+			one_file(const char* spath, bool deleted)
+		{
 			const string path = {
 				.s = spath,
 				.l = strlen(spath)
@@ -260,8 +264,8 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 		case GIT_DELTA_DELETED:
 			return one_file(delta->old_file.path,true);
 		case GIT_DELTA_RENAMED:
-			{ bool a = one_file(delta->old_file.path,true);
-				if(!a) return false;
+			{ enum gfc_action a = one_file(delta->old_file.path,true);
+				if(a!=GFC_CONTINUE) return a;
 			}
 			// fall through
 		case GIT_DELTA_ADDED:
