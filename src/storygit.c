@@ -77,7 +77,7 @@ bool git_for_commits(const db_oid until,
 	
 	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
-		INFO("%.*s nparents %d\n",sizeof(db_oid),DB_OID(*me.oid),nparents);
+		INFO("%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
 		int i;
 		for(i = 0; i < nparents; ++i) {
 			struct item parent = {};
