@@ -28,58 +28,39 @@ int main(int argc, char *argv[])
 					"<link rel=stylesheet href=log.css />\n"
 					"<title>Recent updates.</title>\n"
 					"</head>\n<body>\n"
-					"<ul class=commits>\n"
+					"<ul class=chaps>\n"
 					));
-	
-	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
-		if(last == NULL) {
-			return true;
+
+	void on_chapter(identifier story,
+									size_t chapnum,
+									const string title,
+									const string location,
+									git_time_t timestamp) {
+		write(1,LITLEN("<li><a href=\""));
+		write(1,location.s,location.l);
+		write(1,LITLEN("/"));
+
+		char destname[0x100] = "index.html";
+		int amt = LITSIZ("index.html");
+		if(chapnum > 1) {
+			amt = snprintf(destname,0x100, "chapter%d.html",chapnum);
+			assert(amt < 0x100);
 		}
-		void start(void) {
-			write(1,LITLEN("<li><div class=date>"));
-			char* s = ctime(&timestamp);
-			write(1,s,strlen(s)-1);
-			write(1,LITLEN("</div>\n<ul class=chaps>"));
-		}
-		bool started = false;
+		write(1,destname,amt);
+		write(1,LITLEN("\" title=\""));
+		char* s = ctime(&timestamp);
+		write(1,s,strlen(s)-1);
+		write(1,LITLEN("\">"));
 
-		bool on_chapter(long int chapnum,
-										bool deleted,
-										const string loc,
-										const string src) {
-			if(deleted) return true;
-			identifier story = db_find_story(loc);
-			int num = db_count_chapters(story);
-			if(chapnum == num) return true;
-
-			if(!started) {
-				start();
-				started = true;
-			}
-
-			write(1,LITLEN("<li><a href=\""));
-			write(1,loc.s,loc.l);
-			write(1,LITLEN("/"));
-
-			char destname[0x100] = "index.html";
-			int amt = LITSIZ("index.html");
-			if(chapnum > 1) {
-				amt = snprintf(destname,0x100, "chapter%d.html",chapnum);
-				assert(amt < 0x100);
-			}
-			write(1,destname,amt);
-			write(1,LITLEN("\">"));
-			write(1,loc.s,loc.l);
-			write(1,LITLEN(" "));
-			write(1,destname,snprintf(destname, 0x100, "%d", chapnum));
-			write(1,LITLEN("</a></li>\n"));
-		}
-		bool ret = git_for_chapters_changed(last,cur,on_chapter);
-		if(started)
-			write(1,LITLEN("</ul>\n</li>"));
+		if(title.s)
+			write(1,title.s,title.l);
+		else
+			write(1,location.s,location.l);
+		
+		write(1,LITLEN("</a></li>"));
 	}
 
-	git_for_commits(git_object_id(until)->id,NULL,on_commit);
+	git_for_recent_chapters(100, on_chapter);
 
 	write(1,LITLEN("</ul></body></html>"));
 	
