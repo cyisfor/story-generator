@@ -282,7 +282,7 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 		sqlite3_bind_int64(insert,2,timestamp);
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
-		INFO("creating story %s: %lu",location.l,location.s,story);
+		INFO("creating story %.*s: %lu",location.l,location.s,story);
 		return story;
 	}
 }
