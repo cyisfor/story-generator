@@ -34,7 +34,10 @@ int main(int argc, char *argv[])
 									const string location,
 									git_time_t timestamp) {
 
-		if(db_in_storycache(cache,story,chapnum)) return;
+		if(db_in_storycache(cache,story,chapnum)) {
+			write(2,LITLEN("yayayay"));
+			return;
+		}
 		
 		write(1,LITLEN("<tr><td>"));
 
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("</td></tr>\n"));
 	}
 
-	db_for_recent_chapters(100, on_chapter);
+	db_for_recent_chapters(10000, on_chapter);
 
 	write(1,LITLEN("</table></body></html>"));
 
