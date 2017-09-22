@@ -25,6 +25,8 @@ int main(int argc, char *argv[])
 		fputs(db_oid_str(parent),stdout);
 		fputs(" -> ",stdout);
 		fputs(db_oid_str(commit),stdout);
+		char buf[0x10];
+		itoa(
 		putchar('\n');
 		return GFC_CONTINUE;
 	}
