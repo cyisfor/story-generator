@@ -1,3 +1,5 @@
+#include "itoa.h"
+
 /* itoa: convert n to characters in s */
 bool itoa(char s[], size_t space, unsigned int n) {
    int i,j;

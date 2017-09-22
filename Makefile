@@ -23,7 +23,7 @@ O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a\
 $(foreach name,$(N),$(eval targets:=$$(targets) $(name)))
 S=$(patsubst %,src/%.c,$N)
 
-N=main storygit repo create db note category.gen
+N=main storygit repo create itoa db note category.gen
 generate: $O
 	$(LINK)
 
@@ -31,15 +31,15 @@ N=make-log db note
 make-log: $O
 	$(LINK)
 
-N=list-commits storygit repo note
+N=list-commits storygit repo note itoa
 list-commits: $O
 	$(LINK)
 
-N=describe db note
+N=describe itoa db note
 describe: $O 
 	$(LINK) -lreadline
 
-N=test_git storygit repo db note
+N=test_git storygit repo itoa db note
 test_git: $O
 	$(LINK)
 
