@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	db_open("generate.sqlite");
 	
 	git_object* until;
-	repo_check(git_revparse_single(&until, repo, "HEAD~128"));
+	repo_check(git_revparse_single(&until, repo, "HEAD~1280"));
 	ensure_eq(git_object_type(until),GIT_OBJ_COMMIT);
 
 	write(1,LITLEN(
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 					"<html>\n"
 					"<head>\n"
 					"<meta charset=utf-8/>\n"
-					"<link rel=stylesheet href=log.css/>\n"
+					"<link rel=stylesheet href=log.css />\n"
 					"<title>Recent updates.</title>\n"
 					"</head>\n<body>\n"
 					"<ul class=commits>\n"
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 			write(1,LITLEN("<li><div class=date>"));
 			char* s = ctime(&timestamp);
 			write(1,s,strlen(s)-1);
-			write(1,LITLEN("</li></div>\n<ul class=chaps>"));
+			write(1,LITLEN("</div>\n<ul class=chaps>"));
 		}
 		bool started = false;
 
