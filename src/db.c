@@ -168,13 +168,18 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	}
 	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert_current, 3, timestamp);
-	BEGIN_TRANSACTION;
+	bool wasintrans = in_trans;
+	if(!in_trans) {
+		BEGIN_TRANSACTION;
+	}
 	db_once(insert_current);
 	if(!saw_commit) {
 		saw_commit = true;
 		db_once(insert_pending);
 	}
-	END_TRANSACTION;
+	if(!wasintrans) {
+		END_TRANSACTION;
+	}
 }
 
 
