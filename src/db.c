@@ -53,7 +53,7 @@ DECLARE_BUILTIN(begin) {
 	db_once(begin_stmt); 
 }
 DECLARE_BUILTIN(commit) {
-	if(--transaction_level != 0) return
+	if(--transaction_level != 0) return;
 	db_once(commit_stmt);
 }
 DECLARE_BUILTIN(rollback) {
