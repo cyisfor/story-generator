@@ -72,7 +72,11 @@ int main(int argc, char *argv[])
 	bool always_finished = false;
 	size_t num = 0;
 	size_t counter = 0;
-	bool on_commit(const db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
+	bool on_commit(const db_oid oid,
+								 const db_oid parent,
+								 git_time_t timestamp, 
+								 git_tree*
+								 last, git_tree* cur) {
 		db_saw_commit(timestamp, oid);
 		if(last == NULL) {
 			return true;
