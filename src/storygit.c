@@ -237,25 +237,25 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 			 renamed, old_file, true, new_file, false
 			 otherwise, new_file, false */
 		
-		enum gfc_action
+		void
 			one_file(const char* spath, bool deleted)
 		{
 			const string path = {
 				.s = spath,
 				.l = strlen(spath)
 			};
-			if(path.l < LITSIZ("a/markup/chapterN.hish")) return GFC_CONTINUE;
+			if(path.l < LITSIZ("a/markup/chapterN.hish")) return;
 			const char* slash = strchr(path.s,'/');
-			if(slash == NULL) return GFC_CONTINUE;
+			if(slash == NULL) return;
 			const char* markup = slash+1;
-			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return GFC_CONTINUE;
-			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return GFC_CONTINUE;
+			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return;
+			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return;
 			const char* num = markup + LITSIZ("markup/chapter");
 			char* end;
 			long int chapnum = strtol(num,&end,10);
 			assert(chapnum != 0);
-			if(path.l-(end-path.s) < LITSIZ(".hish")) return GFC_CONTINUE;
-			if(0!=memcmp(end,LITLEN(".hish"))) return GFC_CONTINUE;
+			if(path.l-(end-path.s) < LITSIZ(".hish")) return;
+			if(0!=memcmp(end,LITLEN(".hish"))) return;
 			// got it!
 
 			const string location = {
@@ -263,15 +263,15 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 				.l = slash-path.s
 			};
 
-			return handle(chapnum, deleted, location, path);
+			result = handle(chapnum, deleted, location, path);
 		}
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {
 		case GIT_DELTA_DELETED:
-			result = one_file(delta->old_file.path,true);
+			one_file(delta->old_file.path,true);
 			return result;
 		case GIT_DELTA_RENAMED:
-			{ result = one_file(delta->old_file.path,true);
+			{ one_file(delta->old_file.path,true);
 				if(result!=GFC_CONTINUE) return result;
 			}
 			// fall through
@@ -279,7 +279,7 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 		case GIT_DELTA_MODIFIED:
 		case GIT_DELTA_COPIED:
 			// note: with copied, the old file didn't change, so disregard it.
-			result = one_file(delta->new_file.path,false);
+			one_file(delta->new_file.path,false);
 			return result;
 		default:
 			ERROR("bad delta status %d",delta->status);
