@@ -24,11 +24,6 @@
 	 replace most recent with parent, or none
 */
 
-int later_branches_last(const void* a, const void* b) {
-	git_time_t ta = git_commit_time(*((git_commit**) a));
-	git_time_t tb = git_commit_time(*((git_commit**) b));
-	return ta - tb;
-}
 
 struct item {
 	git_commit* commit;
@@ -36,6 +31,14 @@ struct item {
 	git_time_t time;	
 	const git_oid* oid;
 };
+
+
+int later_branches_last(const void* a, const void* b) {
+	printf("um %p %p\n",a,b);
+	git_time_t ta = git_commit_time(((struct item*) a)->commit);
+	git_time_t tb = git_commit_time(((struct item*) b)->commit);
+	return ta - tb;
+}
 
 void freeitem(struct item i) {
 	git_commit_free(i.commit);
@@ -108,7 +111,7 @@ bool git_for_commits(const db_oid until,
 		// if we pushed all the parents, and still no branches, we're done, yay!
 		if(nbranches == 0) break;
 
-		qsort(branches, nbranches, sizeof(git_commit*), later_branches_last);
+		qsort(branches, nbranches, sizeof(*branches), later_branches_last);
 		// branches[nbranches] should be the most recent now.
 		// pop it off, to examine its parents
 		me = branches[--nbranches];
