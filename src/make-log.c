@@ -13,13 +13,8 @@ int main(int argc, char *argv[])
 {
 	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
-	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generate.sqlite");
 	
-	git_object* until;
-	repo_check(git_revparse_single(&until, repo, "HEAD~1280"));
-	ensure_eq(git_object_type(until),GIT_OBJ_COMMIT);
-
 	write(1,LITLEN(
 					"<!DOCTYPE html>\n"
 					"<html>\n"

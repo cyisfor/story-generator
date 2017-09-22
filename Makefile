@@ -13,7 +13,7 @@ LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 derp: setup
 	$(MAKE) all
 
-all: generate test_git describe make-log
+all: generate test_git describe make-log list-commits
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 COMPILE=$(CC) $(CFLAGS) -c -o $@ $<
@@ -27,8 +27,12 @@ N=main storygit repo create db note category.gen
 generate: $O
 	$(LINK)
 
-N=make-log storygit repo db note
+N=make-log db note
 make-log: $O
+	$(LINK)
+
+N=list-commits storygit repo note
+list-commits: $O
 	$(LINK)
 
 N=describe db note
