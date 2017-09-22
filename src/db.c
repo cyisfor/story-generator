@@ -50,14 +50,14 @@ static int transaction_level = 0;
 
 DECLARE_BUILTIN(begin) {
 	if(++transaction_level != 1) return;
-	SPAM("begin");
+	//SPAM("begin");
 
 	db_once(begin_stmt);
 }
 DECLARE_BUILTIN(commit) {
 	ensure_ne(transaction_level,0);
 	if(--transaction_level != 0) return;
-	SPAM("commit");
+//	SPAM("commit");
 	db_once(commit_stmt);
 }
 DECLARE_BUILTIN(rollback) {

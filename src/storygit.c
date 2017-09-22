@@ -77,7 +77,6 @@ bool git_for_commits(const db_oid until,
 				// skip merge commits because they SUCK
 				INFO("skipping merge commit %s",git_oid_tostr_s(&commit_oid));
 				git_commit_free(commit);
-				if(last) git_tree_free(last);
 				continue;
 			}
 			repo_check(git_commit_tree(&cur,commit));
