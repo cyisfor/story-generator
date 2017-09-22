@@ -36,17 +36,23 @@ int main(int argc, char *argv[])
 									const string title,
 									const string location,
 									git_time_t timestamp) {
-		write(1,LITLEN("<tr><td><a href=\""));
+		write(1,LITLEN("<tr><td>"));
+
+		char num[0x10];
+		int numlen = snprintf(destname,0x100, "%d",chapnum);
+		write(1, num, numlen);
+
+		write(1,LITLEN("</td><td><a href=\""));
 		write(1,location.s,location.l);
 		write(1,LITLEN("/"));
 
-		char destname[0x100] = "index.html";
-		int amt = LITSIZ("index.html");
-		if(chapnum > 1) {
-			amt = snprintf(destname,0x100, "chapter%d.html",chapnum);
-			assert(amt < 0x100);
+		if(chapnum == 1) {
+			write(1,LITLEN("index.html"));
+		} else {
+			write(1,LITLEN("chapter"));
+			write(1,num, numlen);
+			write(1,LITLEN(".html"));
 		}
-		write(1,destname,amt);
 		write(1,LITLEN("\">"));
 
 		if(title.s)
@@ -57,9 +63,6 @@ int main(int argc, char *argv[])
 		write(1, LITLEN("</a></td><td>"));
 		write(1, destname, snprintf(destname,0x100, "%d",chapnum));
 		
-		write(1,LITLEN("</td><td>"));
-		char* s = ctime(&timestamp);
-		write(1,s,strlen(s)-1);
 		write(1,LITLEN("</tr>\n"));
 	}
 
