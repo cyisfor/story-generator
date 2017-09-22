@@ -49,11 +49,13 @@ static int transaction_level = 0;
 	void db_ ## name(void)
 
 DECLARE_BUILTIN(begin) {
+	SPAM("begin %d",transaction_level);
 	if(++transaction_level != 1) return;
 	db_once(begin_stmt);
 }
 DECLARE_BUILTIN(commit) {
 	ensure_ne(transaction_level,0);
+	SPAM("commit %d",transaction_level);
 	if(--transaction_level != 0) return;
 	db_once(commit_stmt);
 }
