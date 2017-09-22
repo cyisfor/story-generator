@@ -56,7 +56,7 @@ void freeitem(struct item i) {
 
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
-										 enum GFC_ACTION (*handle)
+										 enum gfc_action (*handle)
 										 (const db_oid commit,
 											const db_oid parent,
 											git_time_t timestamp,

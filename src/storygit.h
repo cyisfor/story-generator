@@ -1,3 +1,6 @@
+#ifndef _STORYGIT_H_
+#define _STORYGIT_H_
+
 #include "string.h"
 #include "db.h"
 
@@ -21,9 +24,12 @@
 	 as well as a tree of the previous commit (which will be NULL for the first commit)
 	 commits are received in default order, which is ordered by time.
 */
+
+enum gfc_action { GFC_CONTINUE, GFC_STOP, GFC_SKIP };
+
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
-										 bool (*handle)(const db_oid commit,
+										 enum gfc_action (*handle)(const db_oid commit,
 																		const db_oid parent,
 																		git_time_t timestamp,
 																		git_tree* last,
@@ -47,3 +53,7 @@ bool git_for_chapters_changed(git_tree* from, git_tree* to,
 																						 bool deleted,
 																						 const string location,
 																						 const string name));
+
+
+
+#endif /* _STORYGIT_H_ */
