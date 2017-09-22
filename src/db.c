@@ -348,7 +348,7 @@ struct storycache* db_start_storycache(void) {
 			"story INTEGER,\n"
 			"chapter INTEGER,\n"
 			"PRIMARY KEY(story,chapter)) WITHOUT ROWID";
-		itoa(++counter,sql+sizeof(PREFIX)-1);
+		ensure_eq(true,itoa(sql+sizeof(PREFIX)-1,4,++counter));
 		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &create, NULL));
 		assert(create != NULL);
@@ -365,7 +365,7 @@ struct storycache* db_start_storycache(void) {
 	{
 		sqlite3_stmt* create;
 		char sql[] = PREFIX "XXXX WHERE story = ? AND chapter = ?";
-		itoa(counter,sql+sizeof(PREFIX)-1);
+		ensure_eq(true,itoa(sql+sizeof(PREFIX)-1, 4, counter);
 		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql)-1, &cache->find, NULL));
 		assert(cache->find != NULL);
@@ -376,7 +376,7 @@ struct storycache* db_start_storycache(void) {
 #define PREFIX "INSERT INTO storycache"
 	{
 		char sql[] = PREFIX "XXXX (story,chapter) VALUES (?,?)";
-		itoa(counter,sql+sizeof(PREFIX)-1);
+		ensure_eq(true,itoa(sql+sizeof(PREFIX)-1, 4, counter);
 		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &cache->insert, NULL));
 		assert(cache->insert != NULL);
