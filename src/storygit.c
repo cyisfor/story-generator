@@ -24,10 +24,10 @@
 	 replace most recent with parent, or none
 */
 
-int later_branches_first(const void* a, const void* b) {
+int later_branches_last(const void* a, const void* b) {
 	git_time_t ta = git_commit_time((git_commit*) a);
 	git_time_t tb = git_commit_time((git_commit*) b);
-	return tb - ta;
+	return ta - tb;
 }
 
 bool git_for_commits(const db_oid until,
@@ -107,7 +107,7 @@ bool git_for_commits(const db_oid until,
 		qsort(branches, nbranches, sizeof(git_commit*), later_branches_last);
 		// branches[nbranches] should be the most recent now.
 		// pop it off, to examine its parents
-		me = branches[--nbranches];
+		me.commit = branches[--nbranches];
 	}
 
 	assert(0 == nbranches);
