@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
 		fwrite(buf,itoa(buf,0x10,++counter),1,stderr);
 		fputc('\n',stderr);
 
+		fputs(ctime(&timestamp),stderr);
+		fputc('\n',stderr);
+		
 		enum gfc_action on_chapter(
 			long int chapnum,
 			bool deleted,
