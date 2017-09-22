@@ -237,24 +237,25 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 			 renamed, old_file, true, new_file, false
 			 otherwise, new_file, false */
 		
-		bool one_file(const char* spath, bool deleted)
+		enum gfc_action
+			one_file(const char* spath, bool deleted)
 		{
 			const string path = {
 				.s = spath,
 				.l = strlen(spath)
 			};
-			if(path.l < LITSIZ("a/markup/chapterN.hish")) return 0;
+			if(path.l < LITSIZ("a/markup/chapterN.hish")) return GFC_CONTINUE;
 			const char* slash = strchr(path.s,'/');
-			if(slash == NULL) return 0;
+			if(slash == NULL) return GFC_CONTINUE;
 			const char* markup = slash+1;
-			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return 0;
-			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return 0;
+			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return GFC_CONTINUE;
+			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return GFC_CONTINUE;
 			const char* num = markup + LITSIZ("markup/chapter");
 			char* end;
 			long int chapnum = strtol(num,&end,10);
 			assert(chapnum != 0);
-			if(path.l-(end-path.s) < LITSIZ(".hish")) return 0;
-			if(0!=memcmp(end,LITLEN(".hish"))) return 0;
+			if(path.l-(end-path.s) < LITSIZ(".hish")) return GFC_CONTINUE;
+			if(0!=memcmp(end,LITLEN(".hish"))) return GFC_CONTINUE;
 			// got it!
 
 			const string location = {
@@ -262,7 +263,7 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 				.l = slash-path.s
 			};
 
-			return handle(chapnum, deleted, location, path) ? 0 : -1;
+			return handle(chapnum, deleted, location, path);
 		}
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {
