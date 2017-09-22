@@ -333,6 +333,26 @@ struct storycache {
 	sqlite3_stmt* insert;
 };
 
+/* itoa: convert n to characters in s */
+void itoa(unsigned int n, char s[])
+{
+   int i,j;
+
+   i = 0;
+   do {  /* generate digits in reverse order */
+      s[i++] = n % 10 + '0';  /* get next digit */
+			assert(i < 4);
+   } while ((n /= 10) > 0);   /* delete it */
+
+	 // reverse
+	 for(j=0;j<i/2;++j) {
+		 char t = s[j];
+		 s[j] = s[i-j];
+		 s[i-j] = t;
+	 }
+}
+
+
 struct storycache* db_start_storycache(void) {
 	static int counter = 0;
 #define PREFIX "CREATE TEMPORARY TABLE storycache"
@@ -342,10 +362,8 @@ struct storycache* db_start_storycache(void) {
 			"story INTEGER,"
 			"chapter INTEGER,"
 			"PRIMARY_KEY(story,chapter)) WITHOUT ROWID";
-		ssize_t amt =
-			snprintf(sql+sizeof(PREFIX)-1,
-							 4,
-							 "%d",++counter);
+		itoa(++counter,sql+sizeof(PREFIX)-1);
+		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &create, NULL));
 		assert(create != NULL);
 
@@ -356,29 +374,29 @@ struct storycache* db_start_storycache(void) {
 
 	struct storycache* cache = calloc(1, sizeof(struct storycache));
 	{
+
 #define PREFIX "SELECT 1 FROM storycache"
+	{
+		sqlite3_stmt* create;
 		char sql[] = PREFIX "XXXX WHERE story = ? AND chapter = ?";
-		ssize_t amt =
-		snprintf(sql+sizeof(PREFIX)-1,
-					 sizeof(sql)-sizeof(PREFIX),
-					 "%d",counter);
-#undef PREFIX
-		db_check(sqlite3_prepare_v2(db, sql, amt, &cache->find, NULL));
+		itoa(counter,sql+sizeof(PREFIX)-1);
+		// the XXX stay, so it's still sizeof(sql)
+		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql)-1, &cache->find, NULL));
 		assert(cache->find != NULL);
 		//add_stmt(cache->find); ehhh....
 	}
-	{
-#define PREFIX "INSERT INTO storycache"
-		char sql[] = PREFIX "XXXX (story,chapter) VALUES (?,?)";
-		ssize_t amt =
-			snprintf(sql+sizeof(PREFIX)-1,
-							 sizeof(sql)-sizeof(PREFIX),
-							 "%d",counter);
 #undef PREFIX
-		db_check(sqlite3_prepare_v2(db, sql, amt, &cache->insert, NULL));
+
+#define PREFIX "INSERT INTO storycache"
+	{
+		char sql[] = PREFIX "XXXX (story,chapter) VALUES (?,?)";
+		itoa(counter,sql+sizeof(PREFIX)-1);
+		// the XXX stay, so it's still sizeof(sql)
+		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &cache->insert, NULL));
 		assert(cache->insert != NULL);
 		//add_stmt(cache->insert); ehhh....
 	}
+#undef PREFIX
 	return cache;
 }
 
