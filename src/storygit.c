@@ -89,7 +89,7 @@ git_for_commits(const db_oid until,
 	
 	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
-		INFO("%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
+		//INFO("%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
 		int i;
 		for(i = 0; i < nparents; ++i) {
 			struct item parent = {};
@@ -188,7 +188,7 @@ git_for_commits(const db_oid until,
 			// default:
 
 			if(alreadyhere) {
-				INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
+				//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
 				continue;
 			}
 			/* note: parents can branch, so ntodo is 3 in that case,
