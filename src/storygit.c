@@ -67,11 +67,15 @@ bool git_for_commits(const db_oid until,
 	bool op() {
 		git_time_t timestamp = 0;
 		for(;;) {
-			if(0!=git_revwalk_next(&commit_oid, walker)) return true;
+			if(0!=git_revwalk_next(&commit_oid, walker)) {
+				if(last) git_tree_free(last);
+				return true;
+			}
 			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 			if(1!=git_commit_parentcount(commit)) {
 				git_commit_free(commit);
+				if(last) git_tree_free(last);
 				return true;
 			}
 			repo_check(git_commit_tree(&cur,commit));
@@ -87,7 +91,7 @@ bool git_for_commits(const db_oid until,
 			if(timestamp < last_timestamp) {
 				// we missed the last commit we saw!
 				git_commit_free(commit);
-				git_tree_free(last);
+				if(last) git_tree_free(last);
 				return true;
 			}
 			git_commit_free(commit);
