@@ -357,11 +357,12 @@ struct storycache* db_start_storycache(void) {
 #define PREFIX "CREATE TEMPORARY TABLE storycache"
 	{
 		sqlite3_stmt* create;
-		char sql[] = PREFIX "XXXX ("
-			"story INTEGER,"
-			"chapter INTEGER,"
+		char sql[] = PREFIX "XXXX (\n"
+			"story INTEGER,\n"
+			"chapter INTEGER,\n"
 			"PRIMARY_KEY(story,chapter)) WITHOUT ROWID";
 		itoa(++counter,sql+sizeof(PREFIX)-1);
+		puts(sql);
 		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &create, NULL));
 		assert(create != NULL);
@@ -372,7 +373,7 @@ struct storycache* db_start_storycache(void) {
 #undef PREFIX
 
 	struct storycache* cache = calloc(1, sizeof(struct storycache));
-	{
+
 
 #define PREFIX "SELECT 1 FROM storycache"
 	{
