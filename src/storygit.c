@@ -56,11 +56,12 @@ void freeitem(struct item i) {
 
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
-										 bool (*handle)(const db_oid commit,
-																		const db_oid parent,
-																		git_time_t timestamp,
-																		git_tree* last,
-																		git_tree* cur)) {
+										 enum GFC_ACTION (*handle)
+										 (const db_oid commit,
+											const db_oid parent,
+											git_time_t timestamp,
+											git_tree* last,
+											git_tree* cur)) {
 
 	struct item me = {};
 	struct item* todo = NULL;
@@ -158,13 +159,13 @@ bool git_for_commits(const db_oid until,
 			}
 
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
-			struct action op = handle(DB_OID(*me.oid),
+			enum gfc_action op = handle(DB_OID(*me.oid),
 											 DB_OID(*parent.oid),
 											 me.time,
 											 parent.tree,
 											 me.tree);
 			switch(op) {
-			case STOP:
+			case GFC_STOP:
 				freeitem(parent);
 				freeitem(me);
 				for(i=0;i<ntodo;++i) {
@@ -172,7 +173,7 @@ bool git_for_commits(const db_oid until,
 				}
 				free(todo);
 				return false;
-			case SKIP:
+			case GFC_SKIP:
 				freeitem(parent);
 				if(alreadyhere) {
 					// ugh... need to remove this from the list
@@ -182,7 +183,8 @@ bool git_for_commits(const db_oid until,
 					}
 				}
 				continue;
-			}
+			};
+			// default:
 
 			if(alreadyhere) {
 				INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
