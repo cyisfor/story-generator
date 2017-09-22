@@ -28,7 +28,7 @@ generate: $O
 	$(LINK)
 
 N=make-log storygit repo db note
-make-log $O
+make-log: $O
 	$(LINK)
 
 N=describe db note

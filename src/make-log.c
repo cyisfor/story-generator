@@ -7,6 +7,7 @@
 
 int main(int argc, char *argv[])
 {
+	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generate.sqlite");
@@ -14,8 +15,6 @@ int main(int argc, char *argv[])
 	git_object* until;
 	repo_check(git_revparse_single(&until, repo, "HEAD~128"));
 	ensure_eq(git_object_type(until),GIT_OBJ_COMMIT);
-
-	db_descending = true;
 
 	write(1,LITLEN(
 					"<!DOCTYPE html>\n"
@@ -40,10 +39,10 @@ int main(int argc, char *argv[])
 										bool deleted,
 										const string loc,
 										const string src) {
-			if(deleted) return;
+			if(deleted) return true;
 			identifier story = db_find(loc);
 			int num = db_count_chapters(story);
-			if(chapnum == num) return;
+			if(chapnum == num) return true;
 
 			write(1,LITLEN("<li><a href=\""));
 			write(1,loc.s,loc.l);
