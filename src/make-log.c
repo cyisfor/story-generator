@@ -1,0 +1,75 @@
+#include "storygit.h"
+#include "repo.h"
+#include "ensure.h"
+#include "db.h"
+
+#include <sys/stat.h>
+
+int main(int argc, char *argv[])
+{
+	while(0 != stat("code",&info)) ensure0(chdir(".."));
+	repo_check(repo_discover_init(LITLEN(".git")));
+	db_open("generate.sqlite");
+	
+	git_object* until;
+	repo_check(git_revparse_single(&until, repo, "HEAD~128"));
+	ensure_eq(git_object_type(until),GIT_OBJ_COMMIT);
+
+	db_descending = true;
+
+	write(1,LITLEN(
+					"<!DOCTYPE html>\n"
+					"<html>\n"
+					"<head>\n"
+					"<meta charset=utf-8/>\n"
+					"<title>Recent updates.</title>\n"
+					"</head>\n<body>\n"
+					"<ul class=commits>\n"
+					));
+	
+	bool on_commit(db_oid oid, git_time_t timestamp, git_tree* last, git_tree* cur) {
+		if(last == NULL) {
+			return true;
+		}
+		write(1,LITLEN("<li><div class=date>"));
+		char* s = ctime(&timestamp);
+		write(1,s,strlen(s));
+		write(1,LITLEN("<li></div>\n<ul class=chaps>"));
+
+		bool on_chapter(long int chapnum,
+										bool deleted,
+										const string loc,
+										const string src) {
+			if(deleted) return;
+			identifier story = db_find(loc);
+			int num = db_count_chapters(story);
+			if(chapnum == num) return;
+
+			write(1,LITLEN("<li><a href=\""));
+			write(1,loc.s,loc.l);
+			write(1,LITLEN("/"));
+
+			char destname[0x100] = "index.html";
+			int amt = LITSIZ("index.html");
+			if(chapter > 1) {
+				amt = snprintf(destname,0x100, "chapter%d.html",chapter);
+				assert(amt < 0x100);
+			}
+			write(1,destname,amt);
+			write(1,LITLEN("\">"));
+			write(1,loc.s,loc.l);
+			write(1,LITLEN(" "));
+			write(1,destname,snprintf(destname, "%d", chapnum));
+			write(1,LITLEN("</a></li>\n"));
+		}
+		bool ret = git_for_chapters_changed(last,cur,on_chapter);
+
+		write(1,LITLEN("</ul>\n</li>"));
+	}
+
+	git_for_commits(until,NULL,on_commit);
+
+	write(1,LITLEN("</ul></body></html>"));
+	
+	return 0;
+}
