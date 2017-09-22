@@ -27,7 +27,7 @@ N=main storygit repo create itoa db note category.gen
 generate: $O
 	$(LINK)
 
-N=make-log db note
+N=make-log itoa db note
 make-log: $O
 	$(LINK)
 
