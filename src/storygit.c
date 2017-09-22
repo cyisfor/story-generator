@@ -112,21 +112,48 @@ bool git_for_commits(const db_oid until,
 			*/
 
 			bool alreadyhere = false;
-			if(nbranches < 10) {
-				int j=0;
-				
-				for(;j<nbranches;++j) {
+			void findit_sametime(int j) {
+				do {
 					if(git_oid_equal(parent.oid, branches[j].oid)) {
 						git_commit_free(parent.commit);
 						// tree isn't allocated yet
 						parent = branches[j];
 						// WHEN I AM
 						alreadyhere = true;
-						break;
+					}
+					if(++j==nbranches) break;
+				} while(parent.time == nbranches[j].time);
+			}
+			if(nbranches < 10) {
+				void findit(void) {
+					int j=0;
+					for(;j<nbranches;++j) {
+						if(parent.time == nbranches[j].time) {
+							return findit_sametime(j);
+						}
 					}
 				}
+				// WHEN I AM
+				findit();
 			} else {
-				int j = nbranches / 2;
+				void findit(void) {
+					int j = nbranches >> 1;
+					int dj = j >> 1;
+					do {
+						if(branches[j].time == parent.time) {
+							return findit_sametime(j);
+						}
+						// sorted from earlier to later...
+						if(branches[j].time > parent.time) {
+							j -= dj;
+						} else {
+							j += dj;
+						}
+						dj >>= 1;
+					} while(dj > 0);
+				}
+				findit();
+			}
 
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			struct action op = handle(DB_OID(*me.oid),
@@ -148,12 +175,13 @@ bool git_for_commits(const db_oid until,
 				continue;
 			}
 
-			
+			if(alreadyhere) continue;
 			/* note: parents can branch, so nbranches is 3 in that case,
 				 then 4 if a grandparent branches, etc */
 			
 			++nbranches;
 			branches = realloc(branches,sizeof(*branches)*nbranches);
+			//if(alreadyhere) blah blah meh
 			branches[nbranches-1] = parent;
 		}
 		freeitem(me);
