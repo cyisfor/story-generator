@@ -3,6 +3,8 @@
 #include "ensure.h"
 #include "repo.h"
 #include "storygit.h"
+#include "itoa.h"
+
 #include <unistd.h> // chdir
 
 #include <stdio.h>
@@ -28,7 +30,7 @@ int main(int argc, char *argv[])
 		putchar(' ');
 		char buf[0x10];
 		size_t derp = itoa(buf,0x10,++counter);
-		printf("\nDERP %d\n",derp);
+		printf("\nDERP %d %.*s\n",counter,derp,buf);
 		fwrite(buf,derp,1,stdout);
 		putchar('\n');
 		return GFC_CONTINUE;

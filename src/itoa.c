@@ -13,8 +13,8 @@ size_t itoa(char s[], size_t space, unsigned int n) {
 	 // reverse
 	 for(j=0;j<i/2;++j) {
 		 char t = s[j];
-		 s[j] = s[i-j];
-		 s[i-j] = t;
+		 s[j] = s[i-j-1];
+		 s[i-j-1] = t;
 	 }
 	 return i;
 }
