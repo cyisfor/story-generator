@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 					exit(23); */
 			}
 			if(++chapspercom == 5) {
-				puts("huh? lots of chapters in this commit...");
+				WARN("huh? lots of chapters in this commit...");
 			}
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
