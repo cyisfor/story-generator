@@ -362,7 +362,6 @@ struct storycache* db_start_storycache(void) {
 			"chapter INTEGER,\n"
 			"PRIMARY KEY(story,chapter)) WITHOUT ROWID";
 		itoa(++counter,sql+sizeof(PREFIX)-1);
-		puts(sql);
 		// the XXX stay, so it's still sizeof(sql)
 		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &create, NULL));
 		assert(create != NULL);
@@ -438,10 +437,10 @@ void db_for_recent_chapters(int limit,
 /*							 "WHERE "
 							 "(select finished from stories where stories.id = story) OR "
 							 "chapter < (select count(1) from chapters as sub where sub.story = chapters.story) "*/
-							 "ORDER BY timestamp DESC LIMIT ?");
+							 "ORDER BY timestamp DESC");
 	RESETTING(find) int res;
 
-	sqlite3_bind_int(find,1,limit);
+//	sqlite3_bind_int(find,1,limit);
 
 	for(;;) {
 		res = db_check(sqlite3_step(find));
