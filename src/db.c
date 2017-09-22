@@ -334,8 +334,7 @@ struct storycache {
 };
 
 /* itoa: convert n to characters in s */
-void itoa(unsigned int n, char s[])
-{
+void itoa(unsigned int n, char s[]) {
    int i,j;
 
    i = 0;
