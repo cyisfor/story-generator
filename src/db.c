@@ -50,16 +50,17 @@ static int transaction_level = 0;
 
 DECLARE_BUILTIN(begin) {
 	if(++transaction_level != 1) return;
-	db_once(begin_stmt); 
+	db_once(begin_stmt);
 }
 DECLARE_BUILTIN(commit) {
+	ensure_ne(transaction_level,0);
 	if(--transaction_level != 0) return;
 	db_once(commit_stmt);
 }
 DECLARE_BUILTIN(rollback) {
-	if(!in_trans) return;
-	db_once(commit_stmt);
-	in_trans = false;
+	ensure_ne(transaction_level,0);
+	if(--transaction_level != 0) return;
+	db_once(rollback_stmt);
 }
 
 /* since sqlite sucks, have to malloc copies of pointers to all statements,
@@ -598,16 +599,24 @@ void db_set_chapters(identifier story, size_t numchaps) {
 }
 
 void db_transaction(void (*run)(void)) {
-	if(in_trans) return run();
-	db_begin();
+	if(transaction_level > 0) return run();
+	db_once(begin_stmt);
+	transaction_level = 1;
 	run();
-	db_commit();
+	ensure_eq(transaction_level, 1);
+	db_once(commit_stmt);
+	transaction_level = 0;
 }
 
 void db_retransaction(void) {
-	if(in_trans)
-		db_commit();
-	db_begin();
+	if(transaction_level == 0) {
+		db_once(begin_stmt);
+		transaction_level = 1;
+	} else {
+		// NOT db_commit
+		db_once(commit_stmt);
+		db_once(begin_stmt);
+	}
 }
 
 
