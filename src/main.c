@@ -76,13 +76,11 @@ int main(int argc, char *argv[])
 		const db_oid oid,
 		const db_oid parent,
 		git_time_t timestamp, 
-		git_tree*
-		last, git_tree* cur)
+		git_tree* last,
+		git_tree* cur)
 	{	
 		db_saw_commit(timestamp, oid);
-		if(last == NULL) {
-			return GFC_CONTINUE;
-		}
+		assert(last != NULL);
 
 		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
 		int chapspercom = 0;
