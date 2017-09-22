@@ -103,7 +103,7 @@ void db_begin(void);
 void db_commit(void);
 void db_rollback(void);
 
-#define BEGIN_TRANSACTION db_begin()
+#define BEGIN_TRANSACTION INFO("BEGTRANS"); db_begin()
 #define END_TRANSACTION INFO("ENDTRANS"); db_commit()
 
 #define CPPSUX(a,b) a ## b
