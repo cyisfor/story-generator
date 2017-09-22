@@ -15,99 +15,103 @@
 #define LITSIZ(a) (sizeof(a)-1)
 #define LITLEN(a) a,LITSIZ(a)
 
+/* SIGH
+	 we need to do a special revwalk, because revwalk gimps out on diffs between merges.
+	 algorithm:
+	 if no parent, done
+	 if single parent, diff then repeat for parent
+	 if multiple parents, push left + right, then diff merge with most recent one
+	 replace most recent with parent, or none
+*/
+
+int later_branches_first(const void* a, const void* b) {
+	git_time_t ta = git_commit_time((git_commit*) a);
+	git_time_t tb = git_commit_time((git_commit*) b);
+	return tb - ta;
+}
+
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
 										 bool (*handle)(db_oid commit,
 																		git_time_t timestamp,
 																		git_tree* last,
 																		git_tree* cur)) {
-	git_revwalk* walker=NULL;
-	repo_check(git_revwalk_new(&walker, repo));
 
-	// XXX: do we need to specify GIT_SORT_TIME or is that just for weird merge branch commits?
-	git_revwalk_sorting(walker, GIT_SORT_TIME);
-	
-	// XXX: todo revparse HEAD~10 etc
-	if(since) {
-		SPAM("since %s\n",db_oid_str(since));
-		repo_check(git_revwalk_push(walker,GIT_OID(since)));
-	} else {
-		repo_check(git_revwalk_push_head(walker));
-	}
+	git_commit** branches = NULL;
+	size_t nbranches = 0;
 
-	git_time_t last_timestamp = 0;
+	struct {
+		git_commit* commit;
+		git_tree* tree;
+		git_time_t time;	
+		git_oid* oid;
+	} me = {
+			NULL,
+			NULL,
+			0,
+			NULL
+	};
+
 	if(until) {
-		// IMPORTANT: be sure to go 1 past this in the commit log
-		// since changes are from old->new, so it needs a starting old state.
-		/* XXX: this is overcomplicated... */
-		git_revwalk* derper=NULL;
-		repo_check(git_revwalk_new(&derper, repo));
-		git_oid derp = *(GIT_OID(until));
-		repo_check(git_revwalk_push(derper,&derp));
-		git_oid test;
-		// first one is the one we pushed, so 2 to go back 1
-		if(0==git_revwalk_next(&test, derper) &&
-			 0==git_revwalk_next(&test, derper)) {
-			git_commit* commit = NULL;
-			// an older one exists, yay.
-			repo_check(git_revwalk_hide(walker,&test));
-			// get the timestamp, to stop if we miss the commit
-			repo_check(git_commit_lookup(&commit, repo, &test));
-			last_timestamp = git_commit_time(commit);
-		} else {
-			// no older version, we're going back to the beginning.
-		}
-		git_revwalk_free(derper);
+		SPAM("until %s\n",db_oid_str(since));
+		repo_check(git_commit_lookup(&me.commit, repo, GIT_OID(until)));
+	} else {
+		git_reference* ref;
+		repo_check(git_repository_head(&ref, repo)); // this resolves the reference
+		const git_oid * oid = git_reference_target(ref);
+		repo_check(git_commit_lookup(&me.commit, repo, oid));
+		git_reference_free(ref);
 	}
-	
-	git_commit* commit = NULL;
-	git_tree* last = NULL;
-	git_tree* cur = NULL;
-	git_oid commit_oid;
-	bool op() {
-		git_time_t timestamp = 0;
-		for(;;) {
-			if(0!=git_revwalk_next(&commit_oid, walker)) {
-				if(last) git_tree_free(last);
-				return true;
-			}
-			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
-			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
-#if 0
-			if(1!=git_commit_parentcount(commit)) {
-				// skip merge commits because they SUCK
-				INFO("skipping merge commit %s",git_oid_tostr_s(&commit_oid));
-				git_commit_free(commit);
-				continue;
-			}
-#endif
-			repo_check(git_commit_tree(&cur,commit));
-			if(timestamp == 0) {
-				// eh, duplicate one timestamp I guess
-				timestamp = git_commit_time(commit);
-			}
-			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) {
-				git_commit_free(commit);
-				git_tree_free(cur);
-				if(last) git_tree_free(last);
+
+	for(;;) {
+		me.time = git_commit_time(me);
+		me.oid = git_commit_id(me);
+		repo_check(git_commit_tree(&me.tree,me));
+		
+		int nparents = git_commit_parentcount(me.commit);
+		int i;
+		for(i = 0; i < nparents; ++i) {
+			git_commit* parent;
+			repo_check(git_commit_parent(&parent, me.commit, i));
+
+			if(until && git_oid_equal(GIT_OID(until), git_commit_id(parent))) continue;
+			git_tree* partree = git_commit_tree(parent);
+			// XXX: could save this tree somehow, when parent becomes "me"
+			bool ok = handle(me.oid,
+											 me.time,
+												partree,
+												me.tree);
+						 
+			git_tree_free(partree); // see?
+
+			if(!ok) {
+				git_commit_free(parent);
+				for(i=0;i<nbranches;++i)
+					git_commit_free(branches[i]);
 				return false;
 			}
-			git_tree_free(last);
-			last = cur;
-			// timestamp should be for the NEWER tree
-			timestamp = git_commit_time(commit);
-			if(timestamp < last_timestamp) {
-				// we missed the last commit we saw!
-				git_commit_free(commit);
-				git_tree_free(last);
-				return true;
-			}
-			git_commit_free(commit);
+			/* note: parents can branch, so nbranches is 3 in that case,
+				 then 4 if a grandparent branches, etc */
+			
+			++nbranches;
+			branches = realloc(branches,sizeof(*branches)*nbranches);
+			branches[nbranches-1] = parent;
 		}
+		git_tree_free(me.tree);
+		git_commit_free(me.commit);
+		me.commit = NULL; // debugging
+		// if we pushed all the parents, and still no branches, we're done, yay!
+		if(nbranches == 0) break;
+
+		qsort(branches, nbranches, sizeof(git_commit*), later_branches_last);
+		// branches[nbranches] should be the most recent now.
+		// pop it off, to examine its parents
+		me = branches[--nbranches];
 	}
-	bool ret = op();
-	git_revwalk_free(walker);
-	return ret;
+
+	assert(0 == nbranches);
+	assert(me.commit == NULL);
+	return true;
 }
 
 // note: this is the DIFF not the changes of each commit in between.
