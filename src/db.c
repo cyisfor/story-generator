@@ -360,7 +360,7 @@ struct storycache* db_start_storycache(void) {
 		char sql[] = PREFIX "XXXX (\n"
 			"story INTEGER,\n"
 			"chapter INTEGER,\n"
-			"PRIMARY_KEY(story,chapter)) WITHOUT ROWID";
+			"PRIMARY KEY(story,chapter)) WITHOUT ROWID";
 		itoa(++counter,sql+sizeof(PREFIX)-1);
 		puts(sql);
 		// the XXX stay, so it's still sizeof(sql)
