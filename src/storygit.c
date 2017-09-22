@@ -74,6 +74,7 @@ bool git_for_commits(const db_oid until,
 			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
 			if(1!=git_commit_parentcount(commit)) {
+				// skip merge commits because they SUCK
 				git_commit_free(commit);
 				if(last) git_tree_free(last);
 				return true;
@@ -83,7 +84,12 @@ bool git_for_commits(const db_oid until,
 				// eh, duplicate one timestamp I guess
 				timestamp = git_commit_time(commit);
 			}
-			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
+			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) {
+				git_commit_free(commit);
+				git_tree_free(cur);
+				if(last) git_tree_free(last);
+				return false;
+			}
 			git_tree_free(last);
 			last = cur;
 			// timestamp should be for the NEWER tree
@@ -91,7 +97,7 @@ bool git_for_commits(const db_oid until,
 			if(timestamp < last_timestamp) {
 				// we missed the last commit we saw!
 				git_commit_free(commit);
-				if(last) git_tree_free(last);
+				git_tree_free(last);
 				return true;
 			}
 			git_commit_free(commit);
