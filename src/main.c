@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
 		const db_oid parent,
 		git_time_t timestamp, 
 		git_tree*
-		last, git_tree* cur) {
-		
+		last, git_tree* cur)
+	{	
 		db_saw_commit(timestamp, oid);
 		if(last == NULL) {
 			return GFC_CONTINUE;
@@ -87,10 +87,12 @@ int main(int argc, char *argv[])
 		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
 		int chapspercom = 0;
 
-		bool on_chapter(long int chapnum,
-										bool deleted,
-										const string loc,
-										const string src) {
+		enum gfc_action on_chapter(
+			long int chapnum,
+			bool deleted,
+			const string loc,
+			const string src)
+		{
 			if(++num % 100 == 0) {
 				db_retransaction();
 /*				putchar('\n');

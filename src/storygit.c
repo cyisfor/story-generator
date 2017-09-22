@@ -53,14 +53,16 @@ void freeitem(struct item i) {
 }
 	
 
-bool git_for_commits(const db_oid until,
-										 const db_oid since, 
-										 enum gfc_action (*handle)
-										 (const db_oid commit,
-											const db_oid parent,
-											git_time_t timestamp,
-											git_tree* last,
-											git_tree* cur)) {
+enum gfc_action
+git_for_commits(const db_oid until,
+								const db_oid since, 
+								enum gfc_action
+								(*handle)(
+									const db_oid commit,
+									const db_oid parent,
+									git_time_t timestamp,
+									git_tree* last,
+									git_tree* cur)) {
 
 	struct item me = {};
 	struct item* todo = NULL;
@@ -222,6 +224,9 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 																	 const string name)) {
 	if(from == NULL) return true;
 	assert(to != NULL);
+
+	enum gfc_action result = GFC_CONTINUE;
+
 	int file_changed(const git_diff_delta *delta,
 									 float progress,
 									 void *payload) {
@@ -231,8 +236,8 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 		/* either deleted, pass old_file, true
 			 renamed, old_file, true, new_file, false
 			 otherwise, new_file, false */
-		enum gfc_action
-			one_file(const char* spath, bool deleted)
+		
+		bool one_file(const char* spath, bool deleted)
 		{
 			const string path = {
 				.s = spath,
@@ -264,15 +269,16 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 		case GIT_DELTA_DELETED:
 			return one_file(delta->old_file.path,true);
 		case GIT_DELTA_RENAMED:
-			{ enum gfc_action a = one_file(delta->old_file.path,true);
-				if(a!=GFC_CONTINUE) return a;
+			{ result = one_file(delta->old_file.path,true);
+				if(result!=GFC_CONTINUE) return false;
 			}
 			// fall through
 		case GIT_DELTA_ADDED:
 		case GIT_DELTA_MODIFIED:
 		case GIT_DELTA_COPIED:
 			// note: with copied, the old file didn't change, so disregard it.
-			return one_file(delta->new_file.path,false);
+			result = one_file(delta->new_file.path,false);
+			return result==GFC_CONTINUE;
 		default:
 			ERROR("bad delta status %d",delta->status);
 			abort();
@@ -294,5 +300,5 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 	if(0 == git_diff_foreach(diff,
 													 file_changed,
 													 NULL, NULL, NULL, NULL)) return true;
-	return false;
+	return result;
 }
