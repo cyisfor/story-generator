@@ -36,22 +36,25 @@ static int db_once(sqlite3_stmt* stmt) {
 		return db_check(res);
 }
 
+/* A transaction level is VERY important for speed
+	 so you can have "safe" operations that will make
+	 their own transaction, but then when wrapping them
+	 in a transaction, they won't commit early, and be slow
+*/
 
-static bool in_trans = false;
+static int transaction_level = 0;
 
 #define DECLARE_BUILTIN(name)										\
 	sqlite3_stmt *name ## _stmt = NULL;						\
 	void db_ ## name(void)
 
 DECLARE_BUILTIN(begin) {
-	if(in_trans) return;
-	in_trans = true;
+	if(++transaction_level != 1) return;
 	db_once(begin_stmt); 
 }
 DECLARE_BUILTIN(commit) {
-	if(!in_trans) return;
+	if(--transaction_level != 0) return
 	db_once(commit_stmt);
-	in_trans = false;
 }
 DECLARE_BUILTIN(rollback) {
 	if(!in_trans) return;
@@ -130,14 +133,9 @@ void db_close_and_exit(void) {
 
 static int db_once_trans(sqlite3_stmt* stmt) {
 	// because sqlite is retarded, no changes take effect outside a transaction
-	bool wasintrans = in_trans;
-	if(!in_trans) {
-		BEGIN_TRANSACTION;
-	}
+	BEGIN_TRANSACTION;
 	int ret = db_once(stmt);
-	if(!wasintrans) {
-		END_TRANSACTION;
-	}
+	END_TRANSACTION;
 	return ret;
 }
 
@@ -168,18 +166,13 @@ void db_saw_commit(git_time_t timestamp, db_oid commit) {
 	}
 	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
 	sqlite3_bind_int(insert_current, 3, timestamp);
-	bool wasintrans = in_trans;
-	if(!in_trans) {
-		BEGIN_TRANSACTION;
-	}
+	BEGIN_TRANSACTION;
 	db_once(insert_current);
 	if(!saw_commit) {
 		saw_commit = true;
 		db_once(insert_pending);
 	}
-	if(!wasintrans) {
-		END_TRANSACTION;
-	}
+	END_TRANSACTION;
 }
 
 
@@ -193,16 +186,11 @@ void db_caught_up_commits(void) {
 		sqlite3_bind_int(update,2,PENDING);
 		sqlite3_bind_int(nocurrent,1,CURRENT);
 	}
-	bool wasintrans = in_trans;
-	if(!in_trans) {
-		BEGIN_TRANSACTION;
-	}
+	BEGIN_TRANSACTION;
 	db_once(nocurrent);
 	if(saw_commit)
 		db_once(update);
-	if(!wasintrans) {
-		END_TRANSACTION;
-	}
+	END_TRANSACTION;
 }
 
 
