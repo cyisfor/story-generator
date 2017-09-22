@@ -72,14 +72,16 @@ int main(int argc, char *argv[])
 	bool always_finished = false;
 	size_t num = 0;
 	size_t counter = 0;
-	bool on_commit(const db_oid oid,
-								 const db_oid parent,
-								 git_time_t timestamp, 
-								 git_tree*
-								 last, git_tree* cur) {
+	enum gfc_action on_commit(
+		const db_oid oid,
+		const db_oid parent,
+		git_time_t timestamp, 
+		git_tree*
+		last, git_tree* cur) {
+		
 		db_saw_commit(timestamp, oid);
 		if(last == NULL) {
-			return true;
+			return GFC_CONTINUE;
 		}
 
 		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
@@ -103,12 +105,12 @@ int main(int argc, char *argv[])
 			struct stat derp;
 			if(0!=stat(src.s,&derp)) {
 				WARN("%s wasn't there",src.s);
-				return true;
+				return GFC_CONTINUE;
 			}
 			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);
-			return true;
+			return GFC_CONTINUE;
 		}
-		bool ret = git_for_chapters_changed(last,cur,on_chapter);
+		enum gfc_action ret = git_for_chapters_changed(last,cur,on_chapter);
 
 		return ret;
 	}

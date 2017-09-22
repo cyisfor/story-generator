@@ -27,14 +27,16 @@
 
 enum gfc_action { GFC_CONTINUE, GFC_STOP, GFC_SKIP };
 
-bool git_for_commits(const db_oid until,
-										 const db_oid since, 
-										 enum gfc_action (*handle)(const db_oid commit,
-																		const db_oid parent,
-																		git_time_t timestamp,
-																		git_tree* last,
-																		git_tree* cur));
-
+enum gfc_action
+git_for_commits(const db_oid until,
+								const db_oid since, 
+								enum gfc_action
+								(*handle)(
+									const db_oid commit,
+									const db_oid parent,
+									git_time_t timestamp,
+									git_tree* last,
+									git_tree* cur));
 /*
 	git_for_chapters_changed
 
@@ -48,12 +50,13 @@ bool git_for_commits(const db_oid until,
 
 	note: this is the DIFF of the trees not the changes of each commit in between.
 */
-bool git_for_chapters_changed(git_tree* from, git_tree* to,
-															bool (*handle)(long int num,
-																						 bool deleted,
-																						 const string location,
-																						 const string name));
-
+enum gfc_action
+git_for_chapters_changed(git_tree* from, git_tree* to,
+												 enum gfc_action
+												 (*handle)(long int num,
+																	 bool deleted,
+																	 const string location,
+																	 const string name));
 
 
 #endif /* _STORYGIT_H_ */
