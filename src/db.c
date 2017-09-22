@@ -193,11 +193,16 @@ void db_caught_up_commits(void) {
 		sqlite3_bind_int(update,2,PENDING);
 		sqlite3_bind_int(nocurrent,1,CURRENT);
 	}
-	BEGIN_TRANSACTION;
+	bool wasintrans = in_trans;
+	if(!in_trans) {
+		BEGIN_TRANSACTION;
+	}
 	db_once(nocurrent);
 	if(saw_commit)
 		db_once(update);
-	END_TRANSACTION;
+	if(!wasintrans) {
+		END_TRANSACTION;
+	}
 }
 
 
