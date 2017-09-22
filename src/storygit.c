@@ -25,8 +25,8 @@
 */
 
 int later_branches_last(const void* a, const void* b) {
-	git_time_t ta = git_commit_time((git_commit*) a);
-	git_time_t tb = git_commit_time((git_commit*) b);
+	git_time_t ta = git_commit_time(*((git_commit**) a));
+	git_time_t tb = git_commit_time(*((git_commit**) b));
 	return ta - tb;
 }
 
