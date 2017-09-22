@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
 		fputs(db_oid_str(parent),stderr);
 		fputs(" -> ",stderr);
 		fputs(db_oid_str(commit),stderr);
-		fput(' ',stderr);
+		fputc(' ',stderr);
 		char buf[0x10];
 		fwrite(buf,itoa(buf,0x10,++counter),1,stderr);
-		fput('\n',stderr);
+		fputc('\n',stderr);
 		return GFC_CONTINUE;
 	}
 	
