@@ -162,7 +162,7 @@ git_for_commits(const db_oid until,
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			enum gfc_action op = handle(DB_OID(*me.oid),
 											 DB_OID(*parent.oid),
-											 me.time,
+											 parent.time,
 											 parent.tree,
 											 me.tree);
 			switch(op) {
