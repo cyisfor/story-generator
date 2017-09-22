@@ -49,14 +49,15 @@ static int transaction_level = 0;
 	void db_ ## name(void)
 
 DECLARE_BUILTIN(begin) {
-	SPAM("begin %d",transaction_level);
 	if(++transaction_level != 1) return;
+	SPAM("begin");
+
 	db_once(begin_stmt);
 }
 DECLARE_BUILTIN(commit) {
 	ensure_ne(transaction_level,0);
-	SPAM("commit %d",transaction_level);
 	if(--transaction_level != 0) return;
+	SPAM("commit");
 	db_once(commit_stmt);
 }
 DECLARE_BUILTIN(rollback) {
@@ -611,6 +612,7 @@ void db_transaction(void (*run)(void)) {
 }
 
 void db_retransaction(void) {
+	SPAM("retransaction %d",transaction_level);
 	if(transaction_level == 0) {
 		db_once(begin_stmt);
 		transaction_level = 1;
