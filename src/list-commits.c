@@ -21,8 +21,9 @@ int main(int argc, char *argv[])
 								 git_tree* last,
 								 git_tree* cur) {
 		fputs(db_oid_str(parent),stdout);
-		fputs(" -> ",stdout
+		fputs(" -> ",stdout);
 		fputs(db_oid_str(commit),stdout);
+		putchar('\n');
 	}
 	
 	git_for_commits(NULL,NULL,on_commit);

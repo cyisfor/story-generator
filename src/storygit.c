@@ -33,6 +33,7 @@ int later_branches_last(const void* a, const void* b) {
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
 										 bool (*handle)(const db_oid commit,
+																		const db_oid parent,
 																		git_time_t timestamp,
 																		git_tree* last,
 																		git_tree* cur)) {
