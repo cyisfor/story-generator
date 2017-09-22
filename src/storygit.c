@@ -70,19 +70,27 @@ bool git_for_commits(const db_oid until,
 			if(0!=git_revwalk_next(&commit_oid, walker)) return true;
 			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
+			if(1!=git_commit_parentcount(commit)) {
+				git_commit_free(commit);
+				return true;
+			}
 			repo_check(git_commit_tree(&cur,commit));
 			if(timestamp == 0) {
 				// eh, duplicate one timestamp I guess
 				timestamp = git_commit_time(commit);
 			}
 			if(!handle(DB_OID(commit_oid),timestamp, last, cur)) return false;
+			git_tree_free(last);
 			last = cur;
 			// timestamp should be for the NEWER tree
 			timestamp = git_commit_time(commit);
 			if(timestamp < last_timestamp) {
 				// we missed the last commit we saw!
+				git_commit_free(commit);
+				git_tree_free(last);
 				return true;
 			}
+			git_commit_free(commit);
 		}
 	}
 	bool ret = op();
