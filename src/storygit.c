@@ -39,7 +39,7 @@ struct item {
 };
 
 
-int later_branches_last(const void* a, const void* b) {
+int later_commits_last(const void* a, const void* b) {
 //	printf("um %p %p\n",a,b);
 	git_time_t ta = git_commit_time(((struct item*) a)->commit);
 	git_time_t tb = git_commit_time(((struct item*) b)->commit);
@@ -52,7 +52,6 @@ void freeitem(struct item i) {
 	i.commit = NULL; // debugging
 }
 	
-
 
 bool git_for_commits(const db_oid until,
 										 const db_oid since, 
@@ -202,7 +201,7 @@ bool git_for_commits(const db_oid until,
 		// if we pushed all the parents, and still no todo, we're done, yay!
 		if(ntodo == 0) break;
 
-		qsort(todo, ntodo, sizeof(*todo), later_todo_last);
+		qsort(todo, ntodo, sizeof(*todo), later_commits_last);
 		// todo[ntodo] should be the most recent now.
 		// pop it off, to examine its parents
 		me = todo[--ntodo];
