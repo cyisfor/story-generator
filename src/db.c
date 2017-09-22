@@ -344,9 +344,9 @@ struct storycache* db_start_storycache(void) {
 			"PRIMARY_KEY(story,chapter)) WITHOUT ROWID";
 		ssize_t amt =
 			snprintf(sql+sizeof(PREFIX)-1,
-							 sizeof(sql)-sizeof(PREFIX),
+							 4,
 							 "%d",++counter);
-		db_check(sqlite3_prepare_v2(db, sql, amt, &create, NULL));
+		db_check(sqlite3_prepare_v2(db, sql, sizeof(sql), &create, NULL));
 		assert(create != NULL);
 
 		db_check(sqlite3_step(create));
