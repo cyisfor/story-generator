@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	repo_check(repo_discover_init(LITLEN(".git")));
-
+	int counter = 0;
 	enum gfc_action on_commit(
 		const db_oid commit,
 		const db_oid parent,
@@ -25,8 +25,9 @@ int main(int argc, char *argv[])
 		fputs(db_oid_str(parent),stdout);
 		fputs(" -> ",stdout);
 		fputs(db_oid_str(commit),stdout);
+		putchar(' ');
 		char buf[0x10];
-		itoa(
+		fwrite(buf,itoa(buf,0x10,++counter),1,stdout);
 		putchar('\n');
 		return GFC_CONTINUE;
 	}

@@ -10,8 +10,6 @@
 #include "create.h"
 #include "note.h"
 
-#include "itoa.h"
-
 #include "libxmlfixes/libxmlfixes.h"
 
 #include <git2/revparse.h>

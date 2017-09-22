@@ -1,6 +1,9 @@
 #include "db.h"
 #include "ensure.h"
 
+#include "itoa.h"
+
+
 #include <sqlite3.h>
 #include <error.h>
 #include <assert.h>
