@@ -46,10 +46,10 @@ int later_commits_last(const void* a, const void* b) {
 	return ta - tb;
 }
 
-void freeitem(struct item i) {
-	git_commit_free(i.commit);
-	git_tree_free(i.tree);
-	i.commit = NULL; // debugging
+void freeitem(struct item* i) {
+	git_commit_free(i->commit);
+	git_tree_free(i->tree);
+	i->commit = NULL; // debugging
 }
 	
 

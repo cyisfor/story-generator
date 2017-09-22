@@ -6,7 +6,8 @@ int main(int argc, char *argv[])
 {
 
 	enum gfc_action on_commit(
-		db_oid commit,
+		const db_oid commit,
+		const db_oid parent,
 		git_time_t timestamp,
 		git_tree* last,
 		git_tree* cur)
