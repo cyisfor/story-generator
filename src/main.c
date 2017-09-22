@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	}
 	if(num > 0) {
 		db_caught_up_commits();
-		putchar('\n');
+		//putchar('\n');
 	}
 	END_TRANSACTION;
 

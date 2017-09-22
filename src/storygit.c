@@ -73,12 +73,14 @@ bool git_for_commits(const db_oid until,
 			}
 			//SPAM("rev oid %s",git_oid_tostr_s(&commit_oid));
 			repo_check(git_commit_lookup(&commit, repo, &commit_oid));
+#if 0
 			if(1!=git_commit_parentcount(commit)) {
 				// skip merge commits because they SUCK
 				INFO("skipping merge commit %s",git_oid_tostr_s(&commit_oid));
 				git_commit_free(commit);
 				continue;
 			}
+#endif
 			repo_check(git_commit_tree(&cur,commit));
 			if(timestamp == 0) {
 				// eh, duplicate one timestamp I guess
