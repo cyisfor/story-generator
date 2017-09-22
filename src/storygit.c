@@ -63,8 +63,8 @@ bool git_for_commits(const db_oid until,
 																		git_tree* cur)) {
 
 	struct item me = {};
-	struct item* branches = NULL;
-	size_t nbranches = 0;
+	struct item* todo = NULL;
+	size_t ntodo = 0;
 
 	if(until) {
 		SPAM("until %s\n",db_oid_str(since));
@@ -98,37 +98,39 @@ bool git_for_commits(const db_oid until,
 
 			parent.time = git_commit_time(parent.commit);
 			
-			/* When two branches converge, the timestamp of the original common commit will be
+			/* When two todo converge, the timestamp of the original common commit will be
 				 earlier than any of the timestamps along either branch, so if we find the earlier
-				 commits in all branches, by the time we hit the convergence, the common commit
+				 commits in all todo, by the time we hit the convergence, the common commit
 				 will NECESSARILY be in the todo list, since it can't be processed until all
-				 later commits in all branches are processed. So we just have to avoid dupes
+				 later commits in all todo are processed. So we just have to avoid dupes
 				 in the todo list, and the nodes will all be visited exactly once.
 
 				 Could binary search since it's sorted, but unless you're a horrible team,
 				 there will only be one branch per coder, and 1-3 for development, so
-				 only binary search if nbranches is large enough for the overhead of that
+				 only binary search if ntodo is large enough for the overhead of that
 				 search to be lower.
 			*/
 
 			bool alreadyhere = false;
+			int here;
 			void findit_sametime(int j) {
 				do {
-					if(git_oid_equal(parent.oid, branches[j].oid)) {
+					if(git_oid_equal(parent.oid, todo[j].oid)) {
 						git_commit_free(parent.commit);
 						// tree isn't allocated yet
-						parent = branches[j];
+						parent = todo[j];
 						// WHEN I AM
 						alreadyhere = true;
+						here = j;
 					}
-					if(++j==nbranches) break;
-				} while(parent.time == nbranches[j].time);
+					if(++j==ntodo) break;
+				} while(parent.time == ntodo[j].time);
 			}
-			if(nbranches < 10) {
+			if(ntodo < 10) {
 				void findit(void) {
 					int j=0;
-					for(;j<nbranches;++j) {
-						if(parent.time == nbranches[j].time) {
+					for(;j<ntodo;++j) {
+						if(parent.time == ntodo[j].time) {
 							return findit_sametime(j);
 						}
 					}
@@ -137,14 +139,14 @@ bool git_for_commits(const db_oid until,
 				findit();
 			} else {
 				void findit(void) {
-					int j = nbranches >> 1;
+					int j = ntodo >> 1;
 					int dj = j >> 1;
 					do {
-						if(branches[j].time == parent.time) {
+						if(todo[j].time == parent.time) {
 							return findit_sametime(j);
 						}
 						// sorted from earlier to later...
-						if(branches[j].time > parent.time) {
+						if(todo[j].time > parent.time) {
 							j -= dj;
 						} else {
 							j += dj;
@@ -165,36 +167,46 @@ bool git_for_commits(const db_oid until,
 			case STOP:
 				freeitem(parent);
 				freeitem(me);
-				for(i=0;i<nbranches;++i) {
-					freeitem(branches[i]);
+				for(i=0;i<ntodo;++i) {
+					freeitem(todo[i]);
 				}
-				free(branches);
+				free(todo);
 				return false;
 			case SKIP:
 				freeitem(parent);
+				if(alreadyhere) {
+					// ugh... need to remove this from the list
+					int j;
+					for(j=here;j<ntodo-1;++j) {
+						todo[j] = todo[j+1];
+					}
+				}
 				continue;
 			}
 
-			if(alreadyhere) continue;
-			/* note: parents can branch, so nbranches is 3 in that case,
-				 then 4 if a grandparent branches, etc */
+			if(alreadyhere) {
+				INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
+				continue;
+			}
+			/* note: parents can branch, so ntodo is 3 in that case,
+				 then 4 if a grandparent todo, etc */
 			
-			++nbranches;
-			branches = realloc(branches,sizeof(*branches)*nbranches);
+			++ntodo;
+			todo = realloc(todo,sizeof(*todo)*ntodo);
 			//if(alreadyhere) blah blah meh
-			branches[nbranches-1] = parent;
+			todo[ntodo-1] = parent;
 		}
 		freeitem(me);
-		// if we pushed all the parents, and still no branches, we're done, yay!
-		if(nbranches == 0) break;
+		// if we pushed all the parents, and still no todo, we're done, yay!
+		if(ntodo == 0) break;
 
-		qsort(branches, nbranches, sizeof(*branches), later_branches_last);
-		// branches[nbranches] should be the most recent now.
+		qsort(todo, ntodo, sizeof(*todo), later_todo_last);
+		// todo[ntodo] should be the most recent now.
 		// pop it off, to examine its parents
-		me = branches[--nbranches];
+		me = todo[--ntodo];
 	}
 
-	assert(0 == nbranches);
+	assert(0 == ntodo);
 	assert(me.commit == NULL);
 	return true;
 }
