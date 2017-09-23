@@ -267,6 +267,7 @@ int main(int argc, char *argv[])
 		git_time_t max_timestamp = story_timestamp;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
 				max_timestamp = chapter_timestamp;
 			// this should be moved later...
