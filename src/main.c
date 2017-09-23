@@ -254,6 +254,8 @@ int main(int argc, char *argv[])
 						 since it needs its next link removed
 					*/
 					db_saw_chapter(false,story,story_timestamp,countchaps);
+					db_retransaction();
+					db_close_and_exit(23);
 				}
 				numchaps = countchaps;
 			}
