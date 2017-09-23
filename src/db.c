@@ -150,6 +150,9 @@ void db_open(const char* filename) {
 }
 
 void db_close_and_exit(void) {
+	if(transaction_level > 0) {
+		db_commit();
+	}
 	size_t i;
 	for(i=0;i<nstmt;++i) {
 		db_check(sqlite3_finalize(stmts[i]));
