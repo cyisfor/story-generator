@@ -112,8 +112,7 @@ git_for_commits(const db_oid until,
 			struct item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 			parent.oid = git_commit_id(parent.commit);
-
-			if(until && git_oid_equal(GIT_OID(until), parent.oid)) {
+			if(until && git_oid_equal(parent.oid,GIT_OID(until))) {
 				git_commit_free(parent.commit);
 				continue;
 			}
