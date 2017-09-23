@@ -116,11 +116,11 @@ void db_open(const char* filename) {
 	{
 		sqlite3_stmt* check = NULL;
 		db_check(sqlite3_prepare_v2(db, LITLEN(
-																	"SELECT 1 FROM commits LIMIT 1"
+																	"SELECT 1 FROM committing LIMIT 1"
 																	), &ins, NULL));
 		sqlite3_stmt* ins = NULL;
 		db_check(sqlite3_prepare_v2(db, LITLEN(
-																	"INSERT INTO commits DEFAULT_VALUES"
+																	"INSERT INTO committing DEFAULT_VALUES"
 																	), &ins, NULL));
 		for(;;) {
 			int res = db_once(check);
@@ -136,7 +136,7 @@ void db_open(const char* filename) {
 		sqlite3_finalize(check);
 		sqlite3_finalize(ins);
 	}
-	
+
 	END_TRANSACTION;
 
 	string s = { .s = getenv("story") };
@@ -203,8 +203,8 @@ void db_saw_commit(git_time_t timestamp, const db_oid commit) {
 }
 
 
-void db_caught_up_commits(void) {
-	DECLARE_STMT(unset_since,"UPDATE commits SET since = NULL");
+void db_caught_up_committing(void) {
+	DECLARE_STMT(unset_since,"UPDATE committing SET since = NULL");
 
 	if(saw_commit)
 		db_once_trans(unset_since);
@@ -216,7 +216,7 @@ identifier db_get_category(const string name, git_time_t* timestamp) {
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
 	sqlite3_bind_text(find,1,name.s,name.l,NULL);
 	RESETTING(find) int res = sqlite3_step(find);
-	TRANSACTION; 
+	TRANSACTION;
 	if(res == SQLITE_ROW) {
 		*timestamp = sqlite3_column_int64(find,1);
 		return sqlite3_column_int64(find,0);
@@ -245,8 +245,6 @@ void db_last_seen_commit(struct bad* out,
 	}
 }
 
-
-
 void db_caught_up_category(identifier category) {
 	DECLARE_STMT(update,"UPDATE categories SET timestamp = ? WHERE id = ?");
 
@@ -254,7 +252,7 @@ void db_caught_up_category(identifier category) {
 	sqlite3_bind_int64(update,2,category);
 	db_once_trans(update);
 }
-	
+
 identifier db_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	sqlite3_bind_text(find,1,location.s,location.l,NULL);
@@ -304,7 +302,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		INFO("SAW %d:%d %d",story,chapter,timestamp);
 		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
-								 "WHERE story = ? AND chapter = ?"); 
+								 "WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
 		sqlite3_bind_int64(find,1,story);
 		sqlite3_bind_int64(find,2,chapter);
@@ -400,7 +398,7 @@ bool db_in_storycache(struct storycache* cache, identifier story, size_t chapter
 	sqlite3_reset(cache->insert);
 	return false;
 }
-	
+
 void db_storycache_free(struct storycache* cache) {
 	sqlite3_finalize(cache->find);
 	sqlite3_finalize(cache->insert);
@@ -531,7 +529,7 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 			.l = sqlite3_column_bytes(find,3)
 		};
 		handle(story,title,description,source);
-	}	
+	}
 }
 
 
@@ -610,7 +608,7 @@ void db_with_story_info(const identifier story, void (*handle)(string title,
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
-			str->s = sqlite3_column_blob(find,col); 
+			str->s = sqlite3_column_blob(find,col);
 			str->l = sqlite3_column_bytes(find,col);
 		}
 		CHECK(0,&title);
@@ -728,5 +726,3 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 	fprintf(stderr,"xml error %s %s\n",error->message,
 					error->level == XML_ERR_FATAL ? "fatal..." : "ok");
 }
-
-	

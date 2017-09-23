@@ -13,7 +13,7 @@ void db_close_and_exit(void);
 
 void db_set_category(const string category);
 void db_saw_commit(git_time_t timestamp, const db_oid commit);
-void db_caught_up_commits(void);
+void db_caught_up_committing(void);
 struct bad {
 	bool until;
 	bool since;
