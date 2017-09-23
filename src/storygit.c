@@ -109,7 +109,10 @@ git_for_commits(const db_oid until,
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 			parent.oid = git_commit_id(parent.commit);
 
-			if(until && git_oid_equal(GIT_OID(until), parent.oid)) continue;
+			if(until && git_oid_equal(GIT_OID(until), parent.oid)) {
+				git_commit_free(parent.commit);
+				continue;
+			}
 
 			parent.time = author_time(parent.commit);
 			
@@ -206,13 +209,13 @@ git_for_commits(const db_oid until,
 				};
 				// default:
 
-				if(alreadyhere) {
-					//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
-					continue;
-				}
 			} else {
 				INFO("skipping merge commit %.*s",GIT_OID_HEXSZ,
 						 git_oid_tostr_s(me.oid));
+			}
+
+			if(alreadyhere) {
+				//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
 				continue;
 			}
 
