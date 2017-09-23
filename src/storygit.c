@@ -38,8 +38,7 @@ struct item {
 	*/
 };
 
-static
-git_time_t author_time(git_commit* commit) {
+git_time_t git_author_time(git_commit* commit) {
 	// the commit time, or the committer time, changes with every rebase
 	// but author remains the same!
 	const git_signature* author = git_commit_author(commit);

@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
 
 	// but not older than the last commit we dealt with
 	struct bad results = {
-		.last = false,
-		.current = false
+		.until = false,
+		.since = false
 	};
 	git_time_t until;
 	db_oid since;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
 		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
-		git_oid* oid = git_commit_id(thing2);
+		const git_oid* oid = git_commit_id(thing2);
 		INFO("going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
 		until = author_time(thing2);
 		git_object_free(thing1);

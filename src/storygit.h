@@ -8,6 +8,9 @@
 #include <git2/tree.h>
 #include <git2/commit.h>
 
+// this is the REAL time it was committed, ignoring rebasing and such
+git_time_t git_author_time(git_commit* commit);
+
 /* any of these handlers should return false to abort the perusal or true to continue.
 	 don't need a "skip" option since not recursing */
 
