@@ -179,10 +179,10 @@ git_for_commits(const db_oid until,
 			}
 						 
 			enum gfc_action op = handle(DB_OID(*me.oid),
-											 DB_OID(*parent.oid),
-											 parent.time,
-											 parent.tree,
-											 me.tree);
+																	DB_OID(*parent.oid),
+																	parent.time,
+																	me.tree,
+																	parent.tree);
 			switch(op) {
 			case GFC_STOP:
 				freeitem(&parent);
