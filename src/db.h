@@ -19,7 +19,7 @@ struct bad {
 	bool since;
 };
 void db_last_seen_commit(struct bad* out,
-												 db_oid last, db_oid current);
+												 git_time_t* until, db_oid since);
 
 typedef int64_t identifier;
 

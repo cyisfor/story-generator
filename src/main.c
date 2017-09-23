@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 		git_commit* thing2 = (git_commit*)thing1;
 		const git_oid* oid = git_commit_id(thing2);
 		INFO("going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
-		until = author_time(thing2);
+		until = git_author_time(thing2);
 		git_object_free(thing1);
 	} else {
 		db_last_seen_commit(&results,&until,since);

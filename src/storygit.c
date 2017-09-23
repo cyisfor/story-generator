@@ -94,7 +94,7 @@ git_for_commits(bool do_until,
 		git_reference_free(ref);
 	}
 
-	me.time = author_time(me.commit);
+	me.time = git_author_time(me.commit);
 	if(do_until && me.time <= until) {
 		git_commit_free(me.commit);
 		return;
@@ -114,7 +114,7 @@ git_for_commits(bool do_until,
 			struct item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 
-			parent.time = author_time(parent.commit);
+			parent.time = git_author_time(parent.commit);
 			if(do_until && parent.time <= until) {
 				git_commit_free(parent.commit);
 				continue;
