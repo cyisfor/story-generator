@@ -120,7 +120,7 @@ void db_open(const char* filename) {
 																	), &check, NULL));
 		sqlite3_stmt* ins = NULL;
 		db_check(sqlite3_prepare_v2(db, LITLEN(
-																	"INSERT INTO committing DEFAULT_VALUES"
+																	"INSERT INTO committing DEFAULT VALUES"
 																	), &ins, NULL));
 		for(;;) {
 			int res = db_once(check);
@@ -234,11 +234,11 @@ void db_last_seen_commit(struct bad* out,
 
 	RESETTING(find) int res = sqlite3_step(find);
 	assert(res == SQLITE_ROW);
-	if(sqlite_column_type(find,0) != SQLITE_NULL) {
+	if(sqlite3_column_type(find,0) != SQLITE_NULL) {
 		out->until = true;
-		*until = sqlite_column_int64(find,0);
+		*until = sqlite3_column_int64(find,0);
 	}
-	if(sqlite_column_type(find,1) != SQLITE_NULL) {
+	if(sqlite3_column_type(find,1) != SQLITE_NULL) {
 		out->since = true;
 		assert(sizeof(db_oid) == sqlite3_column_bytes(find,1));
 		memcpy(since,sqlite3_column_blob(find, 0),sizeof(db_oid));
