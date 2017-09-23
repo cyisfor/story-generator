@@ -67,7 +67,9 @@ const char* myctime(time_t time) {
 }
 
 enum gfc_action
-git_for_commits(const git_time_t until,
+git_for_commits(bool do_until,
+								const git_time_t until,
+								bool do_since,
 								const db_oid since, 
 								enum gfc_action
 								(*handle)(

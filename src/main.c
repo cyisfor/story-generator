@@ -123,35 +123,30 @@ int main(int argc, char *argv[])
 		.last = false,
 		.current = false
 	};
-	db_oid last_commit, current_commit;
+	git_time_t until;
+	db_oid since;
 	BEGIN_TRANSACTION;
 	if(getenv("until")) {
-		results.last = true;
+		results.until = true;
 		git_object* thing1;
 		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
 		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
-
-		memcpy(last_commit, git_object_id(thing1)->id,sizeof(db_oid));
+		git_oid* oid = git_commit_id(thing2);
+		INFO("going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
+		until = author_time(thing2);
 		git_object_free(thing1);
-		INFO("using commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
-		// this is needed, to jump start when a confusing merge loses the db's
-		// last known commit
-		//arrgh we need a timestamp too
-		git_time_t timestamp = git_commit_time(thing2);
-		db_saw_commit(timestamp,last_commit);
 	} else {
-		db_last_seen_commit(&results,last_commit,current_commit);
-		if(results.last)
-			INFO("last seen commit %.*s",2*sizeof(db_oid),db_oid_str(last_commit));
+		db_last_seen_commit(&results,&until,since);
+		if(results.until)
+			INFO("going back until %d",until);
 
-		if(results.current)
-			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(current_commit));
-
-		git_for_commits(results.last ? last_commit : NULL,
-										results.current ? current_commit : NULL,
-										on_commit);
+		if(results.since)
+			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(since));
 	}
+
+	git_for_commits(results.until, until, results.since, since, on_commit);
+	// check this even when until is set, so we don't clear a since in progress?
 	if(num > 0) {
 		db_caught_up_committing();
 		//putchar('\n');

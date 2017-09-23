@@ -28,7 +28,9 @@
 enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
 enum gfc_action
-git_for_commits(const db_oid until,
+git_for_commits(bool do_until,
+								const db_oid until,
+								bool do_since,
 								const db_oid since, 
 								enum gfc_action
 								(*handle)(
