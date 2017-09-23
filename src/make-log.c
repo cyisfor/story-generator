@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
 					"<table class=chaps>\n"
 					));
 
+	bool sneakpeek = getenv("sneakpeek") != NULL;
+
 	void on_chapter(identifier story,
 									size_t chapnum,
 									const string title,
@@ -38,7 +40,9 @@ int main(int argc, char *argv[])
 			write(2,LITLEN("yayayay"));
 			return;
 		}
-		if(db_count_chapters(story) == chapnum) return;
+		if(!sneakpeek) {
+			if(db_count_chapters(story) == chapnum) return;
+		}
 		
 		write(1,LITLEN("<tr><td>"));
 
