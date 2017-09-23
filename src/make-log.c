@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 			write(2,LITLEN("yayayay"));
 			return;
 		}
+		if(db_count_chapters(story) == chapnum) return;
 		
 		write(1,LITLEN("<tr><td>"));
 
