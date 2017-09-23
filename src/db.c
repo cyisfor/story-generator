@@ -117,7 +117,7 @@ void db_open(const char* filename) {
 		sqlite3_stmt* check = NULL;
 		db_check(sqlite3_prepare_v2(db, LITLEN(
 																	"SELECT 1 FROM committing LIMIT 1"
-																	), &ins, NULL));
+																	), &check, NULL));
 		sqlite3_stmt* ins = NULL;
 		db_check(sqlite3_prepare_v2(db, LITLEN(
 																	"INSERT INTO committing DEFAULT_VALUES"
@@ -195,7 +195,7 @@ void db_saw_commit(git_time_t timestamp, const db_oid commit) {
 	if(!saw_commit) {
 		/* only update until at the beginning
 			 because next time we want to go until the latest commit we saw this time. */
-		sqlite3_bind_blob(update_until, 1, timestamp);
+		sqlite3_bind_int64(update_until, 1, timestamp);
 		db_once(update_until);
 		saw_commit = true;
 	}

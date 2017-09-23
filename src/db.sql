@@ -4,8 +4,9 @@ CREATE TABLE IF NOT EXISTS categories (
 			 timestamp INTEGER NOT NULL DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS committing (
-			 until INTEGER NOT NULL,
-			 since BLOB NOT NULL,
+-- NULLs okay
+			 until INTEGER,
+			 since BLOB,
 			 PRIMARY KEY(until,since)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stories (
