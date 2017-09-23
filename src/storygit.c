@@ -81,9 +81,9 @@ git_for_commits(const db_oid until,
 	struct item* todo = NULL;
 	size_t ntodo = 0;
 
-	if(until) {
-		SPAM("until %s\n",db_oid_str(since));
-		repo_check(git_commit_lookup(&me.commit, repo, GIT_OID(until)));
+	if(since) {
+		SPAM("since %s\n",db_oid_str(since));
+		repo_check(git_commit_lookup(&me.commit, repo, GIT_OID(since)));
 	} else {
 		git_reference* ref;
 		repo_check(git_repository_head(&ref, repo)); // this resolves the reference
@@ -92,9 +92,13 @@ git_for_commits(const db_oid until,
 		git_reference_free(ref);
 	}
 
+	me.oid = git_commit_id(me.commit);
+	if(until && git_oid_equal(me.oid,GIT_OID(until))) {
+		git_commit_free(me.commit);
+		return GFC_CONTINUE;
+	}
 	repo_check(git_commit_tree(&me.tree,me.commit));
 	me.time = author_time(me.commit);
-	me.oid = git_commit_id(me.commit);
 
 	/* ugh.... have to search for if a git commit has been visited or not
 		 can't just say commit->visited = true, since commit is opaque
@@ -239,7 +243,7 @@ git_for_commits(const db_oid until,
 
 	assert(0 == ntodo);
 	assert(me.commit == NULL);
-	return true;
+	return GFC_CONTINUE;
 }
 
 // note: this is the DIFF not the changes of each commit in between.
