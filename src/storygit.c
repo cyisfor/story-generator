@@ -177,7 +177,12 @@ git_for_commits(const db_oid until,
 				INFO("%s:%d ->",git_oid_tostr_s(parent.oid), parent.time);
 				fprintf(stderr,"     %s:%d\n",git_oid_tostr_s(me.oid), me.time);
 			}
-						 
+
+			if(nparents > 1) {
+				INFO("skipping merge commit %.*s",GIT_OID_HEXSZ,
+						 git_oid_tostr_s(me.oid));
+				continue;
+			}
 			enum gfc_action op = handle(DB_OID(*me.oid),
 																	DB_OID(*parent.oid),
 																	parent.time,
