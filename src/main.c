@@ -151,11 +151,12 @@ int main(int argc, char *argv[])
 		git_for_commits(results.last ? last_commit : NULL,
 										results.current ? current_commit : NULL,
 										on_commit);
-		if(num > 0) {
-			db_caught_up_commits();
-			//putchar('\n');
-		}
 	}
+	if(num > 0) {
+		db_caught_up_committing();
+		//putchar('\n');
+	}
+
 	db_retransaction();
 
 	INFO("processing...");
