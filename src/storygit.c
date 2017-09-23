@@ -178,42 +178,44 @@ git_for_commits(const db_oid until,
 				fprintf(stderr,"     %s:%d\n",git_oid_tostr_s(me.oid), me.time);
 			}
 
-			if(nparents > 1) {
+			if(nparents == 1) {
+				enum gfc_action op = handle(DB_OID(*me.oid),
+																		DB_OID(*parent.oid),
+																		parent.time,
+																		me.tree,
+																		parent.tree);
+				switch(op) {
+				case GFC_STOP:
+					freeitem(&parent);
+					freeitem(&me);
+					for(i=0;i<ntodo;++i) {
+						freeitem(&todo[i]);
+					}
+					free(todo);
+					return false;
+				case GFC_SKIP:
+					freeitem(&parent);
+					if(alreadyhere) {
+						// ugh... need to remove this from the list
+						int j;
+						for(j=here;j<ntodo-1;++j) {
+							todo[j] = todo[j+1];
+						}
+					}
+					continue;
+				};
+				// default:
+
+				if(alreadyhere) {
+					//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
+					continue;
+				}
+			} else {
 				INFO("skipping merge commit %.*s",GIT_OID_HEXSZ,
 						 git_oid_tostr_s(me.oid));
 				continue;
 			}
-			enum gfc_action op = handle(DB_OID(*me.oid),
-																	DB_OID(*parent.oid),
-																	parent.time,
-																	me.tree,
-																	parent.tree);
-			switch(op) {
-			case GFC_STOP:
-				freeitem(&parent);
-				freeitem(&me);
-				for(i=0;i<ntodo;++i) {
-					freeitem(&todo[i]);
-				}
-				free(todo);
-				return false;
-			case GFC_SKIP:
-				freeitem(&parent);
-				if(alreadyhere) {
-					// ugh... need to remove this from the list
-					int j;
-					for(j=here;j<ntodo-1;++j) {
-						todo[j] = todo[j+1];
-					}
-				}
-				continue;
-			};
-			// default:
 
-			if(alreadyhere) {
-				//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
-				continue;
-			}
 			/* note: parents can branch, so ntodo is 3 in that case,
 				 then 4 if a grandparent todo, etc */
 			
