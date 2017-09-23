@@ -66,7 +66,7 @@ const char* myctime(time_t time) {
 	return ret;
 }
 
-enum gfc_action
+void
 git_for_commits(bool do_until,
 								const git_time_t until,
 								bool do_since,
@@ -83,10 +83,11 @@ git_for_commits(bool do_until,
 	struct item* todo = NULL;
 	size_t ntodo = 0;
 
-	if(since) {
+	if(do_since) {
 		SPAM("since %s\n",db_oid_str(since));
 		repo_check(git_commit_lookup(&me.commit, repo, GIT_OID(since)));
 	} else {
+		// since HEAD
 		git_reference* ref;
 		repo_check(git_repository_head(&ref, repo)); // this resolves the reference
 		const git_oid * oid = git_reference_target(ref);
@@ -94,13 +95,13 @@ git_for_commits(bool do_until,
 		git_reference_free(ref);
 	}
 
-	me.oid = git_commit_id(me.commit);
-	if(until && git_oid_equal(me.oid,GIT_OID(until))) {
+	me.time = author_time(me.commit);
+	if(do_until && me.time <= until) {
 		git_commit_free(me.commit);
-		return GFC_CONTINUE;
+		return;
 	}
 	repo_check(git_commit_tree(&me.tree,me.commit));
-	me.time = author_time(me.commit);
+	me.oid = git_commit_id(me.commit);
 
 	/* ugh.... have to search for if a git commit has been visited or not
 		 can't just say commit->visited = true, since commit is opaque
@@ -113,19 +114,19 @@ git_for_commits(bool do_until,
 		for(i = 0; i < nparents; ++i) {
 			struct item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
-			parent.oid = git_commit_id(parent.commit);
-			if(until && git_oid_equal(parent.oid,GIT_OID(until))) {
+
+			parent.time = author_time(parent.commit);
+			if(do_until && parent.time <= until) {
 				git_commit_free(parent.commit);
 				continue;
 			}
+			parent.oid = git_commit_id(parent.commit);
 
-			parent.time = author_time(parent.commit);
-			
-			/* When two todo converge, the timestamp of the original common commit will be
+			/* When two branches converge, the timestamp of the original common commit will be
 				 earlier than any of the timestamps along either branch, so if we find the earlier
-				 commits in all todo, by the time we hit the convergence, the common commit
+				 commits in all branches, by the time we hit the convergence, the common commit
 				 will NECESSARILY be in the todo list, since it can't be processed until all
-				 later commits in all todo are processed. So we just have to avoid dupes
+				 later commits in all branches are processed. So we just have to avoid dupes
 				 in the todo list, and the nodes will all be visited exactly once.
 
 				 Could binary search since it's sorted, but unless you're a horrible team,
