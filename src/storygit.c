@@ -38,11 +38,19 @@ struct item {
 	*/
 };
 
+static
+git_time_t author_time(git_commit* commit) {
+	// the commit time, or the committer time, changes with every rebase
+	// but author remains the same!
+	git_signature* author = git_commit_author(commit);
+	return author->when.time;
+}
+
 
 int later_commits_last(const void* a, const void* b) {
 //	printf("um %p %p\n",a,b);
-	git_time_t ta = git_commit_time(((struct item*) a)->commit);
-	git_time_t tb = git_commit_time(((struct item*) b)->commit);
+	git_time_t ta = (((struct item*) a)->time);
+	git_time_t tb = (((struct item*) b)->time);
 	return ta - tb;
 }
 
@@ -85,7 +93,7 @@ git_for_commits(const db_oid until,
 	}
 
 	repo_check(git_commit_tree(&me.tree,me.commit));
-	me.time = git_commit_time(me.commit);
+	me.time = author_time(me.commit);
 	me.oid = git_commit_id(me.commit);
 
 	/* ugh.... have to search for if a git commit has been visited or not
@@ -103,7 +111,7 @@ git_for_commits(const db_oid until,
 
 			if(until && git_oid_equal(GIT_OID(until), parent.oid)) continue;
 
-			parent.time = git_commit_time(parent.commit);
+			parent.time = author_time(parent.commit);
 			
 			/* When two todo converge, the timestamp of the original common commit will be
 				 earlier than any of the timestamps along either branch, so if we find the earlier
