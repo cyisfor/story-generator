@@ -27,9 +27,9 @@
 
 enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
-enum gfc_action
+void
 git_for_commits(bool do_until,
-								const db_oid until,
+								const git_time_t until,
 								bool do_since,
 								const db_oid since, 
 								enum gfc_action
@@ -39,6 +39,7 @@ git_for_commits(bool do_until,
 									git_time_t timestamp,
 									git_tree* last,
 									git_tree* cur));
+
 /*
 	git_for_chapters_changed
 

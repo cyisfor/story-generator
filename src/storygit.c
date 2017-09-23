@@ -201,7 +201,7 @@ git_for_commits(bool do_until,
 						freeitem(&todo[i]);
 					}
 					free(todo);
-					return false;
+					return;
 				case GFC_SKIP:
 					freeitem(&parent);
 					if(alreadyhere) {
@@ -245,7 +245,6 @@ git_for_commits(bool do_until,
 
 	assert(0 == ntodo);
 	assert(me.commit == NULL);
-	return GFC_CONTINUE;
 }
 
 // note: this is the DIFF not the changes of each commit in between.
