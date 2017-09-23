@@ -15,8 +15,8 @@ void db_set_category(const string category);
 void db_saw_commit(git_time_t timestamp, const db_oid commit);
 void db_caught_up_commits(void);
 struct bad {
-	bool last;
-	bool current;
+	bool until;
+	bool since;
 };
 void db_last_seen_commit(struct bad* out,
 												 db_oid last, db_oid current);

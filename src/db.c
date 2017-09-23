@@ -112,6 +112,31 @@ void db_open(const char* filename) {
 	char* err = NULL;
 	BEGIN_TRANSACTION;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+
+	{
+		sqlite3_stmt* check = NULL;
+		db_check(sqlite3_prepare_v2(db, LITLEN(
+																	"SELECT 1 FROM commits LIMIT 1"
+																	), &ins, NULL));
+		sqlite3_stmt* ins = NULL;
+		db_check(sqlite3_prepare_v2(db, LITLEN(
+																	"INSERT INTO commits DEFAULT_VALUES"
+																	), &ins, NULL));
+		for(;;) {
+			int res = db_once(check);
+			if(res == SQLITE_DONE) {
+				// yay, race conditions
+				db_once(ins);
+			} else {
+				assert(res == SQLITE_ROW);
+				break;
+			}
+		}
+
+		sqlite3_finalize(check);
+		sqlite3_finalize(ins);
+	}
+	
 	END_TRANSACTION;
 
 	string s = { .s = getenv("story") };
@@ -155,49 +180,34 @@ enum commit_kind {
 bool saw_commit = false;
 
 void db_saw_commit(git_time_t timestamp, const db_oid commit) {
-	static sqlite3_stmt* insert_current = NULL, *insert_pending;
-	if(insert_current == NULL) {
-		
-		PREPARE(insert_current,
-						"INSERT OR REPLACE INTO commits (kind,oid,timestamp) \n"
-						"VALUES (?,?,?)");
-		// Note: insert pending uses what was inserted for insert_current, but changes kind
-		PREPARE(insert_pending,
-						"INSERT OR IGNORE INTO commits (oid,timestamp,kind) \n"
-						"SELECT oid,timestamp,? FROM commits "
-						"WHERE kind = ?");
-		// these never change
-		sqlite3_bind_int(insert_current, 1, CURRENT);
-		sqlite3_bind_int(insert_pending, 1, PENDING);
-		sqlite3_bind_int(insert_pending, 2, CURRENT);
+	static sqlite3_stmt* update_until = NULL, *update_since;
+	if(update_until == NULL) {
+		PREPARE(update_until, "UPDATE committing SET until = ?");
+		PREPARE(update_since, "UPDATE committing SET since = ?");
 	}
-	sqlite3_bind_blob(insert_current, 2, commit, sizeof(db_oid), NULL);
-	sqlite3_bind_int(insert_current, 3, timestamp);
+	/* update since every time
+		 so if interrupted, we start halfway to the "until" again or somewhere
+	 */
 	BEGIN_TRANSACTION;
-	db_once(insert_current);
+	sqlite3_bind_blob(update_since, 2, commit, sizeof(db_oid), NULL);
+	db_once(update_since);
+
 	if(!saw_commit) {
+		/* only update until at the beginning
+			 because next time we want to go until the latest commit we saw this time. */
+		sqlite3_bind_blob(update_until, 1, timestamp);
+		db_once(update_until);
 		saw_commit = true;
-		db_once(insert_pending);
 	}
 	END_TRANSACTION;
 }
 
 
 void db_caught_up_commits(void) {
-	static sqlite3_stmt* update = NULL, *nocurrent;
-	if(update == NULL) {
-		PREPARE(update,"UPDATE OR REPLACE commits SET kind = ? WHERE kind = ?");
-		PREPARE(nocurrent,"DELETE FROM commits WHERE kind = ?");
-		// these never change
-		sqlite3_bind_int(update,1,LAST);
-		sqlite3_bind_int(update,2,PENDING);
-		sqlite3_bind_int(nocurrent,1,CURRENT);
-	}
-	BEGIN_TRANSACTION;
-	db_once(nocurrent);
+	DECLARE_STMT(unset_since,"UPDATE commits SET since = NULL");
+
 	if(saw_commit)
-		db_once(update);
-	END_TRANSACTION;
+		db_once_trans(unset_since);
 }
 
 
@@ -219,31 +229,20 @@ identifier db_get_category(const string name, git_time_t* timestamp) {
 }
 
 void db_last_seen_commit(struct bad* out,
-												 db_oid last, db_oid current) {
-	static sqlite3_stmt* find = NULL;
-	if(find == NULL) {
-		PREPARE(find,"SELECT oid,timestamp FROM commits WHERE kind = ?");
-	}
+												 git_time_t* until, db_oid since) {
+	DECLARE_STMT(find,"SELECT until,since FROM commits LIMIT 1");
 
-	bool one(db_oid dest, enum commit_kind kind) {
-		sqlite3_bind_int(find,1,kind);
-		RESETTING(find) int res = sqlite3_step(find);
-		switch(res) {
-		case SQLITE_DONE:
-			return false;
-		case SQLITE_ROW:
-			assert(sizeof(db_oid) == sqlite3_column_bytes(find,0));
-			const char* blob = sqlite3_column_blob(find, 0);
-			assert(blob != NULL);
-			memcpy(dest, blob, sizeof(db_oid));
-			return true;
-		default:
-			db_check(res);
-			abort();
-		};
+	RESETTING(find) int res = sqlite3_step(find);
+	assert(res == SQLITE_ROW);
+	if(sqlite_column_type(find,0) != SQLITE_NULL) {
+		out->until = true;
+		*until = sqlite_column_int64(find,0);
 	}
-	out->current = one(current,CURRENT);
-	out->last = one(last,LAST);
+	if(sqlite_column_type(find,1) != SQLITE_NULL) {
+		out->since = true;
+		assert(sizeof(db_oid) == sqlite3_column_bytes(find,1));
+		memcpy(since,sqlite3_column_blob(find, 0),sizeof(db_oid));
+	}
 }
 
 
