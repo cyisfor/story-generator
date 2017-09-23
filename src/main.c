@@ -150,12 +150,12 @@ int main(int argc, char *argv[])
 		git_for_commits(results.last ? last_commit : NULL,
 										results.current ? current_commit : NULL,
 										on_commit);
+		if(num > 0) {
+			db_caught_up_commits();
+			//putchar('\n');
+		}
 	}
-	if(num > 0) {
-		db_caught_up_commits();
-		//putchar('\n');
-	}
-	END_TRANSACTION;
+	db_retransaction();
 
 	INFO("processing...");
 
@@ -412,6 +412,7 @@ int main(int argc, char *argv[])
 		// but if only the title of a chapter changed, we still recreate contents
 	}
 
+	db_retransaction();
 	INFO("stories since %d",timestamp);
 	db_for_stories(for_story, timestamp);
 	db_caught_up_category(category);
