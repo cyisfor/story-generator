@@ -42,7 +42,7 @@ static
 git_time_t author_time(git_commit* commit) {
 	// the commit time, or the committer time, changes with every rebase
 	// but author remains the same!
-	git_signature* author = git_commit_author(commit);
+	const git_signature* author = git_commit_author(commit);
 	return author->when.time;
 }
 
