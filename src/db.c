@@ -296,6 +296,7 @@ bool need_restart_for_chapters = false;
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter) {
 	if(deleted) {
+		return; // meh!
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapter);

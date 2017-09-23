@@ -108,6 +108,9 @@ int main(int argc, char *argv[])
 				return GFC_CONTINUE;
 			}
 			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);
+			db_retransaction();
+			db_close_and_exit();
+
 			return GFC_CONTINUE;
 		}
 		enum gfc_action ret = git_for_chapters_changed(last,cur,on_chapter);
@@ -254,8 +257,6 @@ int main(int argc, char *argv[])
 						 since it needs its next link removed
 					*/
 					db_saw_chapter(false,story,story_timestamp,countchaps);
-					db_retransaction();
-					db_close_and_exit(23);
 				}
 				numchaps = countchaps;
 			}
