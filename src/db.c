@@ -296,13 +296,13 @@ bool need_restart_for_chapters = false;
 void db_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter) {
 	if(deleted) {
-		return; // meh! they're all deleted, eventually!
+		INFO("BALEETED %d:%d %d",story,chapter,timestamp);
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
 	} else {
-		INFO("SAW %d:%d %s",story,chapter,ctime(&timestamp));
+		INFO("SAW %d:%d %d",story,chapter,timestamp);
 		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
 								 "WHERE story = ? AND chapter = ?"); 
