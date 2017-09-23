@@ -52,6 +52,6 @@ int main(int argc, char *argv[])
 		return GFC_CONTINUE;
 	}
 	
-	git_for_commits(NULL,NULL,on_commit);
+	git_for_commits(false,0,false,NULL,on_commit);
 	return 0;
 }

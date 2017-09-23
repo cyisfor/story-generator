@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	puts("chapter location name");
 
 	repo_discover_init(".",1);
-	git_for_commits(false, NULL, false, 0, on_commit);
+	git_for_commits(false, 0, false, NULL, on_commit);
 
 	return 0;
 }
