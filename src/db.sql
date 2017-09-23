@@ -3,11 +3,10 @@ CREATE TABLE IF NOT EXISTS categories (
 			 category TEXT NOT NULL UNIQUE,
 			 timestamp INTEGER NOT NULL DEFAULT 0);
 
-CREATE TABLE IF NOT EXISTS commits (
-			 oid BLOB NOT NULL,
-			 timestamp INTEGER NOT NULL,
-			 kind INTEGER NOT NULL UNIQUE,
-			 PRIMARY KEY(oid,timestamp,kind)) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS committing (
+			 until INTEGER NOT NULL,
+			 since BLOB NOT NULL,
+			 PRIMARY KEY(until,since)) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,

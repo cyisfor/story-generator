@@ -230,7 +230,7 @@ identifier db_get_category(const string name, git_time_t* timestamp) {
 
 void db_last_seen_commit(struct bad* out,
 												 git_time_t* until, db_oid since) {
-	DECLARE_STMT(find,"SELECT until,since FROM commits LIMIT 1");
+	DECLARE_STMT(find,"SELECT until,since FROM committing LIMIT 1");
 
 	RESETTING(find) int res = sqlite3_step(find);
 	assert(res == SQLITE_ROW);
