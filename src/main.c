@@ -108,8 +108,6 @@ int main(int argc, char *argv[])
 				return GFC_CONTINUE;
 			}
 			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);
-			db_retransaction();
-			db_close_and_exit();
 
 			return GFC_CONTINUE;
 		}
