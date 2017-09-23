@@ -166,8 +166,8 @@ git_for_commits(const db_oid until,
 
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			{
-				INFO("%s:%s ->",git_oid_tostr_s(parent.oid), myctime(&parent.time));
-				fprintf(stderr," %s:%s\n",git_oid_tostr_s(me.oid), myctime(&me.time));
+				INFO("%s:%s ->",git_oid_tostr_s(parent.oid), myctime(parent.time));
+				fprintf(stderr," %s:%s\n",git_oid_tostr_s(me.oid), myctime(me.time));
 			}
 						 
 			enum gfc_action op = handle(DB_OID(*me.oid),
