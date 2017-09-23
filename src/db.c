@@ -112,6 +112,7 @@ void db_open(const char* filename) {
 	char* err = NULL;
 	BEGIN_TRANSACTION;
 	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	db_retransaction();
 
 	{
 		sqlite3_stmt* check = NULL;
