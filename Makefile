@@ -54,7 +54,7 @@ o/%.o: src/%.c | o
 	$(COMPILE)
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
-	(cd o && prefix=category enum=CATEGORY exec ../str_to_enum_trie/main)<$<
+	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../str_to_enum_trie/main)<$<
 
 o/category.gen.o: o/category.gen.c
 	$(COMPILE)
