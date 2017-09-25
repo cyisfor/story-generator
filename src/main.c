@@ -181,6 +181,7 @@ int main(int argc, char *argv[])
 	const string scategory = get_category();
 	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
+	else if(results.until) timestamp = until;
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
 
