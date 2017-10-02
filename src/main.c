@@ -187,11 +187,23 @@ int main(int argc, char *argv[])
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
 
+	identifier only_story = -1;
+	if(getenv("story")) {
+		string s = {
+			getenv("story"),
+			strlen(getenv("story"))
+		};
+		only_story = db_find_story(s);
+	}
+
 	void for_story(identifier story,
 								 const string location,
 								 bool finished,
 								 size_t numchaps,
 								 git_time_t story_timestamp) {
+		if(only_story != -1) {
+			if(story != only_story) return;
+		}
 		INFO("story %lu %lu %.*s",story,numchaps,location.l,location.s);
 
 		// we can spare two file descriptors, to track the directories
