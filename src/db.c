@@ -1,5 +1,6 @@
 #include "db.h"
 #include "ensure.h"
+#include "htmlish.h"
 
 #include "itoa.h"
 
@@ -722,6 +723,7 @@ static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 }
 
 void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
+	if(htmlish_handled_error(error)) return;
 	if(error->code == XML_HTML_UNKNOWN_TAG) {
 		const char* name = error->str1;
 		size_t nlen = strlen(name);

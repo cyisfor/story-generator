@@ -65,6 +65,8 @@ int main(int argc, char *argv[])
 	repo_check(repo_discover_init(LITLEN(".git")));
 	db_open("generate.sqlite");
 
+	LIBXML_TEST_VERSION;
+
 	xmlSetStructuredErrorFunc(NULL,cool_xml_error_handler);
 
 	create_setup();

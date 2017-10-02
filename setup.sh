@@ -1,10 +1,5 @@
 . git-tools/funcs.sh
 
-local=/home/code/git-tools
-remote=https://github.com/cyisfor/git-tools.git
-dest=git-tools
-clonepull
-
 local=/home/code/htmlish
 remote=https://github.com/cyisfor/htmlish.git
 dest=htmlish
@@ -12,6 +7,11 @@ clonepull
 
 uplink ./htmlish/ html_when
 uplink ./htmlish/html_when/ libxml2
+
+local=/home/code/git-tools
+remote=https://github.com/cyisfor/git-tools.git
+dest=git-tools
+clonepull
 
 local=/extra/home/packages/git/ddate/
 remote=https://github.com/cyisfor/ddate.git
