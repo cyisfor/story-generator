@@ -723,12 +723,42 @@ static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	return res == SQLITE_ROW ? 1 : 0;
 }
 
+static struct {
+	identifier story;
+	identifier chapter;
+} = {};
+
+void db_working_on(identifier story, identifier chapter) {
+	working.story = story;
+	working.chapter = chapter;
+}
+
 void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 	if(htmlish_handled_error(error)) return;
 	if(error->code == XML_HTML_UNKNOWN_TAG) {
 		const char* name = error->str1;
 		size_t nlen = strlen(name);
 		if(is_cool_xml_tag(name,nlen)) return;
+	}
+	if(working.story) {
+		DECLARE_STMT(find,"SELECT location,(select title FROM chapters where id = ?2) FROM story WHERE id = ?1");
+		sqlite3_bind_int64(find,1,story);
+		sqlite3_bind_int64(find,2,chapter);
+		if(db_check(sqlite3_step(find) == SQLITE_ROW)) {
+			fprintf(stderr,"%.*s:%d ",
+							sqlite3_column_bytes(find,0),
+							sqlite3_column_blob(find,0),
+							chapter);
+			if(sqlite3_column_type(find,1) != SQLITE_NULL) {
+				fprintf(stderr,"(%.*s) ",
+								sqlite3_column_bytes(find,1),
+								sqlite3_column_blob(find,1));
+			}
+		} else {
+			fprintf(stderr,"???%d:%d ",story,chapter);
+		}
+		working.story = 0;
+		working.chapter = 0;
 	}
 	fprintf(stderr,"xml error %s %s\n",error->message,
 					error->level == XML_ERR_FATAL ? "fatal..." : "ok");
