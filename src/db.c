@@ -541,12 +541,19 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 void db_for_chapters(identifier story,
 										void (*handle)(identifier chapter,
 																	 git_time_t timestamp),
-										git_time_t since) {
+										git_time_t since,
+										bool only_ready) {
+#define READY "(select ready FROM stories WHERE chapter = chapters.id)"
 	DECLARE_STMT(find,
-							 "SELECT chapter,timestamp FROM chapters WHERE story = ? AND timestamp > ? ORDER BY timestamp");
+							 "SELECT chapter,timestamp FROM chapters WHERE "
+							 "story = ? AND timestamp > ? AND "
+							 "(? OR (id >= " READY ")) "
+							 "ORDER BY timestamp");
+#undef READY
 RESTART:
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,since);
+	sqlite3_bind_int(find,3,only_ready ? 0 : 1);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
@@ -744,7 +751,8 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 		DECLARE_STMT(find,"SELECT location,(select title FROM chapters where id = ?2) FROM stories WHERE id = ?1");
 		sqlite3_bind_int64(find,1,working.story);
 		sqlite3_bind_int64(find,2,working.chapter);
-		if(db_check(sqlite3_step(find)) == SQLITE_ROW) {
+		RESETTING(find) int res = db_check(sqlite3_step(find));
+		if(res == SQLITE_ROW) {
 			fprintf(stderr,"=== %.*s:%d ",
 							sqlite3_column_bytes(find,0),
 							sqlite3_column_blob(find,0),

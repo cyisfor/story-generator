@@ -64,9 +64,10 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 																							 const string source));
 
 void db_for_chapters(identifier story,
-										void (*handle)(identifier chapter,
-																	 git_time_t timestamp),
-										git_time_t since);
+										 void (*handle)(identifier chapter,
+																		git_time_t timestamp),
+										 git_time_t since,
+										 bool only_ready);
 
 void db_with_chapter_title(identifier story,
 													 identifier chapter,

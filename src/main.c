@@ -160,17 +160,27 @@ int main(int argc, char *argv[])
 
 	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
 
+	bool only_ready = false;
+
 	const string get_category() {
 		if(getenv("category")!=NULL) {
 			string c = {getenv("category")};
-			c.l = strlen(c.s);
 			switch(lookup_category(c.s)) {
 			case CATEGORY_censored:
-				WARN("censored is a special category. set censored=1 instead plz");
+				//WARN("censored is a special category. set censored=1 instead plz");
 				setenv("censored","1",1);
+				c.l = LITSIZ("censored");
+				break;
 			case CATEGORY_sneakpeek:
 				always_finished = true;
+				c.l = LITSIZ("sneakpeek");
+				break;
+			case CATEGORY_ready:
+				only_ready = true;
+				c.l = LITSIZ("ready");
+				break;
 			};
+			c.l = strlen(c.s);
 			return c;
 		} else if(getenv("censored")!=NULL) {
 			return (const string){LITLEN("censored")};
@@ -361,7 +371,7 @@ int main(int argc, char *argv[])
 		}
 
 		// NOT story_timestamp
-		db_for_chapters(story, for_chapter, timestamp);
+		db_for_chapters(story, for_chapter, timestamp, only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));
