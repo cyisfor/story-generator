@@ -726,7 +726,7 @@ static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 static struct {
 	identifier story;
 	identifier chapter;
-} = {};
+} working = {};
 
 void db_working_on(identifier story, identifier chapter) {
 	working.story = story;
@@ -741,22 +741,23 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 		if(is_cool_xml_tag(name,nlen)) return;
 	}
 	if(working.story) {
-		DECLARE_STMT(find,"SELECT location,(select title FROM chapters where id = ?2) FROM story WHERE id = ?1");
-		sqlite3_bind_int64(find,1,story);
-		sqlite3_bind_int64(find,2,chapter);
-		if(db_check(sqlite3_step(find) == SQLITE_ROW)) {
-			fprintf(stderr,"%.*s:%d ",
+		DECLARE_STMT(find,"SELECT location,(select title FROM chapters where id = ?2) FROM stories WHERE id = ?1");
+		sqlite3_bind_int64(find,1,working.story);
+		sqlite3_bind_int64(find,2,working.chapter);
+		if(db_check(sqlite3_step(find)) == SQLITE_ROW) {
+			fprintf(stderr,"=== %.*s:%d ",
 							sqlite3_column_bytes(find,0),
 							sqlite3_column_blob(find,0),
-							chapter);
+							working.chapter);
 			if(sqlite3_column_type(find,1) != SQLITE_NULL) {
 				fprintf(stderr,"(%.*s) ",
 								sqlite3_column_bytes(find,1),
 								sqlite3_column_blob(find,1));
 			}
 		} else {
-			fprintf(stderr,"???%d:%d ",story,chapter);
+			fprintf(stderr,"??? %d:%d ",working.story,working.chapter);
 		}
+		fputc('\n',stderr);
 		working.story = 0;
 		working.chapter = 0;
 	}

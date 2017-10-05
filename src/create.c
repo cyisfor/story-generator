@@ -337,6 +337,7 @@ void create_chapter(int src, int dest,
 	bool as_child = false;
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 
+	db_working_on(story,chapter);
 	htmlish(content,src,as_child);
 
 	if(!as_child) {
