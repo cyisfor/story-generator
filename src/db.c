@@ -547,7 +547,8 @@ void db_for_chapters(identifier story,
 	DECLARE_STMT(find,
 							 "SELECT chapter,timestamp FROM chapters WHERE "
 							 "story = ? AND timestamp > ? AND "
-							 "(? OR (chapter >= " READY ")) "
+							 "(? OR (SELECT finished FROM stories WHERE id = chapters.story) OR "
+							 "(chapter <= " READY ")) "
 							 "ORDER BY timestamp");
 #undef READY
 RESTART:
