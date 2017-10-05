@@ -102,6 +102,9 @@ void db_set_story_info(identifier story,
 											 const string description,
 											 const string source);
 
+// XXX: just for the error handler...
+void db_working_on(identifier story, identifier chapter);
+
 #include <libxml/xmlerror.h>
 
 void cool_xml_error_handler(void * userData, xmlErrorPtr error);

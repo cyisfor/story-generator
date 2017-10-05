@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS stories (
 			 -- these are how many chapters the story had the LAST
 			 -- time its contents were written. COUNT(1) FROM chapters for accurate count
 			 chapters INTEGER NOT NULL DEFAULT 0,
+			 -- this is the latest chapter that is "ready"
+			 -- i.e. no longer in draft.
+			 -- TODO: readiness levels?
+			 ready INTEGER,
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);

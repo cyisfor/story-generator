@@ -289,7 +289,9 @@ int main(int argc, char *argv[])
 
 		git_time_t max_timestamp = story_timestamp;
 
+		bool any_chapter = false; // stays false when no chapters are ready
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			any_chapter = true;
 			//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
 				max_timestamp = chapter_timestamp;
@@ -400,6 +402,8 @@ int main(int argc, char *argv[])
 				return;
 			}
 		}
+
+		if(!any_chapter) return;
 
 		WARN("recreating contents of %d", story);
 

@@ -543,11 +543,11 @@ void db_for_chapters(identifier story,
 																	 git_time_t timestamp),
 										git_time_t since,
 										bool only_ready) {
-#define READY "(select ready FROM stories WHERE chapter = chapters.id)"
+#define READY "(select ready FROM stories WHERE id = chapters.story)"
 	DECLARE_STMT(find,
 							 "SELECT chapter,timestamp FROM chapters WHERE "
 							 "story = ? AND timestamp > ? AND "
-							 "(? OR (id >= " READY ")) "
+							 "(? OR (chapter >= " READY ")) "
 							 "ORDER BY timestamp");
 #undef READY
 RESTART:
