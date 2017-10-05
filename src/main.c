@@ -245,12 +245,13 @@ int main(int argc, char *argv[])
 				if(destinfo.st_mtime >= srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
-					WARN("skip %s",destname);
+					//WARN("skip %s",destname);
 					return true;
 				}
 			} else {
 				INFO("dest no exist %s",destname);
 			}
+			INFO("generating %s",destname);
 			return false;
 		}
 
@@ -279,7 +280,7 @@ int main(int argc, char *argv[])
 		git_time_t max_timestamp = story_timestamp;
 
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-			SPAM("chap %d:%d\n",chapter,chapter_timestamp);
+			//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
 				max_timestamp = chapter_timestamp;
 			// this should be moved later...
@@ -381,7 +382,6 @@ int main(int argc, char *argv[])
 			// be sure to create anyway if contents.html doesn't exist
 			bool contents_exist = (0 == fstatat(destloc,"contents.html",&info,0));
 			if(contents_exist) {
-				WARN("not recreating contents of %d", story);
 				int dest = openat(destloc,"contents.html",O_WRONLY);
 				if(dest >= 0) {
 					close_with_time(dest, max_timestamp);
@@ -390,6 +390,8 @@ int main(int argc, char *argv[])
 				return;
 			}
 		}
+
+		WARN("recreating contents of %d", story);
 
 		/* be sure to create the contents after processing the chapters, to update the db
 		 with any embedded chapter titles */

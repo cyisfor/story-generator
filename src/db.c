@@ -304,7 +304,7 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
 	} else {
-		INFO("SAW %d:%d %d",story,chapter,timestamp);
+		//INFO("SAW %d:%d %d",story,chapter,timestamp);
 		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
 		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
 								 "WHERE story = ? AND chapter = ?");
@@ -645,10 +645,11 @@ identifier db_count_chapters(identifier story) {
 void db_set_chapter_title(const string title,
 													identifier story, identifier chapter,
 													bool* title_changed) {
-	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ?");
+	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND title != ?");
 	sqlite3_bind_text(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
+	sqlite3_bind_text(update,4,title.s,title.l,NULL);
 	BEGIN_TRANSACTION;
 	db_once(update);
 	if(!*title_changed) {

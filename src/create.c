@@ -144,7 +144,6 @@ int create_contents(identifier story,
 
 		// check for changes first
 
-		SPAM("got info");
 		bool newdesc = false;
 		bool newsource = false;
 		bool newtitle = false;
@@ -363,9 +362,9 @@ void create_chapter(int src, int dest,
 		};
 		t.l = strlen(t.s);
 		db_set_chapter_title(t, story, chapter, title_changed);
-	} else {
+	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);
-	}
+	}*/
 
 	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {
 		xmlNode* a = xmlNewNode(links->ns,"a");
