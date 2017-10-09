@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 					"<table class=chaps>\n"
 					));
 
-	bool sneakpeek = getenv("sneakpeek") != NULL;
+	db_all_finished = getenv("sneakpeek") != NULL;
 
 	void on_chapter(identifier story,
 									size_t chapnum,
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 			write(2,LITLEN("yayayay"));
 			return;
 		}
-		if(!sneakpeek) {
+		if(!db_all_finished) {
 			if(db_count_chapters(story) == chapnum) return;
 		}
 		

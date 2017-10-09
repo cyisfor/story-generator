@@ -6,6 +6,14 @@
 #include <stdint.h> // int64_t
 #include <stdbool.h>
 
+// censor stories that are "bad"
+extern bool db_only_censored;
+// include last chapter for all stories
+extern bool db_all_finished;
+
+
+
+
 #include "db_oid/base.h"
 
 void db_open(const char* filename);
@@ -27,8 +35,6 @@ identifier db_get_category(const string name, git_time_t* timestamp);
 void db_caught_up_category(identifier category);
 
 bool db_set_censored(identifier story, bool censored);
-
-extern bool db_only_censored;
 
 identifier db_find_story(const string location);
 identifier db_get_story(const string location, git_time_t timestamp);

@@ -450,7 +450,7 @@ void db_for_recent_chapters(int limit,
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story))"
 							 "ORDER BY chapters.timestamp DESC LIMIT ?3");
 	RESETTING(find) int res;
-	sqlite3_bind_int(find,1,db_censored ? 1 : 0);
+	sqlite3_bind_int(find,1,db_only_censored ? 1 : 0);
 	sqlite3_bind_int(find,2,db_all_finished ? 1 : 0);
 	sqlite3_bind_int(find,3,limit);
 	
