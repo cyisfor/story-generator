@@ -269,8 +269,8 @@ identifier db_find_story(const string location) {
 }
 
 bool db_set_censored(identifier story, bool censored) {
-	DECLARE_STMT(insert,"INSERT OR IGNORE INTO censored_stories (id) VALUES (?)");
-	DECLARE_STMT(delete,"DELETE FROM censored_stories WHERE id = ?");
+	DECLARE_STMT(insert,"INSERT OR IGNORE INTO censored_stories (story) VALUES (?)");
+	DECLARE_STMT(delete,"DELETE FROM censored_stories WHERE story = ?");
 	if(censored) {
 		sqlite3_bind_int(insert,1,1);
 		db_once(insert);
@@ -481,7 +481,7 @@ void db_for_stories(void (*handle)(identifier story,
 										git_time_t since) {
 	if(only_story.ye) {
 		DECLARE_STMT(find,"SELECT location,finished,chapters,timestamp FROM stories WHERE id = ?1\n"
-								 " AND NOT(?2 AND id IN (SELECT id FROM censored_stories))");
+								 " AND NOT(?2 AND id IN (SELECT story FROM censored_stories))");
 
 		sqlite3_bind_int64(find,1,only_story.i);
 		sqlite3_bind_int(find,2,db_only_censored ? 1 : 0);
