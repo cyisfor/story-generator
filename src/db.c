@@ -499,7 +499,7 @@ void db_for_recent_chapters(int limit,
 				sqlite3_column_int64(find,0),
 				sqlite3_column_int64(find,1),
 				story_title,
-				chapter_title
+				chapter_title,
 				location,
 				sqlite3_column_int64(find,5));
 			continue;
