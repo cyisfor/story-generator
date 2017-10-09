@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 					));
 
 	db_all_finished = getenv("sneakpeek") != NULL;
+	db_only_censored = getenv("censored") != NULL;
 
 	void on_chapter(identifier story,
 									size_t chapnum,

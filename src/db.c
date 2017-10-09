@@ -444,14 +444,16 @@ void db_for_recent_chapters(int limit,
 							 "chapters.title,"
 							 "location,"
 							 "chapters.timestamp "
+#ifdef DEBUGGINGTHISQUERY
 							 ","
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story),"
 							 "  stories.finished,"
+#endif
 							 "story IN (select story from censored_stories) "
 							 "FROM chapters inner join stories on stories.id = chapters.story "
 							 "WHERE "
-							 // not censored or censored but not in censored_stories
-							 "NOT (?1 OR story IN (select story from censored_stories)) "
+							 // not (only censored and in censored_stories)
+							 "NOT (?1 AND story IN (select story from censored_stories)) "
 							 " AND "
 							 // all finished, or this one finished, or not last chapter
 							 "(?2 OR stories.finished OR chapter < "
@@ -471,11 +473,14 @@ void db_for_recent_chapters(int limit,
 		res = db_check(sqlite3_step(find));
 		switch(res) {
 		case SQLITE_ROW: {
-			SPAM("erg %d %d %d\n",
-				sqlite3_column_int(find,5),
+#ifdef DEBUGGINGTHISQUERY
+			SPAM("erg %d:%d nchap %d fins %d censor %d\n",
+					 sqlite3_column_int64(find,0),
+					 sqlite3_column_int64(find,1),
+					 sqlite3_column_int(find,5),
 						sqlite3_column_int(find,6),
 						sqlite3_column_int(find,7));
-	
+#endif
 			const string title = {
 				.s = sqlite3_column_blob(find,2),
 				.l = sqlite3_column_bytes(find,2)
