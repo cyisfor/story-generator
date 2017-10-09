@@ -268,6 +268,19 @@ identifier db_find_story(const string location) {
 	return -1;
 }
 
+bool db_set_censored(identifier story, bool censored) {
+	DECLARE_STMT(insert,"INSERT OR IGNORE INTO censored_stories (id) VALUES (?)");
+	DECLARE_STMT(delete,"DELETE FROM censored_stories WHERE id = ?");
+	if(censored) {
+		sqlite3_bind_int(insert,1,1);
+		db_once(insert);
+	} else {
+		sqlite3_bind_int(delete,1,1);
+		db_once(delete);
+	}
+	return sqlite3_changes(db) > 0; // operation did something, or not.
+}
+
 identifier db_get_story(const string location, git_time_t timestamp) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
@@ -458,6 +471,8 @@ void db_for_recent_chapters(int limit,
 	}
 }
 
+bool db_censored = false;
+
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
 																	 bool finished,
@@ -465,8 +480,11 @@ void db_for_stories(void (*handle)(identifier story,
 																	 git_time_t timestamp),
 										git_time_t since) {
 	if(only_story.ye) {
-		DECLARE_STMT(find,"SELECT location,finished,chapters,timestamp FROM stories WHERE id = ?");
+		DECLARE_STMT(find,"SELECT location,finished,chapters,timestamp FROM stories WHERE id = ?1\n"
+								 " AND NOT(?2 AND id IN (SELECT id FROM censored_stories))");
+
 		sqlite3_bind_int64(find,1,only_story.i);
+		sqlite3_bind_int(find,2,db_censored ? 1 : 0);
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		ensure_eq(res,SQLITE_ROW);
 		const string location = {
