@@ -26,4 +26,13 @@ typedef struct string {
 
 #define ISLIT(ss,a) ((ss.l == LITSIZ(a)) ? (0 == memcmp(ss.s,a,LITSIZ(a))) : 0)
 
+static
+const struct string ztos(const char* z) {
+	const struct string ret = {
+		.s = z,
+		.l = strlen(z)
+	};
+	return ret;
+}
+
 #endif /* _STRING_H_ */

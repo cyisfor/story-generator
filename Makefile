@@ -45,8 +45,8 @@ N=test_git storygit repo itoa db note
 test_git: $O
 	$(LINK)
 
-N=set-censored db note
-set-censored: $0
+N=set-censored db note itoa
+set-censored: $O
 	$(LINK)
 
 
