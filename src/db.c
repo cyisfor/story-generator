@@ -1,3 +1,4 @@
+#include "note.h"
 #include "db.h"
 #include "ensure.h"
 #include "htmlish.h"
@@ -438,10 +439,15 @@ void db_for_recent_chapters(int limit,
 																					 const string location,
 																					 git_time_t timestamp)) {
 
-	DECLARE_STMT(find,"SELECT story,chapter,"
+	DECLARE_STMT(find,"SELECT story,"
+							 "chapter,"
 							 "chapters.title,"
 							 "location,"
 							 "chapters.timestamp "
+							 ","
+							 "  (select count(1) from chapters as sub where sub.story = chapters.story),"
+							 "  stories.finished,"
+							 "story IN (select story from censored_stories) "
 							 "FROM chapters inner join stories on stories.id = chapters.story "
 							 "WHERE "
 							 // not censored or censored but not in censored_stories
@@ -459,12 +465,17 @@ void db_for_recent_chapters(int limit,
 	sqlite3_bind_int(find,1,db_only_censored ? 1 : 0);
 	sqlite3_bind_int(find,2,db_all_finished ? 1 : 0);
 	sqlite3_bind_int(find,3,limit);
-	
+
 
 	for(;;) {
 		res = db_check(sqlite3_step(find));
 		switch(res) {
 		case SQLITE_ROW: {
+			SPAM("erg %d %d %d\n",
+				sqlite3_column_int(find,5),
+						sqlite3_column_int(find,6),
+						sqlite3_column_int(find,7));
+	
 			const string title = {
 				.s = sqlite3_column_blob(find,2),
 				.l = sqlite3_column_bytes(find,2)
