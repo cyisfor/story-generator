@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 				db_only_censored = true;
 				break;
 			case CATEGORY_sneakpeek:
-				db_always_finished = true;
+				db_all_finished = true;
 				c.l = LITSIZ("sneakpeek");
 				break;
 			case CATEGORY_ready:
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
 		// save numchaps to update story later.
 		const int savenumchaps = numchaps;
 		// XXX: if finished, numchaps, otherwise
-		if(!db_always_finished && !finished && numchaps > 1) --numchaps;
+		if(!db_all_finished && !finished && numchaps > 1) --numchaps;
 
 		git_time_t max_timestamp = story_timestamp;
 
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
-				if(chapter > 2 && !db_always_finished && !finished) {
+				if(chapter > 2 && !db_all_finished && !finished) {
 					// two chapters before this needs updating, since it now has a "next" link
 					db_saw_chapter(false,story,chapter_timestamp,chapter-2);
 				}

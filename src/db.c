@@ -439,15 +439,21 @@ void db_for_recent_chapters(int limit,
 																					 git_time_t timestamp)) {
 
 	DECLARE_STMT(find,"SELECT story,chapter,"
-							 "title,"
+							 "chapters.title,"
 							 "location,"
-							 "timestamp "
+							 "chapters.timestamp "
 							 "FROM chapters inner join stories on stories.id = chapters.story "
 							 "WHERE "
+							 // not censored or censored but not in censored_stories
 							 "NOT (?1 OR story IN (select story from censored_stories)) "
 							 " AND "
+							 // all finished, or this one finished, or not last chapter
 							 "(?2 OR stories.finished OR chapter < "
-							 "  (select count(1) from chapters as sub where sub.story = chapters.story))"
+							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
+							 // always stories with one chapter are "finished"
+							 " OR 1 = "
+							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
+							 ")"
 							 "ORDER BY chapters.timestamp DESC LIMIT ?3");
 	RESETTING(find) int res;
 	sqlite3_bind_int(find,1,db_only_censored ? 1 : 0);
