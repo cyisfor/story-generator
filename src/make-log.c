@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
 
 	void on_chapter(identifier story,
 									size_t chapnum,
-									const string title,
+									const string story_title,
+									const string chapter_title,
 									const string location,
 									git_time_t timestamp) {
 
@@ -64,11 +65,17 @@ int main(int argc, char *argv[])
 		}
 		write(1,LITLEN("\">"));
 
-		if(title.s)
-			write(1,title.s,title.l);
+		if(story_title.s)
+			write(1,story_title.s,story_title.l);
 		else
 			write(1,location.s,location.l);
 
+		if(chapter_title.s) {
+			write(1,LITLEN(" ("));
+			write(1,chapter_title.s,chapter_title.l);
+			write(1,LITLEN(")"));
+		}
+		
 		write(1, LITLEN("</a></td><td>"));
 
 		char* s = ctime(&timestamp);

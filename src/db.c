@@ -448,8 +448,8 @@ void db_for_recent_chapters(int limit,
 							 ","
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story),"
 							 "  stories.finished,"
-#endif
 							 "story IN (select story from censored_stories) "
+#endif
 							 "FROM chapters inner join stories on stories.id = chapters.story "
 							 "WHERE "
 							 // not (only censored and in censored_stories)
