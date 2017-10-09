@@ -57,7 +57,8 @@ void db_storycache_free(struct storycache* cache);
 void db_for_recent_chapters(int limit,
 														void (*handle)(identifier story,
 																					 size_t chapnum,
-																					 const string title,
+																					 const string story_title,
+																					 const string chapter_title,
 																					 const string location,
 																					 git_time_t timestamp));
 

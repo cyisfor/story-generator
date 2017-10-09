@@ -435,12 +435,14 @@ void db_storycache_free(struct storycache* cache) {
 void db_for_recent_chapters(int limit,
 														void (*handle)(identifier story,
 																					 size_t chapnum,
-																					 const string title,
+																					 const string story_title,
+																					 const string chapter_title,
 																					 const string location,
 																					 git_time_t timestamp)) {
 
 	DECLARE_STMT(find,"SELECT story,"
 							 "chapter,"
+							 "stories.title,"
 							 "chapters.title,"
 							 "location,"
 							 "chapters.timestamp "
@@ -481,20 +483,25 @@ void db_for_recent_chapters(int limit,
 						sqlite3_column_int(find,6),
 						sqlite3_column_int(find,7));
 #endif
-			const string title = {
+			const string story_title = {
 				.s = sqlite3_column_blob(find,2),
 				.l = sqlite3_column_bytes(find,2)
 			};
-			const string location = {
+			const string chapter_title = {
 				.s = sqlite3_column_blob(find,3),
 				.l = sqlite3_column_bytes(find,3)
+			};
+			const string location = {
+				.s = sqlite3_column_blob(find,4),
+				.l = sqlite3_column_bytes(find,4)
 			};
 			handle(
 				sqlite3_column_int64(find,0),
 				sqlite3_column_int64(find,1),
-				title,
+				story_title,
+				chapter_title
 				location,
-				sqlite3_column_int64(find,4));
+				sqlite3_column_int64(find,5));
 			continue;
 		}
 		case SQLITE_DONE:
