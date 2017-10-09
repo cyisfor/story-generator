@@ -12,6 +12,11 @@
 
 #include "db_oid/gen.h"
 
+bool db_only_censored = false;
+bool db_all_finished = false;
+
+
+
 sqlite3* db = NULL;
 
 static int db_check(int res) {
@@ -272,10 +277,10 @@ bool db_set_censored(identifier story, bool censored) {
 	DECLARE_STMT(insert,"INSERT OR IGNORE INTO censored_stories (story) VALUES (?)");
 	DECLARE_STMT(delete,"DELETE FROM censored_stories WHERE story = ?");
 	if(censored) {
-		sqlite3_bind_int(insert,1,1);
+		sqlite3_bind_int64(insert,1,story);
 		db_once(insert);
 	} else {
-		sqlite3_bind_int(delete,1,1);
+		sqlite3_bind_int64(delete,1,story);
 		db_once(delete);
 	}
 	return sqlite3_changes(db) > 0; // operation did something, or not.
@@ -434,16 +439,21 @@ void db_for_recent_chapters(int limit,
 																					 git_time_t timestamp)) {
 
 	DECLARE_STMT(find,"SELECT story,chapter,"
-							 "(select title from stories where stories.id = story),"
-							 "(select location from stories where stories.id = story),"
-							 "timestamp FROM chapters "
-/*							 "WHERE "
-							 "(select finished from stories where stories.id = story) OR "
-							 "chapter < (select count(1) from chapters as sub where sub.story = chapters.story) "*/
-							 "ORDER BY timestamp DESC");
+							 "title,"
+							 "location,"
+							 "timestamp "
+							 "FROM chapters inner join stories on stories.id = chapters.story "
+							 "WHERE "
+							 "NOT (?1 OR story IN (select story from censored_stories)) "
+							 " AND "
+							 "(?2 OR stories.finished OR chapter < "
+							 "  (select count(1) from chapters as sub where sub.story = chapters.story))"
+							 "ORDER BY chapters.timestamp DESC LIMIT ?3");
 	RESETTING(find) int res;
-
-//	sqlite3_bind_int(find,1,limit);
+	sqlite3_bind_int(find,1,db_censored ? 1 : 0);
+	sqlite3_bind_int(find,2,db_all_finished ? 1 : 0);
+	sqlite3_bind_int(find,3,limit);
+	
 
 	for(;;) {
 		res = db_check(sqlite3_step(find));
@@ -470,8 +480,6 @@ void db_for_recent_chapters(int limit,
 		};
 	}
 }
-
-bool db_only_censored = false;
 
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
