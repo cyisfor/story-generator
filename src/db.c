@@ -471,7 +471,7 @@ void db_for_recent_chapters(int limit,
 	}
 }
 
-bool db_censored = false;
+bool db_only_censored = false;
 
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
@@ -484,7 +484,7 @@ void db_for_stories(void (*handle)(identifier story,
 								 " AND NOT(?2 AND id IN (SELECT id FROM censored_stories))");
 
 		sqlite3_bind_int64(find,1,only_story.i);
-		sqlite3_bind_int(find,2,db_censored ? 1 : 0);
+		sqlite3_bind_int(find,2,db_only_censored ? 1 : 0);
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		ensure_eq(res,SQLITE_ROW);
 		const string location = {

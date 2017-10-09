@@ -15,7 +15,7 @@ LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 derp: setup
 	$(MAKE) all
 
-all: generate test_git describe make-log list-commits
+all: generate test_git describe make-log list-commits set-censored
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 COMPILE=$(CC) $(CFLAGS) -c -o $@ $<
@@ -44,6 +44,12 @@ describe: $O
 N=test_git storygit repo itoa db note
 test_git: $O
 	$(LINK)
+
+N=set-censored db note
+set-censored: $0
+	$(LINK)
+
+
 
 o/%.d: src/%.c  $(LIBXML)/$(XMLVERSION) | o
 	(echo -n o/; \

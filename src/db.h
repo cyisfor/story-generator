@@ -28,6 +28,8 @@ void db_caught_up_category(identifier category);
 
 bool db_set_censored(identifier story, bool censored);
 
+extern bool db_only_censored;
+
 identifier db_find_story(const string location);
 identifier db_get_story(const string location, git_time_t timestamp);
 

@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 				//WARN("censored is a special category. set censored=1 instead plz");
 				setenv("censored","1",1);
 				c.l = LITSIZ("censored");
-				db_censored = true;
+				db_only_censored = true;
 				break;
 			case CATEGORY_sneakpeek:
 				always_finished = true;
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 			c.l = strlen(c.s);
 			return c;
 		} else if(getenv("censored")!=NULL) {
-			db_censored = true;
+			db_only_censored = true;
 			return (const string){LITLEN("censored")};
 		} else {
 			return (const string){LITLEN("html")};
