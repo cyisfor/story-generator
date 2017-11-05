@@ -112,7 +112,7 @@ struct {
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
-#include "db-sql.gen.c"
+#include "o/db-sql.gen.c"
 	PREPARE(begin_stmt,"BEGIN");
 	PREPARE(commit_stmt,"COMMIT");
 	PREPARE(rollback_stmt,"ROLLBACK");

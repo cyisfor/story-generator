@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
 	db_all_finished = getenv("sneakpeek") != NULL;
 	db_only_censored = getenv("censored") != NULL;
 
+#define output_literal(lit) write(1,LITLEN(lit))
+
 	void on_chapter(identifier story,
 									size_t chapnum,
 									const string story_title,
@@ -35,24 +37,24 @@ int main(int argc, char *argv[])
 			if(db_count_chapters(story) == chapnum) return;
 		}
 		
-		write(1,LITLEN("<tr><td>"));
+		output_literal("<tr><td>");
 
 		char num[0x10];
 		int numlen = snprintf(num,0x100, "%d",chapnum);
 		write(1, num, numlen);
 
-		write(1,LITLEN("</td><td><a href=\""));
+		output_literal("</td><td><a href=\"");
 		write(1,location.s,location.l);
-		write(1,LITLEN("/"));
+		output_literal("/");
 
 		if(chapnum == 1) {
-			write(1,LITLEN("index.html"));
+			output_literal("index.html");
 		} else {
-			write(1,LITLEN("chapter"));
+			output_literal("chapter");
 			write(1,num, numlen);
-			write(1,LITLEN(".html"));
+			output_literal(".html");
 		}
-		write(1,LITLEN("\">"));
+		output_literal("\">");
 
 		void wrstory(void) {
 			if(story_title.s)
@@ -63,32 +65,31 @@ int main(int argc, char *argv[])
 
 		if(chapter_title.s) {
 			write(1,chapter_title.s,chapter_title.l);
-			write(1,LITLEN(" ("));
+			output_literal(" (");
 			wrstory();
-			write(1,LITLEN(")"));
+			output_literal(")");
 		} else {
 			wrstory();
-//			write(1,LITLEN(" (chapter "));
+//			output_literal" (chapter "));
 //			write(1,num,numlen);
-//			write(1,LITLEN(")"));
+//			output_literal")"));
 		}
 
 
 		
-		write(1, LITLEN("</a></td><td>"));
+		output_literal("</a></td><td>");
 
 		char* s = ctime(&timestamp);
 		write(1,s,strlen(s)-1);
 
-		write(1,LITLEN("</td></tr>\n"));
+		output_literal"</td></tr>\n");
 	}
 
 	void output_body(void) {
 		db_for_recent_chapters(10000, on_chapter);
 	}
-	#define output_literal(lit) write(1,LITLEN(lit))
 
-#include "o/make-log.template.html.c"
+#include "o/template/make-log.html.c"
 
 	db_storycache_free(cache);
 	

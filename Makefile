@@ -8,7 +8,7 @@ LIBXML:=libxml2
 XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Io -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src
+CFLAGS+=-I. -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -36,9 +36,12 @@ make-log: $O
 N=make-log
 $(O): o/template/make-log.html.c
 
-o/template/%.c: template/% ctemplate/generate
+o/template/%.c: template/% ctemplate/generate | o/template
 	./ctemplate/generate < $< >$@.temp
 	mv $@.temp $@
+
+o/template: | o
+	mkdir $@
 
 ctemplate/generate: | ctemplate
 	$(MAKE) -C ctemplate generate

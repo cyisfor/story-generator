@@ -1,6 +1,6 @@
 #define _GNU_SOURCE // O_PATH
 
-#include "category.gen.h"
+#include "o/category.gen.h"
 
 #include "db.h"
 #include "ensure.h"
