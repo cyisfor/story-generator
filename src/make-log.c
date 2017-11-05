@@ -37,13 +37,10 @@ int main(int argc, char *argv[])
 			if(db_count_chapters(story) == chapnum) return;
 		}
 		
-		output_literal("<tr><td>");
-
 		char num[0x10];
 		int numlen = snprintf(num,0x100, "%d",chapnum);
-		write(1, num, numlen);
 
-		output_literal("</td><td><a href=\"");
+		output_literal("<tr><td><a href=\"");
 		write(1,location.s,location.l);
 		output_literal("/");
 
@@ -70,19 +67,21 @@ int main(int argc, char *argv[])
 			output_literal(")");
 		} else {
 			wrstory();
-//			output_literal" (chapter "));
+//			output_literal(" (chapter ");
 //			write(1,num,numlen);
-//			output_literal")"));
+//			output_literal(")");
 		}
 
-
-		
 		output_literal("</a></td><td>");
+
+		write(1, num, numlen);
+
+		output_literal("</td></td>\n");
 
 		char* s = ctime(&timestamp);
 		write(1,s,strlen(s)-1);
 
-		output_literal"</td></tr>\n");
+		output_literal("</td></tr>\n");
 	}
 
 	void output_body(void) {
