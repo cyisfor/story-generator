@@ -18,16 +18,10 @@ int main(int argc, char *argv[])
 	struct storycache* cache = db_start_storycache();
 	
 	write(1,LITLEN(
-					"<!DOCTYPE html>\n"
-					"<html>\n"
-					"<head>\n"
-					"<meta charset=utf-8/>\n"
-					"<link rel=stylesheet href=log.css />\n"
-					"<title>Recent updates.</title>\n"
-					"</head>\n<body>\n"
-					"<table class=chaps>\n"
+
 					));
 
+	void output_
 	db_all_finished = getenv("sneakpeek") != NULL;
 	db_only_censored = getenv("censored") != NULL;
 
@@ -79,9 +73,9 @@ int main(int argc, char *argv[])
 			write(1,LITLEN(")"));
 		} else {
 			wrstory();
-			write(1,LITLEN(" (chapter "));
-			write(1,num,numlen);
-			write(1,LITLEN(")"));
+//			write(1,LITLEN(" (chapter "));
+//			write(1,num,numlen);
+//			write(1,LITLEN(")"));
 		}
 
 
