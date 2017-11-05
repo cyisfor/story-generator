@@ -202,7 +202,10 @@ int main(int argc, char *argv[])
 		if(res)
 			timestamp = res;
 	}
-	else if(results.until) timestamp = until;
+	else if(results.until) {
+		INFO("UNTIL %d\n",until);
+		timestamp = until;
+	}
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
 
@@ -300,6 +303,7 @@ int main(int argc, char *argv[])
 
 		bool any_chapter = false; // stays false when no chapters are ready
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
+			SPAM("chapter %d %d",chapter,timestamp);
 			any_chapter = true;
 			//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
@@ -382,6 +386,7 @@ int main(int argc, char *argv[])
 		}
 
 		// NOT story_timestamp
+		SPAM("for chapters since %d",timestamp);
 		db_for_chapters(story, for_chapter, timestamp, only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
