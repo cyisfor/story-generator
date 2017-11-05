@@ -8,7 +8,7 @@ LIBXML:=libxml2
 XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb -fdiagnostics-color=always $(shell pkg-config --cflags $(P))
-CFLAGS+=-Io -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include
+CFLAGS+=-Io -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src
 LDLIBS+=-lbsd $(shell pkg-config --libs $(P))
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
@@ -32,6 +32,18 @@ generate: $O
 N=make-log itoa db note
 make-log: $O
 	$(LINK)
+
+N=make-log
+$(O): o/template/make-log.html.c
+
+o/template/%.c: template/% ctemplate/generate
+	./ctemplate/generate < $< >$@.temp
+	mv $@.temp $@
+
+ctemplate/generate: | ctemplate
+	$(MAKE) -C ctemplate
+
+ctemplate: setup
 
 N=list-commits storygit repo note itoa
 list-commits: $O
