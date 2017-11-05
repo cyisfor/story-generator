@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 			if(++chapspercom == 5) {
 				WARN("huh? lots of chapters in this commit...");
 			}
-			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
+//			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
 
 		// XXX: todo: handle if unreadable
 			//printf("saw %d of ",chapnum);
@@ -203,7 +203,6 @@ int main(int argc, char *argv[])
 			timestamp = res;
 	}
 	else if(results.until) {
-		INFO("UNTIL %d\n",until);
 		timestamp = until;
 	}
 
@@ -267,7 +266,7 @@ int main(int argc, char *argv[])
 				if(destinfo.st_mtime >= srcstamp) {
 					// XXX: this will keep the db from getting chapter titles
 					// if it's destroyed w/out deleting chapter htmls
-					//WARN("skip %s",destname);
+					//WARN("skip %s %d %d",destname,destinfo.st_mtime, srcstamp);
 					return true;
 				}
 			} else {
@@ -303,7 +302,7 @@ int main(int argc, char *argv[])
 
 		bool any_chapter = false; // stays false when no chapters are ready
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-			SPAM("chapter %d %d",chapter,timestamp);
+//			SPAM("chapter %d %d",chapter,chapter_timestamp - timestamp);
 			any_chapter = true;
 			//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
@@ -386,7 +385,7 @@ int main(int argc, char *argv[])
 		}
 
 		// NOT story_timestamp
-		SPAM("for chapters since %d",timestamp);
+//		SPAM("for chapters since %d",timestamp);
 		db_for_chapters(story, for_chapter, timestamp, only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
