@@ -22,3 +22,8 @@ local=/home/code/str_to_enum_trie/
 remote=https://github.com/cyisfor/str_to_enum_trie.git
 dest=str_to_enum_trie
 clonepull
+
+local=/home/code/ctemplate/
+remote=https://github.com/cyisfor/ctemplate.git
+dest=ctemplate
+clonepull

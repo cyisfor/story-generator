@@ -17,11 +17,6 @@ int main(int argc, char *argv[])
 
 	struct storycache* cache = db_start_storycache();
 	
-	write(1,LITLEN(
-
-					));
-
-	void output_
 	db_all_finished = getenv("sneakpeek") != NULL;
 	db_only_censored = getenv("censored") != NULL;
 
@@ -88,9 +83,12 @@ int main(int argc, char *argv[])
 		write(1,LITLEN("</td></tr>\n"));
 	}
 
-	db_for_recent_chapters(10000, on_chapter);
+	void output_body(void) {
+		db_for_recent_chapters(10000, on_chapter);
+	}
+	#define output_literal(lit) write(1,LITLEN(lit))
 
-	write(1,LITLEN("</table></body></html>"));
+#include "o/make-log.template.html.c"
 
 	db_storycache_free(cache);
 	
