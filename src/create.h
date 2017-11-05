@@ -10,3 +10,10 @@ int create_contents(identifier story,
 void create_chapter(int src, int dest,
 										int chapter, int chapters,
 										identifier story, bool* title_changed);
+
+#define CHAPTER_NAME(i,buf)											\
+	char buf[0x100] = "index.html";								\
+	int buf ## len = 10;													\
+	if(i > 1) {																		\
+		buf ## len = snprintf(buf,0x100,"chapter%d.html",i);	\
+	}

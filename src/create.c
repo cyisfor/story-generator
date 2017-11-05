@@ -129,10 +129,7 @@ int create_contents(identifier story,
 		xmlNode* a = xmlNewNode(li->ns,"a");
 		xmlAddChild(li,a);
 		xmlAddChild(toc,li);
-		char buf[0x100] = "index.html";
-		if(i > 1) {
-			snprintf(buf,0x100,"chapter%d.html",i);
-		}
+		CHAPTER_NAME(i,buf);
 		xmlSetProp(a,"href",buf);
 		void got_title(const string title) {
 			xmlNodeAddContentLen(a,title.s,title.l);
@@ -377,7 +374,7 @@ void create_chapter(int src, int dest,
 		xmlSetProp(a,"href",href);
 		xmlAddChild(head,a);
 	}
-	
+
 	char buf[0x100] = "index.html";
 	if(chapter > 1) {
 		if(chapter != 2) {
@@ -387,7 +384,6 @@ void create_chapter(int src, int dest,
 
 		linkthing(buf,"prev",LITLEN("Prev"));
 	}
-	
 
 	xmlNodeAddContentLen(links,LITLEN(" "));
 	linkthing("contents.html","first",LITLEN("Contents"));

@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
 		if(!db_all_finished) {
 			if(db_count_chapters(story) == chapnum) return;
 		}
-		
+
 		char num[0x10];
-		int numlen = snprintf(num,0x100, "%d",chapnum);
+		int numlen = snprintf(num,0x100, "%d",chapnum+1);
 
 		output_literal("<tr><td><a href=\"");
 		write(1,location.s,location.l);
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
 		write(1, num, numlen);
 
-		output_literal("</td></td>\n");
+		output_literal("</td><td>\n");
 
 		char* s = ctime(&timestamp);
 		write(1,s,strlen(s)-1);

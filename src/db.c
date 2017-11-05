@@ -458,7 +458,7 @@ void db_for_recent_chapters(int limit,
 							 "NOT (?1 AND story IN (select story from censored_stories)) "
 							 " AND "
 							 // all finished, or this one finished, or not last chapter
-							 "(?2 OR stories.finished OR chapter < "
+							 "(?2 OR stories.finished OR chapter + 1 < "
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
 							 // always stories with one chapter are "finished"
 							 " OR 1 = "
