@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		db_saw_commit(timestamp, oid);
 		assert(last != NULL);
 
-		INFO("commit %d %d %.*s",timestamp, ++counter, 2*sizeof(db_oid),db_oid_str(oid));
+		INFO("commit %d %d",timestamp, ++counter);
 		int chapspercom = 0;
 
 		enum gfc_action on_chapter(
