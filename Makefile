@@ -41,7 +41,7 @@ o/template/%.c: template/% ctemplate/generate
 	mv $@.temp $@
 
 ctemplate/generate: | ctemplate
-	$(MAKE) -C ctemplate
+	$(MAKE) -C ctemplate generate
 
 ctemplate: setup
 
