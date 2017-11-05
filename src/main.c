@@ -100,6 +100,9 @@ int main(int argc, char *argv[])
 			if(++chapspercom == 5) {
 				WARN("huh? lots of chapters in this commit...");
 			}
+			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
+
+		// XXX: todo: handle if unreadable
 			//printf("saw %d of ",chapnum);
 			//STRPRINT(loc);
 			//fputc('\n',stdout);
@@ -194,6 +197,11 @@ int main(int argc, char *argv[])
 	const string scategory = get_category();
 	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
+	else if(getenv("since")) {
+		long res = strtol(getenv("since"),NULL,0);
+		if(res)
+			timestamp = res;
+	}
 	else if(results.until) timestamp = until;
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
