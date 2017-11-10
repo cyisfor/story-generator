@@ -1,0 +1,13 @@
+<?C
+		void outchap() {
+				if(chapnum != 1) {
+								?>chapter<?cS num ?>.html<?C
+ 				}
+		}
+?>
+<tr>
+<td><a href="<?cS location?>/"><?cS stitle?></a></td>
+<td><a href="<?cS location?>/<?C outchap()?>"><?cS chapter_title.s ? chapter_title : stitle?></a></td>
+<td><?cS num ?></td>
+<td><?csl ctime(&timestamp)?></td>
+</tr>

@@ -37,49 +37,22 @@ int main(int argc, char *argv[])
 			if(db_count_chapters(story) == chapnum) return;
 		}
 
-		char num[0x10];
-		int numlen = snprintf(num,0x100, "%d",chapnum+1);
-		
-		void wrstory(void) {
-			if(story_title.s)
-				write(1,story_title.s,story_title.l);
-			else
-				write(1,location.s,location.l);
-		}
+		char numbuf[0x10];
+		string num = {
+			.s = numbuf,
+			.l = itoa(numbuf,0x10,chapnum+1)
+		};
 
-		output_literal("<tr><td><a href=\"");
-		write(1,location.s,location.l);
-		output_literal("/");
+		const string stitle = story_title.s ? story_title : location;
+		const string ctitle = chapter_title.s ? chapter_title : stitle;
 
-		if(chapnum != 1) {
-			output_literal("chapter");
-			write(1,num, numlen);
-			output_literal(".html");
-		}
-		output_literal("\">");
+		char numbuf[0x10];
+    string num = { .s = numbuf,
+									 .l = itoa(num.s,0x10)
+		};
+		// need num even for chapnum 0, because "chapter" column
 
-		if(chapter_title.s) {
-			write(1,chapter_title.s,chapter_title.l);
-		} else {
-			wrstory();
-		}
-
-		output_literal("</a></td><td><a href=\"");
-		write(1,location.s,location.l);
-		output_literal("/\">");
-
-		wrstory();
-
-		output_literal("</a></td><td>");
-
-		write(1, num, numlen);
-
-		output_literal("</td><td>\n");
-
-		char* s = ctime(&timestamp);
-		write(1,s,strlen(s)-1);
-
-		output_literal("</td></tr>\n");
+#include "o/template/make-log.row.c"
 	}
 
 	void output_body(void) {
