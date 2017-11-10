@@ -39,20 +39,7 @@ int main(int argc, char *argv[])
 
 		char num[0x10];
 		int numlen = snprintf(num,0x100, "%d",chapnum+1);
-
-		output_literal("<tr><td><a href=\"");
-		write(1,location.s,location.l);
-		output_literal("/");
-
-		if(chapnum == 1) {
-			output_literal("index.html");
-		} else {
-			output_literal("chapter");
-			write(1,num, numlen);
-			output_literal(".html");
-		}
-		output_literal("\">");
-
+		
 		void wrstory(void) {
 			if(story_title.s)
 				write(1,story_title.s,story_title.l);
@@ -60,17 +47,30 @@ int main(int argc, char *argv[])
 				write(1,location.s,location.l);
 		}
 
+		output_literal("<tr><td><a href=\"");
+		write(1,location.s,location.l);
+		output_literal("/");
+
+		if(chapnum != 1) {
+			output_literal("chapter");
+			write(1,num, numlen);
+			output_literal(".html");
+		}
+		output_literal("\">");
+
 		if(chapter_title.s) {
 			write(1,chapter_title.s,chapter_title.l);
-			output_literal(" (");
-			wrstory();
-			output_literal(")");
 		} else {
 			wrstory();
-//			output_literal(" (chapter ");
-//			write(1,num,numlen);
-//			output_literal(")");
 		}
+
+		output_literal("</a></td><td>");
+		
+		output_literal("</td><td><a href=\"");
+		write(1,location.s,location.l);
+		output_literal("/\">");
+
+		wrstory();
 
 		output_literal("</a></td><td>");
 
