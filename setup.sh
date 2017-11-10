@@ -27,8 +27,3 @@ local=/home/code/ctemplate/
 remote=https://github.com/cyisfor/ctemplate.git
 dest=ctemplate
 clonepull
-
-local=/home/code/mystuff
-remote=https://github.com/cyisfor/cystuff.git
-dest=cystuff
-clonepull

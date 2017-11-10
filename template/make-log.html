@@ -8,23 +8,12 @@
 <body>
 <table class="chaps">
 <tr>
-<th>Title</th>
-<th>Chapter</th>
 <th>Story</th>
+<th>Chapter</th>
+<th>Num</th>
 <th>Modified</th>
 </tr>
-<?C void on_chapter(identifier story,
-									size_t chapnum,
-									const string story_title,
-									const string chapter_title,
-									const string location,
-									git_time_t timestamp) {
-		const string stitle = story_title.s ? story_title : location;
-		char num[0x10];
-		int numlen = atoi(num,0x10);
- ?>
-<td><a href="<?cS location?>/"><?cS stitle?></a></td>
-<td><a href="<?cS location?>/"><?cS chapter_title.s ? chapter_title : stitle?></td>
+<?C output_rows(); ?>
 </table>
 </body>
 </html>

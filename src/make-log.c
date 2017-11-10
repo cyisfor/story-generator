@@ -1,3 +1,4 @@
+#include "itoa.h"
 #include "storygit.h"
 #include "repo.h"
 #include "ensure.h"
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
 	db_only_censored = getenv("censored") != NULL;
 
 #define output_literal(lit) write(1,LITLEN(lit))
+#define output_buf(s,l) write(1,s,l)
 
 	void on_chapter(identifier story,
 									size_t chapnum,
@@ -42,20 +44,15 @@ int main(int argc, char *argv[])
 			.s = numbuf,
 			.l = itoa(numbuf,0x10,chapnum+1)
 		};
-
+		// need num even for chapnum 0, because "chapter" column
+		
 		const string stitle = story_title.s ? story_title : location;
 		const string ctitle = chapter_title.s ? chapter_title : stitle;
 
-		char numbuf[0x10];
-    string num = { .s = numbuf,
-									 .l = itoa(num.s,0x10)
-		};
-		// need num even for chapnum 0, because "chapter" column
-
-#include "o/template/make-log.row.c"
+#include "o/template/make-log.row.html.c"
 	}
 
-	void output_body(void) {
+	void output_rows(void) {
 		db_for_recent_chapters(10000, on_chapter);
 	}
 
