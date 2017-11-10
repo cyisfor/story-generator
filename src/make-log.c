@@ -64,9 +64,7 @@ int main(int argc, char *argv[])
 			wrstory();
 		}
 
-		output_literal("</a></td><td>");
-		
-		output_literal("</td><td><a href=\"");
+		output_literal("</a></td><td><a href=\"");
 		write(1,location.s,location.l);
 		output_literal("/\">");
 
