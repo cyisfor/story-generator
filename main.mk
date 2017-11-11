@@ -1,3 +1,5 @@
+include coolmake/top.mk
+
 P=libgit2 sqlite3
 PKG_CONFIG_PATH:=/custom/libgit2/lib/pkgconfig
 export PKG_CONFIG_PATH
@@ -9,6 +11,11 @@ CFLAGS+=-ggdb
 CFLAGS+=-I. -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src -Icystuff/src
 LDLIBS+=-lbsd
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
+
+LIBS=htmlish/libhtmlish.la \
+	html_when/libhtmlwhen.la \
+	libxmlfixes/libxmlfixes.la \
+	libxml2/libxml2.la
 
 all: generate test_git describe make-log list-commits set-censored statements2source
 
@@ -102,8 +109,11 @@ $(O)/db_oid: | $(O)
 
 .PHONY: setup
 
-$(LIBXML)/$(XMLVERSION): descend
+$(LIBXML)/$(XMLVERSION): setup
 
 setup:
 	sh setup.sh
 	$(MAKE) -C htmlish setup
+
+htmlish/libhtmlish.la: | htmlish
+	$(MAKE) -C $| $(notdir $@)

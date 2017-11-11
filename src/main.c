@@ -10,7 +10,7 @@
 #include "create.h"
 #include "note.h"
 
-#include "libxmlfixes/libxmlfixes.h"
+#include "libxmlfixes/src/libxmlfixes.h"
 
 #include <git2/revparse.h>
 
