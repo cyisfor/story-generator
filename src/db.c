@@ -1,9 +1,7 @@
 #include "note.h"
 #include "db.h"
-#include "db-private.h"
 #include "ensure.h"
 #include "htmlish.h"
-
 #include "itoa.h"
 
 
@@ -13,6 +11,8 @@
 #include <string.h> // memcpy
 
 #include "db_oid/gen.h"
+
+#include "db-private.h"
 
 bool db_only_censored = false;
 bool db_all_finished = false;
@@ -88,7 +88,7 @@ const char* db_next = NULL;
 
 sqlite3_stmt* db_preparen(const char* s, int l) {
 	sqlite3_stmt* stmt = NULL;
-	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, &db_next)); 
+	db_check(sqlite3_prepare_v2(db, s, l, &stmt, &db_next)); 
 	assert(stmt != NULL);
 	return stmt;
 }

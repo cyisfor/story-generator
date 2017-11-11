@@ -10,7 +10,7 @@ struct <?cS name ?>_stmts {
 void <?cS name ?>_init() {
 	<?C
 		for(i=0;i<nstmts;++i) {
-			?><?cS name ?>_stmts.<?cS stmts[i].name?> = db_prepare(LITLEN("<?C output_sql();?>"));
+			?><?cS name ?>_stmts.<?cS stmts[i].name?> = db_prepare(LITLEN("<?C output_sql(stmts[i].sql);?>"));
 	<?C
 			}?>
 }	

@@ -15,7 +15,7 @@ LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 derp: setup
 	$(MAKE) all
 
-all: generate test_git describe make-log list-commits set-censored
+all: generate test_git describe make-log list-commits set-censored statements2source
 
 LINK=$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 COMPILE=$(CC) $(CFLAGS) -c -o $@ $<
@@ -24,6 +24,17 @@ COMPILE=$(CC) $(CFLAGS) -c -o $@ $<
 O=$(patsubst %,o/%.o,$N) ddate/ddate.o htmlish/libhtmlish.a\
 $(foreach name,$(N),$(eval targets:=$$(targets) $(name)))
 S=$(patsubst %,src/%.c,$N)
+
+N=statements2source db itoa cystuff/mmapfd note
+statements2source: $O
+	$(LINK)
+
+N=cystuff/mmapfd
+$O: cystuff/src/mmapfile.c | o/cystuff
+	$(COMPILE)
+
+o/cystuff: | o/
+	mkdir $@
 
 N=main storygit repo create itoa db note category.gen
 generate: $O
