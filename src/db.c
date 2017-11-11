@@ -92,7 +92,6 @@ sqlite3_stmt* db_preparen(const char* s, int l) {
 	return stmt;
 }
 
-
 #define PREPARE(stmt,sql) {																	 \
 	stmt = db_preparen(LITLEN(sql))
 	add_stmt(stmt);																							 \
