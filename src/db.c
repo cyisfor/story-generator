@@ -112,13 +112,15 @@ struct {
 void db_open(const char* filename) {
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
-#include "o/db-sql.gen.c"
 	PREPARE(begin_stmt,"BEGIN");
 	PREPARE(commit_stmt,"COMMIT");
 	PREPARE(rollback_stmt,"ROLLBACK");
 	char* err = NULL;
 	BEGIN_TRANSACTION;
-	db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	{
+#include "o/db.sql.gen.c"
+		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	}
 	db_retransaction();
 
 	{
@@ -143,6 +145,11 @@ void db_open(const char* filename) {
 
 		sqlite3_finalize(check);
 		sqlite3_finalize(ins);
+	}
+
+	{
+#include "o/indexes.sql.gen.c"
+		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 
 	END_TRANSACTION;
