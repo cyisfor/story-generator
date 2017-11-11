@@ -283,12 +283,12 @@ int main(int argc, char *argv[])
 			if(countchaps != numchaps) {
 				numchaps_changed = true;
 				WARN("#chapters changed %d -> %d",numchaps,countchaps);
-				if(countchaps < numchaps) {
-					/* if we've reduced our chapters, mark the new last chapter as seen recently
-						 since it needs its next link removed
-					*/
-					db_saw_chapter(false,story,story_timestamp,countchaps);
-				}
+				/* if we've reduced our chapters, mark the new last chapter as seen recently
+					 since it needs its next link removed
+					 if we've increased our chapters, need to add the next link, or
+					 create if it was the previous last chapter.
+				*/
+				db_saw_chapter(false,story,story_timestamp,countchaps);
 				numchaps = countchaps;
 			}
 		}
