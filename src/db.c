@@ -117,10 +117,24 @@ void db_open(const char* filename) {
 	PREPARE(rollback_stmt,"ROLLBACK");
 	char* err = NULL;
 	BEGIN_TRANSACTION;
+
 	{
 #include "o/db.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
+#ifdef UPGRADEME
+	{
+		#include "o/upgrade.sql.gen.c"
+		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	}
+#endif
+	
+	{
+#include "o/indexes.sql.gen.c"
+		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
+	}
+
+	
 	db_retransaction();
 
 	{
@@ -145,11 +159,6 @@ void db_open(const char* filename) {
 
 		sqlite3_finalize(check);
 		sqlite3_finalize(ins);
-	}
-
-	{
-#include "o/indexes.sql.gen.c"
-		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 
 	END_TRANSACTION;
