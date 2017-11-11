@@ -26,6 +26,9 @@ N=statements2source db itoa cystuff/mmapfile note
 OUT=statements2source
 $(eval $(PROGRAM))
 
+N=statements2source
+$(OBJ) $(DEP): o/template/statements2source.c
+
 N=cystuff/mmapfile
 $(OBJ): cystuff/src/mmapfile.c | $(O)/cystuff
 	$(COMPILE)
@@ -42,7 +45,7 @@ OUT=make-log
 $(eval $(PROGRAM))
 
 N=make-log
-$(OBJ): o/template/make-log.html.c
+$(OBJ) $(DEP): o/template/make-log.html.c o/template/make-log.row.html.c
 
 $(O)/template/%.c: template/% ctemplate/generate | $(O)/template
 	./ctemplate/generate < $< >$@.temp
@@ -78,12 +81,14 @@ $(O)/category.gen.c $(O)/category.gen.h: src/categories.list ./str_to_enum_trie/
 $(O)/category.gen.lo: $(O)/category.gen.c
 	$(COMPILE)
 
-$(O)/main.lo: $(O)/category.gen.c $(O)/category.gen.h
+N=main
+$(OBJ) $(DEP): $(O)/category.gen.c $(O)/category.gen.h
 
 ./str_to_enum_trie/main: | setup
 	$(MAKE) -C str_to_enum_trie main
 
-$(O)/db.lo: $(O)/db-sql.gen.c db_oid/gen.h db_oid/make.c
+N=db list-commits
+$(OBJ) $(DEP): $(O)/db-sql.gen.c src/db_oid/gen.h db_oid/make.c
 
 $(O)/%.sql.gen.c: src/%.sql $(O)/make-sql
 	$(O)/make-sql <$< >$@.temp
@@ -100,9 +105,9 @@ N=db_oid/make
 OUT=$(O)/db_oid/make
 $(eval $(PROGRAM))
 
-$(OBJ): | $(O)/db_oid
+$(OBJ) $(DEP): | $(O)/db_oid
 
-$(OBJ): db_oid/make.c
+$(OBJ) $(DEP): db_oid/make.c
 
 $(O)/make-sql: $(O)/make-sql.lo
 	$(LINK)
