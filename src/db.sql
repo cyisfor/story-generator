@@ -26,8 +26,6 @@ CREATE TABLE IF NOT EXISTS stories (
 			 description TEXT,
 			 source TEXT);
 
-CREATE INDEX IF NOT EXISTS storytime ON stories(timestamp);
-
 CREATE TABLE IF NOT EXISTS chapters (
 			 story INTEGER NOT NULL REFERENCES stories(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 			 chapter INTEGER NOT NULL,
@@ -38,11 +36,6 @@ CREATE TABLE IF NOT EXISTS chapters (
 			 -- greatest(updated,seen) -> actual
 			 title TEXT,
 			 PRIMARY KEY(story,chapter)) WITHOUT ROWID;
-
--- we can do this... right?
-CREATE INDEX IF NOT EXISTS bystory ON chapters(story);
-CREATE INDEX IF NOT EXISTS chaptertime ON chapters(updated);
-CREATE INDEX IF NOT EXISTS storytime ON stories(updated);
 
 CREATE TABLE IF NOT EXISTS cool_xml_tags (
 	tag TEXT PRIMARY KEY) WITHOUT ROWID;
