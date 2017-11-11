@@ -9,13 +9,16 @@ XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb
 CFLAGS+=-I. -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src -Icystuff/src
-LDLIBS+=-lbsd
+LDLIBS+=-lbsd -lreadline
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 
 LIBS=htmlish/libhtmlish.la \
-	html_when/libhtmlwhen.la \
-	libxmlfixes/libxmlfixes.la \
-	libxml2/libxml2.la
+	libxml2/libxml2.la \
+	$(O)/ddate.o
+
+$(O)/ddate.o:
+	$(MAKE) -C ddate ddate.o
+	mv ddate/ddate.o $@
 
 all: generate test_git describe make-log list-commits set-censored statements2source
 
@@ -100,9 +103,6 @@ $(O)/db_oid/make.o: | $(O)/db_oid
 $(O)/make-sql: $(O)/make-sql.o
 	$(LINK)
 
-o/ddate.o:
-	$(MAKE) -C ddate ddate.o
-	mv ddate/ddate.o $@
 
 $(O)/db_oid: | $(O)
 	mkdir $@
@@ -116,4 +116,7 @@ setup:
 	$(MAKE) -C htmlish setup
 
 htmlish/libhtmlish.la: | htmlish
+	$(MAKE) -C $| $(notdir $@)
+
+libxml2/libxml2.la: | libxml2
 	$(MAKE) -C $| $(notdir $@)
