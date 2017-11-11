@@ -86,7 +86,7 @@ $(O)/main.lo: $(O)/category.gen.c $(O)/category.gen.h
 $(O)/db.lo: $(O)/db-sql.gen.c db_oid/gen.h db_oid/make.c
 
 $(O)/%.sql.gen.c: src/%.sql $(O)/make-sql
-	./$(O)/make-sql <$< >$@.temp
+	$(O)/make-sql <$< >$@.temp
 	mv $@.temp $@
 
 $(O)/%.ctempl.c: src/% ctemplate/generate
@@ -94,16 +94,20 @@ $(O)/%.ctempl.c: src/% ctemplate/generate
 	mv $@.temp $@
 
 src/db_oid/gen.h: $(O)/db_oid/make | src/db_oid/same.h src/db_oid/custom.h
-	./$< src/db_oid
+	$< src/db_oid
 
-$(O)/db_oid/make: $(O)/db_oid/make.lo
-$(O)/db_oid/make.lo: | $(O)/db_oid
+N=db_oid/make
+OUT=$(O)/db_oid/make
+$(eval $(PROGRAM))
 
-$(O)/db_oid/make.lo: db_oid/make.c
+$(OBJ): | $(O)/db_oid
+
+$(OBJ): db_oid/make.c
 
 $(O)/make-sql: $(O)/make-sql.lo
 	$(LINK)
 
+$(O)/db.lo: o/db.sql.gen.c  o/indexes.sql.gen.c  o/upgrade.sql.gen.c
 
 $(O)/db_oid: | $(O)
 	mkdir $@
@@ -121,4 +125,3 @@ htmlish/libhtmlish.la: | htmlish
 
 libxml2/libxml2.la: | libxml2
 	$(MAKE) -C $| $(notdir $@)
-

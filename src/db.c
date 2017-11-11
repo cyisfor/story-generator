@@ -128,7 +128,7 @@ void db_open(const char* filename) {
 #include "o/db.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
-	
+#define UPGRADEME
 #ifdef UPGRADEME
 	{
 		#include "o/upgrade.sql.gen.c"
@@ -316,8 +316,8 @@ bool db_set_censored(identifier story, bool censored) {
 
 identifier db_get_story(const string location, git_time_t updated) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2,?2)");
-	DECLARE_STMT(update,"UPDATE stories SET updated = MAX(updated,?1), created = MIN(created,?1) WHERE id = ?");
+	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
+	DECLARE_STMT(update,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?");
 
 	sqlite3_bind_text(find,1,location.s,location.l,NULL);
 	TRANSACTION;
