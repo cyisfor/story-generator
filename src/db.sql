@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS categories (
 			 id INTEGER PRIMARY KEY,
 			 category TEXT NOT NULL UNIQUE,
-			 timestamp INTEGER NOT NULL DEFAULT 0);
+			 updated INTEGER NOT NULL DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS committing (
 -- NULLs okay
@@ -12,10 +12,11 @@ CREATE TABLE IF NOT EXISTS committing (
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
 			 location TEXT NOT NULL UNIQUE,
-			 timestamp INTEGER NOT NULL,
+			 created INTEGER NOT NULL,
+			 updated INTEGER NOT NULL,
 			 finished BOOLEAN NOT NULL DEFAULT FALSE,
 			 -- these are how many chapters the story had the LAST
-			 -- time its contents were written. COUNT(1) FROM chapters for accurate count
+			 -- time its contents were calculated. COUNT(1) FROM chapters for current count
 			 chapters INTEGER NOT NULL DEFAULT 0,
 			 -- this is the latest chapter that is "ready"
 			 -- i.e. no longer in draft.
@@ -24,19 +25,24 @@ CREATE TABLE IF NOT EXISTS stories (
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);
-			 
+
 CREATE INDEX IF NOT EXISTS storytime ON stories(timestamp);
 
 CREATE TABLE IF NOT EXISTS chapters (
 			 story INTEGER NOT NULL REFERENCES stories(id) ON DELETE RESTRICT ON UPDATE CASCADE,
 			 chapter INTEGER NOT NULL,
-			 timestamp INTEGER NOT NULL,
+			 created INTEGER NOT NULL,
+			 updated INTEGER NOT NULL,
+			 seen INTEGER NOT NULL,
+			 -- seen = acts like it was updated, but was marked by an auxiliary process
+			 -- greatest(updated,seen) -> actual
 			 title TEXT,
 			 PRIMARY KEY(story,chapter)) WITHOUT ROWID;
 
 -- we can do this... right?
 CREATE INDEX IF NOT EXISTS bystory ON chapters(story);
-CREATE INDEX IF NOT EXISTS chaptertime ON chapters(timestamp);
+CREATE INDEX IF NOT EXISTS chaptertime ON chapters(updated);
+CREATE INDEX IF NOT EXISTS storytime ON stories(updated);
 
 CREATE TABLE IF NOT EXISTS cool_xml_tags (
 	tag TEXT PRIMARY KEY) WITHOUT ROWID;

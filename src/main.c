@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
-	db_open("generate.sqlite");
+	db_open("storyinfo.sqlite");
 
 	LIBXML_TEST_VERSION;
 
