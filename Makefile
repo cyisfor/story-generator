@@ -91,6 +91,10 @@ o/%.sql.gen.c: src/%.sql o/make-sql
 	./o/make-sql <$< >$@.temp
 	mv $@.temp $@
 
+o/%.ctempl.c: src/% ctemplate/generate
+	./ctemplate/generate <$< >$@.temp
+	mv $@.temp $@
+
 src/db_oid/gen.h: o/db_oid/make | src/db_oid/same.h src/db_oid/custom.h
 	cd src/db_oid && ../../o/db_oid/make
 
