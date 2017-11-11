@@ -122,6 +122,7 @@ void db_open(const char* filename) {
 #include "o/db.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
+	
 #ifdef UPGRADEME
 	{
 		#include "o/upgrade.sql.gen.c"
@@ -133,6 +134,10 @@ void db_open(const char* filename) {
 #include "o/indexes.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
+
+#ifdef UPGRADEME
+	exit(0);
+#endif
 
 	
 	db_retransaction();
