@@ -1,7 +1,9 @@
 #include "mystring.h"
 #include "db.h"
 #include "mmapfile.h"
-#include "search_schema.h"
+
+#include <sqlite3.h> 
+
 
 #include <stdio.h>
 #include <unistd.h> // STDIN_FILENO
@@ -39,7 +41,7 @@ int main(int argc, char *argv[]) {
 	struct stmt *stmts = NULL;
 	size_t nstmts = 0;
 
-	sqlite3* db = db_init();
+	db_init();
 
 	const char* cur = data;
 	size_t left = datalen;
@@ -103,5 +105,5 @@ int main(int argc, char *argv[]) {
 		left -= db_next-cur + 1;
 		cur = db_next + 1;
 	}
-#include "o/statements2source.template.c
+#include "o/template/statements2source.c
 }
