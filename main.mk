@@ -83,7 +83,7 @@ $(O)/main.lo: $(O)/category.gen.c $(O)/category.gen.h
 ./str_to_enum_trie/main: | setup
 	$(MAKE) -C str_to_enum_trie main
 
-$(O)/db.o: $(O)/db-sql.gen.c src/db_oid/gen.h src/db_oid/make.c
+$(O)/db.lo: $(O)/db-sql.gen.c db_oid/gen.h db_oid/make.c
 
 $(O)/%.sql.gen.c: src/%.sql $(O)/make-sql
 	./$(O)/make-sql <$< >$@.temp
@@ -94,12 +94,14 @@ $(O)/%.ctempl.c: src/% ctemplate/generate
 	mv $@.temp $@
 
 src/db_oid/gen.h: $(O)/db_oid/make | src/db_oid/same.h src/db_oid/custom.h
-	cd src/db_oid && ../../$(O)/db_oid/make
+	./$< src/db_oid
 
-$(O)/db_oid/make: $(O)/db_oid/make.o
-$(O)/db_oid/make.o: | $(O)/db_oid
+$(O)/db_oid/make: $(O)/db_oid/make.lo
+$(O)/db_oid/make.lo: | $(O)/db_oid
 
-$(O)/make-sql: $(O)/make-sql.o
+$(O)/db_oid/make.lo: db_oid/make.c
+
+$(O)/make-sql: $(O)/make-sql.lo
 	$(LINK)
 
 
@@ -119,3 +121,4 @@ htmlish/libhtmlish.la: | htmlish
 
 libxml2/libxml2.la: | libxml2
 	$(MAKE) -C $| $(notdir $@)
+

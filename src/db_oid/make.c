@@ -8,7 +8,8 @@
 
 int main(int argc, char *argv[])
 {
-	chdir("source/db_oid");
+	if(argc == 2)
+		if(chdir(argv[1])) exit(3);
 	int src;
 	bool same = sizeof(db_oid) == sizeof(git_oid);
 	if(same) {
