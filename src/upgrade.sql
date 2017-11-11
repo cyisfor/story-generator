@@ -11,4 +11,4 @@ title FROM old.chapters;
 INSERT INTO cool_xml_tags SELECT tag FROM old.cool_xml_tags;
 INSERT INTO censored_stories SELECT story FROM old.censored_stories;
 
-detact old;
+detach old;

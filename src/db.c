@@ -122,18 +122,21 @@ void db_open(const char* filename) {
 	PREPARE(commit_stmt,"COMMIT");
 	PREPARE(rollback_stmt,"ROLLBACK");
 	char* err = NULL;
+//#define UPGRADEME
+#ifndef UPGRADEME
 	BEGIN_TRANSACTION;
+#endif
 
 	{
 #include "o/db.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
-#define UPGRADEME
 #ifdef UPGRADEME
 	{
 		#include "o/upgrade.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
+	BEGIN_TRANSACTION;
 #endif
 	
 	{
