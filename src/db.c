@@ -16,8 +16,6 @@
 bool db_only_censored = false;
 bool db_all_finished = false;
 
-
-
 sqlite3* db = NULL;
 
 static int db_check(int res) {
@@ -85,10 +83,18 @@ static void add_stmt(sqlite3_stmt* stmt) {
 	stmts[nstmt-1] = stmt;
 }
 
+const char* db_next = NULL;
+
+sqlite3_stmt* db_preparen(const char* s, int l) {
+	sqlite3_stmt* stmt = NULL;
+	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, &db_next)); 
+	assert(stmt != NULL);
+	return stmt;
+}
+
 
 #define PREPARE(stmt,sql) {																	 \
-	db_check(sqlite3_prepare_v2(db, LITLEN(sql), &stmt, NULL)); \
-	assert(stmt != NULL);																				 \
+	stmt = db_preparen(LITLEN(sql))
 	add_stmt(stmt);																							 \
 	}
 
