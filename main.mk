@@ -26,7 +26,7 @@ N=statements2source db itoa cystuff/mmapfile note
 OUT=statements2source
 $(eval $(PROGRAM))
 
-N=cystuff/mmapfd
+N=cystuff/mmapfile
 $(OBJ): cystuff/src/mmapfile.c | $(O)/cystuff
 	$(COMPILE)
 
@@ -43,7 +43,6 @@ $(eval $(PROGRAM))
 
 N=make-log
 $(OBJ): o/template/make-log.html.c
-	$(COMPILE)
 
 $(O)/template/%.c: template/% ctemplate/generate | $(O)/template
 	./ctemplate/generate < $< >$@.temp

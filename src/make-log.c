@@ -3,6 +3,8 @@
 #include "repo.h"
 #include "ensure.h"
 #include "db.h"
+#include "mystring.h"
+
 
 #include <git2/revparse.h>
 

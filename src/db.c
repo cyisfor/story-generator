@@ -217,7 +217,7 @@ enum commit_kind {
 
 bool saw_commit = false;
 
-void db_saw_commit(git_time_t timestamp, const db_oid commit) {
+void db_saw_commit(git_time_t updated, const db_oid commit) {
 	static sqlite3_stmt* update_until = NULL, *update_since;
 	if(update_until == NULL) {
 		PREPARE(update_until, "UPDATE committing SET until = ?");
@@ -233,7 +233,7 @@ void db_saw_commit(git_time_t timestamp, const db_oid commit) {
 	if(!saw_commit) {
 		/* only update until at the beginning
 			 because next time we want to go until the latest commit we saw this time. */
-		sqlite3_bind_int64(update_until, 1, timestamp);
+		sqlite3_bind_int64(update_until, 1, updated);
 		db_once(update_until);
 		saw_commit = true;
 	}
@@ -249,17 +249,17 @@ void db_caught_up_committing(void) {
 }
 
 
-identifier db_get_category(const string name, git_time_t* timestamp) {
-	DECLARE_STMT(find,"SELECT id,timestamp FROM categories WHERE category = ?");
+identifier db_get_category(const string name, git_time_t* updated) {
+	DECLARE_STMT(find,"SELECT id,updated FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
 	sqlite3_bind_text(find,1,name.s,name.l,NULL);
 	RESETTING(find) int res = sqlite3_step(find);
 	TRANSACTION;
 	if(res == SQLITE_ROW) {
-		*timestamp = sqlite3_column_int64(find,1);
+		*updated = sqlite3_column_int64(find,1);
 		return sqlite3_column_int64(find,0);
 	}
-	*timestamp = 0;
+	*updated = 0;
 	sqlite3_bind_text(insert,1,name.s,name.l,NULL);
 	db_once(insert);
 	identifier ret = sqlite3_last_insert_rowid(db);
@@ -284,7 +284,7 @@ void db_last_seen_commit(struct bad* out,
 }
 
 void db_caught_up_category(identifier category) {
-	DECLARE_STMT(update,"UPDATE categories SET timestamp = ? WHERE id = ?");
+	DECLARE_STMT(update,"UPDATE categories SET updated = ? WHERE id = ?");
 
 	sqlite3_bind_int64(update,1,time(NULL));
 	sqlite3_bind_int64(update,2,category);
@@ -314,23 +314,23 @@ bool db_set_censored(identifier story, bool censored) {
 	return sqlite3_changes(db) > 0; // operation did something, or not.
 }
 
-identifier db_get_story(const string location, git_time_t timestamp) {
+identifier db_get_story(const string location, git_time_t updated) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	DECLARE_STMT(insert,"INSERT INTO stories (location,timestamp) VALUES (?,?)");
-	DECLARE_STMT(update,"UPDATE stories SET timestamp = MAX(timestamp,?) WHERE id = ?");
+	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2,?2)");
+	DECLARE_STMT(update,"UPDATE stories SET updated = MAX(updated,?1), created = MIN(created,?1) WHERE id = ?");
 
 	sqlite3_bind_text(find,1,location.s,location.l,NULL);
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		identifier id = sqlite3_column_int64(find,0);
-		sqlite3_bind_int64(update,1,timestamp);
+		sqlite3_bind_int64(update,1,updated);
 		sqlite3_bind_int64(update,2,id);
 		db_once_trans(update);
 		return id;
 	} else {
 		sqlite3_bind_text(insert,1,location.s, location.l, NULL);
-		sqlite3_bind_int64(insert,2,timestamp);
+		sqlite3_bind_int64(insert,2,updated);
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
 		INFO("creating story %.*s: %lu",location.l,location.s,story);
@@ -342,28 +342,28 @@ identifier db_get_story(const string location, git_time_t timestamp) {
 bool need_restart_for_chapters = false;
 
 void db_saw_chapter(bool deleted, identifier story,
-										git_time_t timestamp, identifier chapter) {
+										git_time_t updated, identifier chapter) {
 	if(deleted) {
-		INFO("BALEETED %d:%d %d",story,chapter,timestamp);
+		INFO("BALEETED %d:%d %d",story,chapter,updated);
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
 	} else {
-		//INFO("SAW %d:%d %d",story,chapter,timestamp);
-		DECLARE_STMT(find,"SELECT timestamp FROM chapters WHERE story = ? AND chapter = ?");
-		DECLARE_STMT(update,"UPDATE chapters SET timestamp = MAX(timestamp,?) "
+		//INFO("SAW %d:%d %d",story,chapter,updated);
+		DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
+		DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
 								 "WHERE story = ? AND chapter = ?");
-		DECLARE_STMT(insert,"INSERT INTO chapters (timestamp,story,chapter) VALUES (?,?,?)");
+		DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
 		sqlite3_bind_int64(find,1,story);
 		sqlite3_bind_int64(find,2,chapter);
 		TRANSACTION;
 		RESETTING(find) int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW:
-			// update if new timestamp is higher
-			if(sqlite3_column_int64(find,0) < timestamp) {
-				sqlite3_bind_int64(update,1,timestamp);
+			// update if new updated is higher
+			if(sqlite3_column_int64(find,0) < updated) {
+				sqlite3_bind_int64(update,1,updated);
 				sqlite3_bind_int64(update,2,story);
 				sqlite3_bind_int64(update,3,chapter);
 				db_once(update);
@@ -373,7 +373,7 @@ void db_saw_chapter(bool deleted, identifier story,
 			}
 			return;
 		case SQLITE_DONE:
-			sqlite3_bind_int64(insert,1,timestamp);
+			sqlite3_bind_int64(insert,1,updated);
 			sqlite3_bind_int64(insert,2,story);
 			sqlite3_bind_int64(insert,3,chapter);
 			db_once(insert);
@@ -465,14 +465,14 @@ void db_for_recent_chapters(int limit,
 																					 const string story_title,
 																					 const string chapter_title,
 																					 const string location,
-																					 git_time_t timestamp)) {
+																					 git_time_t updated)) {
 
 	DECLARE_STMT(find,"SELECT story,"
 							 "chapter,"
 							 "stories.title,"
 							 "chapters.title,"
 							 "location,"
-							 "chapters.timestamp "
+							 "chapters.updated "
 #ifdef DEBUGGINGTHISQUERY
 							 ","
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story),"
@@ -491,7 +491,7 @@ void db_for_recent_chapters(int limit,
 							 " OR 1 = "
 							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
 							 ")"
-							 "ORDER BY chapters.timestamp DESC LIMIT ?3");
+							 "ORDER BY chapters.updated DESC LIMIT ?3");
 	RESETTING(find) int res;
 	sqlite3_bind_int(find,1,db_only_censored ? 1 : 0);
 	sqlite3_bind_int(find,2,db_all_finished ? 1 : 0);
@@ -541,10 +541,10 @@ void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
 																	 bool finished,
 																	 size_t numchaps,
-																	 git_time_t timestamp),
+																	 git_time_t updated),
 										git_time_t since) {
 	if(only_story.ye) {
-		DECLARE_STMT(find,"SELECT location,finished,chapters,timestamp FROM stories WHERE id = ?1\n"
+		DECLARE_STMT(find,"SELECT location,finished,chapters,updated FROM stories WHERE id = ?1\n"
 								 " AND NOT(?2 AND id IN (SELECT story FROM censored_stories))");
 
 		sqlite3_bind_int64(find,1,only_story.i);
@@ -563,7 +563,7 @@ void db_for_stories(void (*handle)(identifier story,
 		return;
 	}
 
-	DECLARE_STMT(find,"SELECT id,location,finished,chapters,timestamp FROM stories WHERE timestamp AND timestamp > ? ORDER BY timestamp");
+	DECLARE_STMT(find,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated");
 
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {
@@ -622,16 +622,16 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 
 void db_for_chapters(identifier story,
 										void (*handle)(identifier chapter,
-																	 git_time_t timestamp),
+																	 git_time_t updated),
 										git_time_t since,
 										bool only_ready) {
 #define READY "(select ready FROM stories WHERE id = chapters.story)"
 	DECLARE_STMT(find,
-							 "SELECT chapter,timestamp FROM chapters WHERE "
-							 "story = ? AND timestamp > ? AND "
-							 "(? OR (SELECT finished FROM stories WHERE id = chapters.story) OR "
+							 "SELECT chapter,updated FROM chapters WHERE "
+							 "story = ?1 AND (updated > ?2 OR seen > ?2) AND "
+							 "(?3 OR (SELECT finished FROM stories WHERE id = chapters.story) OR "
 							 "(chapter <= " READY ")) "
-							 "ORDER BY timestamp");
+							 "ORDER BY updated");
 #undef READY
 RESTART:
 	sqlite3_bind_int64(find,1,story);
@@ -644,10 +644,10 @@ RESTART:
 			handle(sqlite3_column_int64(find,0),
 						 sqlite3_column_int64(find,1));
 			if(need_restart_for_chapters) {
-				/* okay, so since in order of ascending timestamp...
-					 we can re-bind a new timestamp to find,
+				/* okay, so since in order of ascending updated...
+					 we can re-bind a new updated to find,
 					 only checking (again) from now onward
-					 no chapter should be added with an OLDER timestamp
+					 no chapter should be added with an OLDER updated
 					 than the current one!
 				*/
 				since = sqlite3_column_int64(find,1);
