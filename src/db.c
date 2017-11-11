@@ -1,5 +1,6 @@
 #include "note.h"
 #include "db.h"
+#include "db-private.h"
 #include "ensure.h"
 #include "htmlish.h"
 

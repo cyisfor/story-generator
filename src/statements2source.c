@@ -4,11 +4,13 @@
 
 #include <sqlite3.h> 
 
-
 #include <stdio.h>
 #include <unistd.h> // STDIN_FILENO
 #include <assert.h>
 #include <ctype.h> // isspace
+
+#include "db-private.h"
+
 
 #define output_literal(lit) fwrite(LITLEN(lit), 1, stdout)
 #define output_buf(s,l) fwrite(s, l, 1, stdout)
@@ -41,7 +43,7 @@ int main(int argc, char *argv[]) {
 	struct stmt *stmts = NULL;
 	size_t nstmts = 0;
 
-	db_init();
+	db_open(":memory:");
 
 	const char* cur = data;
 	size_t left = datalen;
@@ -105,5 +107,6 @@ int main(int argc, char *argv[]) {
 		left -= db_next-cur + 1;
 		cur = db_next + 1;
 	}
-#include "o/template/statements2source.c
+	int i;
+#include "o/template/statements2source.c.c"
 }
