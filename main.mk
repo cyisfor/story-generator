@@ -27,7 +27,7 @@ OUT=statements2source
 $(eval $(PROGRAM))
 
 N=statements2source
-$(OBJ) $(DEP): o/template/statements2source.c
+$(OBJ) $(DEP): o/template/statements2source.c.c
 
 N=cystuff/mmapfile
 $(OBJ): cystuff/src/mmapfile.c | $(O)/cystuff
@@ -88,7 +88,7 @@ $(OBJ) $(DEP): $(O)/category.gen.c $(O)/category.gen.h
 	$(MAKE) -C str_to_enum_trie main
 
 N=db list-commits
-$(OBJ) $(DEP): $(O)/db-sql.gen.c src/db_oid/gen.h db_oid/make.c
+$(OBJ) $(DEP): $(O)/db.sql.gen.c $(O)/indexes.sql.gen.c src/db_oid/gen.h db_oid/make.c
 
 $(O)/%.sql.gen.c: src/%.sql $(O)/make-sql
 	$(O)/make-sql <$< >$@.temp
