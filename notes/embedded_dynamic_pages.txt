@@ -1,0 +1,17 @@
+ok... new plan. generate produces (and compiles) an array of embedded pages. Like...
+a/b/c.html
+a/b/d.html
+a/c.html
+a_c.html
+
+=>
+p0 a/b/c.html
+p1 a/b/d.html
+p2 a/c.html
+p3 a_c.html
+=> (str_to_enum_trie)
+enum pageid { P0, P1, P2, P3 };
+...
+enum pageid lookup_pageid(const char* urlpath) { ... }
+
+then...
