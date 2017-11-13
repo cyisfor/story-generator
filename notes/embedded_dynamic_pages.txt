@@ -15,3 +15,93 @@ enum pageid { P0, P1, P2, P3 };
 enum pageid lookup_pageid(const char* urlpath) { ... }
 
 then...
+
+a/b/c.html contents:
+12345
+
+a/b/d.html contents:
+6789
+
+a/c.html contents:
+828282
+
+a_c.html contents:
+132342
+
+=>
+const char* pages[] = {
+			P0 = "12345",
+			P1 = "6789",
+			P2 = "828282",
+			P3 = "132342",
+			UNKNOWN = "404 not found"
+};
+size_t page_sizes[] = {
+			 P0 = 5,
+			 P1 = 4,
+			 P2 = 6,
+			 P3 = 6
+};
+
+thus pages[lookup_pageid(path)] => the page you want
+except... pages[] is *itself* a ctemplate, adding user ID, comments, etc.
+so...
+
+const string getpage(enum pageid page) {
+  bstring ret = {};
+#define output_buf(buf,l) addstr(ret,buf,l);
+  switch(page) {
+  case P0: {
+    output_literal("12345");
+ } break;
+  case P1: {
+    output_literal("12345");
+ } break;
+  case P2: {
+    output_literal("12345");
+ } break;
+  case P3: {
+    output_literal("12345");
+ } break;
+  case UNKNOWN: {
+    output_literal("12345");
+ } break;
+ };
+ return STRING(buf);
+}
+
+so page.html contents:
+<?C struct userinfo user = discover_user(); ?>
+This is your user ID: <?cs I(user,id)?>
+
+=>
+
+enum pageid { ... P42 ... };
+enum pageid lookup_pageid(const char* path) {
+  'p'
+		'a'
+			'g'
+				'e'
+							return P42;
+}
+
+const string getpage(enum pageid) {
+		...
+		switch(pageid) {
+		...
+		case P42: {
+         struct userinfo user = discover_user();
+				 output_literal("This is your user ID: ");
+				 output_buf((user.id).s, (user.id).l);
+				 break;
+   }
+    ...
+   };
+   return ret;
+}
+...
+struct userinfo user {
+	identifier id;
+  string name;
+  ...
+};
