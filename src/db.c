@@ -738,7 +738,7 @@ identifier db_count_chapters(identifier story) {
 void db_set_chapter_title(const string title,
 													identifier story, identifier chapter,
 													bool* title_changed) {
-	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND title != ?");
+	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND (title IS NULL OR title != ?)");
 	sqlite3_bind_text(update,1,title.s,title.l,NULL);
 	sqlite3_bind_int64(update,2,story);
 	sqlite3_bind_int64(update,3,chapter);
