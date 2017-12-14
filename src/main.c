@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
 				break;
 			case CATEGORY_sneakpeek:
 				db_all_finished = true;
+				INFO("sneak peek!");
 				c.l = LITSIZ("sneakpeek");
 				break;
 			case CATEGORY_ready:
