@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // memmem
 #include "repo.h"
 #include "mystring.h"
 
@@ -5,6 +6,7 @@
 #include <git2/commit.h>
 #include <git2/refs.h>
 
+#include <string.h>
 
 #include <stdio.h>
 
@@ -42,16 +44,16 @@ int main(int argc, char *argv[])
 			if(0==memcmp(sig->name, LITLEN("Skybrook"))) {
 				const char* message = git_commit_body(commit);
 				if(message != NULL) {
-					puts("<p>");
+					puts("<p><code>");
 					time_t time = git_commit_time(commit);
 					puts(ctime(&time));
-					puts("<b>");
+					puts("</code> <b>");
 					puts(git_commit_summary(commit));
-					puts("</b></p><p>");
+					puts("</b></p>");
 					const char* cur = message;
 					size_t mlen = strlen(message);
 					for(;;) {
-						const char* nl = strstr(cur,"\n\n");
+						const char* nl = memmem(cur,mlen - (cur - message), "\n\n", 2);
 						int done = nl == NULL;
 						if(done) {
 							nl = message + mlen;
@@ -63,9 +65,9 @@ int main(int argc, char *argv[])
 						if(done) {
 							break;
 						}
+						cur = nl + 2;
 					}
 							
-					puts("</p>");
 					if(++count > 256) break;
 				}
 			}
