@@ -24,30 +24,35 @@ int main(int argc, char *argv[])
 		printf("arg no %d\n",argc);
 		exit(1);
 	}
+	repo_check(repo_discover_init(LITLEN(".git")));
 
 	xmlDoc* out = htmlParseFile("template/news-log.html","UTF-8");
-	if(out == NULL) abort();
+	if(out == NULL) {
+		printf("Couldn't parse html?");
+		exit(2);
+	}
 
-	xmlNode* entry_template = fuckXPath(out->children, "body");
+	xmlNode* entry_template = fuckXPath(out, "body");
 	if(entry_template == NULL) abort();
-	entry_template = xmlCopyNode(entry_template, 1);
 	xmlNode* body = entry_template;
+	entry_template = xmlCopyNode(entry_template, 1);
 	while(body->children) {
 		xmlUnlinkNode(body->children);
 	}
 	void entry(time_t time, const char* subject, const char* message) {
 		xmlNode* all = xmlCopyNode(entry_template, 1);
 		// code
-		xmlNode* p1 = all->children;
-		xmlNode* p2 = p1->next;
-		xmlNodeAddContent(p1->children, ctime(&time));
-		xmlNodeAddContent(p1->children->next, subject);
+		xmlNode* p1 = nextE(all->children);
+		xmlNode* p2 = nextE(p1->next);
+		xmlNode* code = nextE(p1->children);
+		xmlNode* bold = nextE(code->next);
+		xmlNodeAddContent(code, ctime(&time));
+		xmlNodeAddContent(bold, subject);
 		htmlish_str(p2, message, strlen(message), true);
 		xmlAddChild(body, all);
 	};
 	
 	int count = 0;
-	repo_check(repo_discover_init(LITLEN(".git")));
 
 	git_revwalk* walk;
 	repo_check(git_revwalk_new(&walk, repo));
