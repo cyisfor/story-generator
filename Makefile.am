@@ -7,7 +7,6 @@ GENERATE=$(call SOMEWHERE,$(1),src)
 CYSTUFF=$(call SOMEWHERE,$(1),cystuff/src)
 
 XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
-HTMLISH_C=$(srcdir)/htmlish/src/htmlish.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
 AM_CFLAGS = -I $(srcdir)/libxml2/include -I $(srcdir)/libxml2/build/include
@@ -19,16 +18,23 @@ noinst_PROGRAMS = statements2source
 
 ADD_TO=$(foreach file, $(3), $(eval $(1) += $(2)/$(file)))
 
-generate_SOURCES =
-$(call ADD_TO, generate_SOURCES, $(srcdir)/src, \
-	main.c storygit.c repo.c create.c db.c note.c)
-generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
+generate_SOURCES = \
+	src/main.c \
+	src/storygit.c \
+	src/repo.c \
+	src/create.c \
+	src/db.c \
+	src/note.c
+
+generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 
 generate_CFLAGS = $(SQLITE_CFLAGS)
 
 generate_CFLAGS += $(AM_CFLAGS)
 
 generate_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
+generate_LDADD += $(srcdir)/htmlish/libhtmlish.la
+generate_LDADD += $(srcdir)/htmlish/html_when/libhtmlwhen.la
 BUILT_SOURCES = o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
@@ -36,8 +42,8 @@ o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
-news_log_SOURCES = $(XMLFIXES_C) $(HTMLISH_C)
-$(call ADD_TO news_log_SOURCES, $(srcdir)/src,
+news_log_SOURCES = $(XMLFIXES_C)
+$(call ADD_TO news_log_SOURCES, $(srcdir)/src, \
   news-log.c repo.c)
 
 news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)

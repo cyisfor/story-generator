@@ -8,8 +8,14 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc == 2)
-		if(chdir(argv[1])) exit(3);
+	if(argc != 3) exit(4);
+
+	const char* srcdir = realpath(argv[2],NULL);
+	int srcdirlen= strlen(srcdir);
+	
+	const char* destdir = argv[1];
+	if(chdir(destdir)) exit(3);
+	
 	int src;
 	bool same = sizeof(db_oid) == sizeof(git_oid);
 	if(same) {
@@ -25,13 +31,16 @@ int main(int argc, char *argv[])
 		
 		doit(DB_OID(test));
 	}
+	char* buf = malloc(srcdirlen + 10);
+	memcpy(buf, srcdir, srcdirlen);
+	buf[srcdirlen] = '/';
 	if(same) {
-		unlink("gen.h");
-		symlink("same.h","gen.h");
+		memcpy(buf+srcdirlen+1, "same.h\0", 7);
 	} else {
-		unlink("gen.h");
-		symlink("custom.h","gen.h");
+		memcpy(buf+srcdirlen+1, "custom.h\0", 9);
 	}
+	unlink("gen.h");
+	symlink(buf,"gen.h");
 
 	return 0;
 }
