@@ -87,7 +87,12 @@ o/template:
 $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
 
-statements2source_SOURCES = o/template/statements2source.c.c
+statements2source_SOURCES = src/statements2source.c
+statements2source_CFLAGS = $(XMLINC) \
+	-I$(srcdir)/cystuff/src
+statements2source_LDADD = \
+	$(srcdir)/libxml2/build/libxml2.la
+
 
 BUILT_SOURCES += o/template/statements2source.c.c
 
@@ -96,6 +101,13 @@ describe_SOURCES = \
 	cystuff/src/itoa.c \
 	src/db.c \
 	src/note.c
+
+describe_CFLAGS = $(XMLINC) $(HISHINC)
+describe_LDADD = \
+	$(SQLITE_LIBS) $(GIT_LIBS) -lreadline \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/libxml2/build/libxml2.la
+
 
 define make_sublib
 $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
