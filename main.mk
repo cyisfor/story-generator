@@ -37,10 +37,10 @@ N=cystuff/become
 $(OBJ): cystuff/src/become.c | $(O)/cystuff
 	$(COMPILE)
 
-o/cystuff: | o/
+$(O)/libxmlfixes $(O)/cystuff: | $(O)/
 	mkdir $@
 
-N=main storygit repo create itoa db note category.gen
+N=main storygit repo create itoa db note category.gen libxmlfixes/libxmlfixes
 OUT=generate
 $(eval $(PROGRAM))
 

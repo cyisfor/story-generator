@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
-	db_open("storyinfo.sqlite");
+	db_open();
 
 	LIBXML_TEST_VERSION;
 
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 			int src;
 
 			bool setupsrc(void) {
-				snprintf(srcname,0x100,"chapter%d.hish",chapter);
+				snprintf(srcname,0x100,"chapter%ld.hish",chapter);
 				src = openat(srcloc, srcname, O_RDONLY, 0755);
 				ensure_ge(src,0);
 				// for adjusting dest timestamp
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
 
 			char destname[0x100] = "index.html";
 			if(chapter > 1) {
-				int amt = snprintf(destname,0x100, "chapter%d.html",chapter);
+				int amt = snprintf(destname,0x100, "chapter%ld.html",chapter);
 				assert(amt < 0x100);
 				/* be sure to mark the previous chapter as "seen" if we are the last chapter
 					 being exported (previous needs a "next" link) */

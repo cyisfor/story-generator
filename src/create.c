@@ -307,15 +307,6 @@ int create_contents(identifier story,
 	return chapters;
 }
 
-static xmlNode* nextE(xmlNode* e) {
-	// already checked this e...
-	while(e->next) {
-		e = e->next;
-		if(e->type == XML_ELEMENT_NODE) return e;
-	}
-	return NULL;
-}
-
 void create_chapter(int src, int dest,
 										int chapter, int chapters,
 										identifier story, bool* title_changed) {
@@ -386,5 +377,5 @@ void create_chapter(int src, int dest,
 	}
 	set_created(head->next->next);
 
-	dump_to_fd(dest,doc);
+	html_dump_to_fd(dest,doc);
 }
