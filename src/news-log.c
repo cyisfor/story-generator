@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
 	xmlNode* entry_template = fuckXPathDivId(out->children, "entry");
 	if(entry_template == NULL) abort();
+	xmlRemoveProp(entry_template, "id");
 	xmlNode* body = entry_template->parent;
 	xmlUnlinkNode(entry_template);
 	void entry(time_t time, const char* subject, const char* message) {

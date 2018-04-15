@@ -87,11 +87,20 @@ o/template:
 $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
 
-statements2source_SOURCES = src/statements2source.c
-statements2source_CFLAGS = $(XMLINC) \
+statements2source_SOURCES = \
+	src/statements2source.c \
+	src/db.c \
+	src/note.c \
+	cystuff/src/itoa.c \
+	cystuff/src/mmapfile.c
+statements2source_CFLAGS = $(XMLINC) $(HISHINC) \
+	$(SQLITE_CFLAGS) $(GIT_CFLAGS) \
 	-I$(srcdir)/cystuff/src
 statements2source_LDADD = \
-	$(srcdir)/libxml2/build/libxml2.la
+	$(SQLITE_LIBS) $(GIT_LIBS)\
+	$(srcdir)/libxml2/build/libxml2.la \
+	$(srcdir)/htmlish/libhtmlish.la
+
 
 
 BUILT_SOURCES += o/template/statements2source.c.c
