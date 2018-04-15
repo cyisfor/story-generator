@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
 		
 		const string stitle = story_title.s ? story_title : location;
 		const string ctitle = chapter_title.s ? chapter_title : stitle;
+	}
 
 #include "o/template/make-log.row.html.c"
-	}
 
 	void output_rows(void) {
 		db_for_recent_chapters(10000, on_chapter);

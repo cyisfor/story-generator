@@ -59,9 +59,19 @@ news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la \
 	$(srcdir)/htmlish/libhtmlish.la \
 	$(srcdir)/htmlish/html_when/libhtmlwhen.la
 
-make_log_SOURCES = make-log.c itoa.c db.c note.c become.c o/template/make-log.html.c
+make_log_SOURCES = \
+	src/make-log.c \
+	src/db.c \
+	src/note.c \
+	o/template/make-log.html.c \
+	cystuff/src/itoa.c \
+	cystuff/src/become.c
 
-BUILT_SOURCES += o/template/make-log.html.c
+make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
+
+BUILT_SOURCES += \
+	o/template/make-log.html.c \
+	o/template/make-log.row.html.c
 
 o/template/%.c: $(srcdir)/template/% $(srcdir)/ctemplate/generate | o/template
 	$(srcdir)/ctemplate/generate < $< > $@.temp
