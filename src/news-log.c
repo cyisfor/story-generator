@@ -2,6 +2,11 @@
 #include "repo.h"
 #include "mystring.h"
 
+#include "become.h"
+
+#include <libxml/HTMLparser.h> // input
+#include <libxml/HTMLtree.h> // output
+
 #include <git2/revwalk.h>
 #include <git2/commit.h>
 #include <git2/refs.h>
@@ -10,9 +15,39 @@
 
 #include <stdio.h>
 
+static void dump_to_fd(int dest, xmlDoc* src) {
+	xmlOutputBuffer* out = xmlOutputBufferCreateFd(dest,encoding);
+	ensure_ne(out,NULL);
+	/* note, the encoding string passed to htmlDocContentDumpOutput is
+		 totally ignored, and should not be there, since xmlOutputBuffer
+		 handles encoding from this point.
+	*/
+	htmlDocContentDumpOutput(out,src,NULL);
+	// libxml
+	ensure_ge(xmlOutputBufferClose(out),0);
+}
+
 
 int main(int argc, char *argv[])
 {
+	if(argc != 2) abort();
+
+	xmlDoc* out = htmlParseFile("template/news-log.html","UTF-8");
+	if(out == NULL) abort();
+
+	xmlNode* entry_template = fuckXPathDivId(out->children, "entry");
+	if(entry_template == NULL) abort();
+	xmlNode* body = entry_template->parent;
+	xmlUnlinkNode(entry_template);
+	void entry(time_t time, const char* subject, const char* message) {
+		xmlNode* all = xmlCopyNode(entry_template, 1);
+		// code
+		xmlNodeAddContent(all->children, ctime(&time));
+		xmlNodeAddContent(all->children->next, subject);
+		htmlish_str(all->children->last, message, strlen(message), true);
+		xmlNodeAddChild(body, all);
+	};
+	
 	int count = 0;
 	repo_check(repo_discover_init(LITLEN(".git")));
 
@@ -20,11 +55,6 @@ int main(int argc, char *argv[])
 	repo_check(git_revwalk_new(&walk, repo));
 	git_revwalk_sorting(walk, GIT_SORT_TIME);
 
-	puts("<!DOCTYPE html>\n"
-			 "<html><head><meta charset=\"utf-8\"/>\n"
-			 "<title>News log</title>\n"
-			 "</head><body>\n");
-	
 	// since HEAD
 	git_reference* ref;
 	repo_check(git_repository_head(&ref, repo)); // this resolves the reference
@@ -44,35 +74,15 @@ int main(int argc, char *argv[])
 			if(0==memcmp(sig->name, LITLEN("Skybrook"))) {
 				const char* message = git_commit_body(commit);
 				if(message != NULL) {
-					puts("<p><code>");
-					time_t time = git_commit_time(commit);
-					puts(ctime(&time));
-					puts("</code> <b>");
-					puts(git_commit_summary(commit));
-					puts("</b></p>");
-					const char* cur = message;
-					size_t mlen = strlen(message);
-					for(;;) {
-						const char* nl = memmem(cur,mlen - (cur - message), "\n\n", 2);
-						int done = nl == NULL;
-						if(done) {
-							nl = message + mlen;
-						} 
-							
-						puts("<p>");
-						fwrite(cur, nl-cur, 1, stdout);
-						puts("</p>");
-						if(done) {
-							break;
-						}
-						cur = nl + 2;
-					}
-							
+					entry(git_commit_time(commit),
+								git_commit_summary(commit),
+								message);
 					if(++count > 256) break;
 				}
 			}
 		}
 	}
-	puts("</body></html>");
+
+	
 	return 0;
 }
