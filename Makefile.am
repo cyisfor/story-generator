@@ -1,10 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SOMEWHERE=$(patsubst %, $(srcdir)/$(2)/%, $(1))
-XML2=$(call SOMEWHERE, $(1), libxml2)
-HWHEN=$(call SOMEWHERE, $(1), htmlish/html_when/src)
-GENERATE=$(call SOMEWHERE, $(1), src)
-CYSTUFF=$(call SOMEWHERE, $(1), cystuff/src)
+XML2=$(call SOMEWHERE,$(1),libxml2)
+HWHEN=$(call SOMEWHERE,$(1),htmlish/html_when/src)
+GENERATE=$(call SOMEWHERE,$(1),src)
+CYSTUFF=$(call SOMEWHERE,$(1),cystuff/src)
 
 XMLFIXES_C=$(srcdir)/libxmlfixes/libxmlfixes.c
 HTMLISH_C=$(srcdir)/htmlish/src/htmlish.c
@@ -14,6 +14,8 @@ AM_CFLAGS = -I $(call XML2, include) -I libxml2/include -I $(srcdir)/htmlish/htm
 
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source
+
+$(message $(call GENERATE, main.c storygit.c repo.c create.c db.c note.c))
 
 generate_SOURCES = $(call GENERATE, main.c storygit.c repo.c create.c \
 	db.c note.c) o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
@@ -48,4 +50,20 @@ BUILT_SOURCES += o/template/statements2source.c.c
 
 describe_SOURCES = describe.c itoa.c db.c note.c
 
-SUBDIRS = libxml2
+define make_sublib
+o/$(name)/$(target): | o/$(name)/Makefile | o/$(name)
+	$(MAKE) -C $(name)
+
+o/$(name)/Makefile: $(srcdir)/$(name)/configure | o/$(name)
+	(cd o/$(name); . $(srcdir)/$(name)/configure)
+
+o/$(name): | o
+	mkdir $@
+
+$(srcdir)/$(name)/configure: | $(srcdir)/$(name)/configure.ac
+	(cd $(srcdir)/$(name); . ./autogen.sh)
+endef
+
+name=libxml2
+target=libxml2.la
+$(eval $(make_sublib))
