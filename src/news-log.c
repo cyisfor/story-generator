@@ -1,4 +1,9 @@
 #include "repo.h"
+#include "mystring.h"
+
+#include <git2/revwalk.h>
+
+
 #include <stdio.h>
 
 
@@ -28,8 +33,8 @@ int main(int argc, char *argv[])
 		repo_check(git_commit_lookup(&commit, repo, oid));
 		const git_signature* sig = git_commit_author(commit);
 		int nlen = strlen(sig->name);
-		if(nlen == sizeof("Skybrook")-1) {
-			if(0==memcmp(sig->name, "Skybrook", nlen)) {
+		if(nlen == LITSIZ("Skybrook")) {
+			if(0==memcmp(sig->name, LITLEN("Skybrook"))) {
 				const char* message = git_commit_body(commit);
 				if(message != NULL) {
 					puts("<p>");

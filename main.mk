@@ -20,7 +20,7 @@ $(O)/ddate.o:
 	$(MAKE) -C ddate ddate.o
 	mv ddate/ddate.o $@
 
-all: generate test_git describe make-log list-commits set-censored statements2source
+all: generate test_git describe make-log list-commits set-censored news-log statements2source
 
 N=statements2source db itoa cystuff/mmapfile note
 OUT=statements2source
@@ -42,6 +42,10 @@ $(eval $(PROGRAM))
 
 N=make-log itoa db note
 OUT=make-log
+$(eval $(PROGRAM))
+
+N=news-log repo
+OUT=news-log
 $(eval $(PROGRAM))
 
 N=make-log
