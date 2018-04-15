@@ -15,10 +15,16 @@ AM_CFLAGS = -I $(call XML2, include) -I libxml2/include -I $(srcdir)/htmlish/htm
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source
 
-$(message $(call GENERATE, main.c storygit.c repo.c create.c db.c note.c))
+$(info ummmmmm $(call GENERATE, main.c storygit.c repo.c create.c db.c note.c))
 
-generate_SOURCES = $(call GENERATE, main.c storygit.c repo.c create.c \
+generateSOURCES = $(call GENERATE, main.c storygit.c repo.c create.c \
 	db.c note.c) o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
+
+generate_SOURCES = $(generateSOURCES)
+
+
+$(info errrrrrr $(generate_SOURCES))
+
 generate_CFLAGS = $(SQLITE_CFLAGS)
 generate_LDADD = libxml2/libxml2.la $(SQLITE_LIBS)
 BUILT_SOURCES = o/category.gen.c
@@ -34,7 +40,7 @@ make_log_SOURCES = make-log.c itoa.c db.c note.c become.c o/template/make-log.ht
 
 BUILT_SOURCES += o/template/make-log.html.c
 
-o/template/%.c: $(srcdir)template/% $(srcdir)/ctemplate/generate | o/template
+o/template/%.c: $(srcdir)/template/% $(srcdir)/ctemplate/generate | o/template
 	./ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
 
