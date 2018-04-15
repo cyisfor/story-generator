@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 	}
 	char* buf = malloc(srcdirlen + 10);
 	memcpy(buf, srcdir, srcdirlen);
+	free(srcdir);
 	buf[srcdirlen] = '/';
 	if(same) {
 		memcpy(buf+srcdirlen+1, "same.h\0", 7);

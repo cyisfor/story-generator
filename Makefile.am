@@ -1,3 +1,5 @@
+BUILT_SOURCES =
+
 ACLOCAL_AMFLAGS = -I m4
 
 SOMEWHERE=$(patsubst %, $(srcdir)/$(2)/%, $(1))
@@ -14,7 +16,7 @@ AM_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
 AM_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
 
 bin_PROGRAMS = generate news-log make-log describe
-noinst_PROGRAMS = statements2source
+noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
 ADD_TO=$(foreach file, $(3), $(eval $(1) += $(2)/$(file)))
 
@@ -35,7 +37,7 @@ generate_CFLAGS += $(AM_CFLAGS)
 generate_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
 generate_LDADD += $(srcdir)/htmlish/libhtmlish.la
 generate_LDADD += $(srcdir)/htmlish/html_when/libhtmlwhen.la
-BUILT_SOURCES = o/category.gen.c
+BUILT_SOURCES += o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../$(srcdir)/str_to_enum_trie/main) <$<
@@ -85,3 +87,19 @@ endef
 name=libxml2
 target=libxml2.la
 $(eval $(make_sublib))
+
+BUILT_SOURCES+=db_oid/gen.h
+
+db_oid/gen.h: db_oid/make
+	./db_oid/make db_oid $(srcdir)/src/db_oid
+
+db_oid_make_SOURCES = src/db_oid/make.c
+
+BUILT_SOURCES+=o/db.sql.gen.c
+
+o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
+	o/make-sql <$< >$@.temp
+	mv $@.temp $@
+
+o_make_sql_SOURCES = src/make-sql.c
+
