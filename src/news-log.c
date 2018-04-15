@@ -2,6 +2,8 @@
 #include "mystring.h"
 
 #include <git2/revwalk.h>
+#include <git2/commit.h>
+#include <git2/refs.h>
 
 
 #include <stdio.h>
@@ -9,11 +11,12 @@
 
 int main(int argc, char *argv[])
 {
+	int count = 0;
 	repo_check(repo_discover_init(LITLEN(".git")));
 
 	git_revwalk* walk;
 	repo_check(git_revwalk_new(&walk, repo));
-	git_revwalk_sorting(GIT_SORT_TIME);
+	git_revwalk_sorting(walk, GIT_SORT_TIME);
 
 	puts("<!DOCTYPE html>\n"
 			 "<html><head><meta charset=\"utf-8\"/>\n"
@@ -23,14 +26,16 @@ int main(int argc, char *argv[])
 	// since HEAD
 	git_reference* ref;
 	repo_check(git_repository_head(&ref, repo)); // this resolves the reference
-	const git_oid * oid = git_reference_target(ref);
+	const git_oid * oiderp = git_reference_target(ref);
 	git_reference_free(ref);
 
-	git_revwalk_push(walk, oid);
+	git_revwalk_push(walk, oiderp);
+
+	git_oid oid;
 
 	while(!git_revwalk_next(&oid, walk)) {
 		git_commit* commit = NULL;
-		repo_check(git_commit_lookup(&commit, repo, oid));
+		repo_check(git_commit_lookup(&commit, repo, &oid));
 		const git_signature* sig = git_commit_author(commit);
 		int nlen = strlen(sig->name);
 		if(nlen == LITSIZ("Skybrook")) {
@@ -43,7 +48,23 @@ int main(int argc, char *argv[])
 					puts("<b>");
 					puts(git_commit_summary(commit));
 					puts("</b></p><p>");
-					puts(message);
+					const char* cur = message;
+					size_t mlen = strlen(message);
+					for(;;) {
+						const char* nl = strstr(cur,"\n\n");
+						int done = nl == NULL;
+						if(done) {
+							nl = message + mlen;
+						} 
+							
+						puts("<p>");
+						fwrite(cur, nl-cur, 1, stdout);
+						puts("</p>");
+						if(done) {
+							break;
+						}
+					}
+							
 					puts("</p>");
 					if(++count > 256) break;
 				}
