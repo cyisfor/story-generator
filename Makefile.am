@@ -1,15 +1,28 @@
 ACLOCAL_AMFLAGS = -I m4
 
-vpath %.c o:src:cystuff/src:libxmlfixes/src:htmlish/src
+SOMEWHERE=$(patsubst %, $(srcdir)/$(2)/%, $(1))
+XML2=$(call SOMEWHERE, $(1), libxml2)
+HWHEN=$(call SOMEWHERE, $(1), htmlish/html_when/src)
+GENERATE=$(call SOMEWHERE, $(1), src)
+CYSTUFF=$(call SOMEWHERE, $(1), cystuff/src)
+
+XMLFIXES_C=$(srcdir)/libxmlfixes/libxmlfixes.c
+HTMLISH_C=$(srcdir)/htmlish/src/htmlish.c
+DDATE_C=$(srcdir)/ddate/ddate.c
+
+AM_CFLAGS = -I $(call XML2, include) -I libxml2/include -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
+
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source
 
-generate_SOURCES = main.c storygit.c repo.c create.c itoa.c db.c note.c category.gen.c libxmlfixes.c htmlish.c
-
+generate_SOURCES = $(call GENERATE, main.c storygit.c repo.c create.c \
+	db.c note.c) o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
+generate_CFLAGS = $(SQLITE_CFLAGS)
+generate_LDADD = libxml2/libxml2.la $(SQLITE_LIBS)
 BUILT_SOURCES = o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
-
+	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../$(srcdir)/str_to_enum_trie/main) <$<
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
@@ -34,3 +47,5 @@ statements2source_SOURCES = o/template/statements2source.c.c
 BUILT_SOURCES += o/template/statements2source.c.c
 
 describe_SOURCES = describe.c itoa.c db.c note.c
+
+SUBDIRS = libxml2
