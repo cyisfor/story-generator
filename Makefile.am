@@ -6,26 +6,31 @@ HWHEN=$(call SOMEWHERE,$(1),htmlish/html_when/src)
 GENERATE=$(call SOMEWHERE,$(1),src)
 CYSTUFF=$(call SOMEWHERE,$(1),cystuff/src)
 
-XMLFIXES_C=$(srcdir)/libxmlfixes/libxmlfixes.c
+XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 HTMLISH_C=$(srcdir)/htmlish/src/htmlish.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
-AM_CFLAGS = -I $(call XML2, include) -I libxml2/include -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
+AM_CFLAGS = -I $(srcdir)/libxml2/include -I libxml2/include
+AM_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
+AM_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
 
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source
 
-$(info ummmmmm $(call GENERATE, main.c storygit.c repo.c create.c db.c note.c))
+ADD_TO=$(foreach file, $(3), $(eval $(1) += $(2)/$(file)))
 
-generateSOURCES = $(call GENERATE, main.c storygit.c repo.c create.c \
-	db.c note.c) o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
-
-generate_SOURCES = $(generateSOURCES)
-
-
-$(info errrrrrr $(generate_SOURCES))
+generate_SOURCES =
+$(call ADD_TO, generate_SOURCES, $(srcdir)/src, \
+	main.c storygit.c repo.c create.c db.c note.c)
+generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
 
 generate_CFLAGS = $(SQLITE_CFLAGS)
+
+generate_CFLAGS += -I $(srcdir)/libxml2/include -I libxml2/include
+generate_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
+generate_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
+
+
 generate_LDADD = libxml2/libxml2.la $(SQLITE_LIBS)
 BUILT_SOURCES = o/category.gen.c
 
@@ -34,14 +39,14 @@ o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
-news_log_SOURCES = news-log.c repo.c libxmlfixes.c htmlish.c
+news_log_SOURCES = news-log.c repo.c $(XMLFIXES_C) htmlish.c
 
 make_log_SOURCES = make-log.c itoa.c db.c note.c become.c o/template/make-log.html.c
 
 BUILT_SOURCES += o/template/make-log.html.c
 
 o/template/%.c: $(srcdir)/template/% $(srcdir)/ctemplate/generate | o/template
-	./ctemplate/generate < $< > $@.temp
+	$(srcdir)/ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
 
 o/template:
