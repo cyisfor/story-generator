@@ -5,6 +5,8 @@
 #include "htmlish.h"
 #include "note.h"
 
+#include "libxmlfixes.h"
+
 #include <libxml/HTMLparser.h> // input
 #include <libxml/HTMLtree.h> // output
 
@@ -73,18 +75,6 @@ void create_setup(void) {
 	if(!contents_template) {
 		contents_template = chapter_template;
 	}
-}
-
-static void dump_to_fd(int dest, xmlDoc* src) {
-	xmlOutputBuffer* out = xmlOutputBufferCreateFd(dest,encoding);
-	ensure_ne(out,NULL);
-	/* note, the encoding string passed to htmlDocContentDumpOutput is
-		 totally ignored, and should not be there, since xmlOutputBuffer
-		 handles encoding from this point.
-	*/
-	htmlDocContentDumpOutput(out,src,NULL);
-	// libxml
-	ensure_ge(xmlOutputBufferClose(out),0);
 }
 
 int create_contents(identifier story,
@@ -312,7 +302,7 @@ int create_contents(identifier story,
 
 	unsetenv("titlehead");
 
-	dump_to_fd(dest,doc);
+	html_dump_to_fd(dest,doc);
 	
 	return chapters;
 }

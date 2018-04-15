@@ -4,6 +4,8 @@
 
 #include "become.h"
 
+#include <libxmlfixes.h> // html_dump_to_fd
+
 #include <libxml/HTMLparser.h> // input
 #include <libxml/HTMLtree.h> // output
 
@@ -14,18 +16,6 @@
 #include <string.h>
 
 #include <stdio.h>
-
-static void dump_to_fd(int dest, xmlDoc* src) {
-	xmlOutputBuffer* out = xmlOutputBufferCreateFd(dest,encoding);
-	ensure_ne(out,NULL);
-	/* note, the encoding string passed to htmlDocContentDumpOutput is
-		 totally ignored, and should not be there, since xmlOutputBuffer
-		 handles encoding from this point.
-	*/
-	htmlDocContentDumpOutput(out,src,NULL);
-	// libxml
-	ensure_ge(xmlOutputBufferClose(out),0);
-}
 
 
 int main(int argc, char *argv[])
@@ -83,6 +73,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	
+	struct becomer* dest = become_start(argv[1]);
+	html_dump_to_fd(fileno(dest->out), out);
+	become_commit(&dest);
+
 	return 0;
 }

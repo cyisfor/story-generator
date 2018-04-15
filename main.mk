@@ -8,7 +8,7 @@ LIBXML:=libxml2
 XMLVERSION:=include/libxml/xmlversion.h
 
 CFLAGS+=-ggdb
-CFLAGS+=-I. -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxml2/include -Ictemplate/src -Icystuff/src
+CFLAGS+=-I. -Iddate/ -Ihtmlish/src -Ihtml_when/src -Ihtml_when/ -Ilibxmlfixes/src -Ilibxml2/include -Ictemplate/src -Icystuff/src
 LDLIBS+=-lbsd -lreadline
 LDLIBS+=$(shell xml2-config --libs | sed -e's/-xml2//g')
 

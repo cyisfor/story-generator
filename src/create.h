@@ -15,5 +15,5 @@ void create_chapter(int src, int dest,
 	char buf[0x100] = "index.html";								\
 	int buf ## len = 10;													\
 	if(i > 1) {																		\
-		buf ## len = snprintf(buf,0x100,"chapter%d.html",i);	\
+		buf ## len = snprintf(buf,0x100,"chapter%ld.html",i);	\
 	}
