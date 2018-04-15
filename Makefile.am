@@ -10,7 +10,7 @@ XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 HTMLISH_C=$(srcdir)/htmlish/src/htmlish.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
-AM_CFLAGS = -I $(srcdir)/libxml2/include -I libxml2/include
+AM_CFLAGS = -I $(srcdir)/libxml2/include -I $(srcdir)/libxml2/build/include
 AM_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
 AM_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
 
@@ -26,12 +26,9 @@ generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(HTMLISH_C) $(DDATE_C)
 
 generate_CFLAGS = $(SQLITE_CFLAGS)
 
-generate_CFLAGS += -I $(srcdir)/libxml2/include -I libxml2/include
-generate_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
-generate_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
+generate_CFLAGS += $(AM_CFLAGS)
 
-
-generate_LDADD = libxml2/libxml2.la $(SQLITE_LIBS)
+generate_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
 BUILT_SOURCES = o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
@@ -39,7 +36,11 @@ o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
-news_log_SOURCES = news-log.c repo.c $(XMLFIXES_C) htmlish.c
+news_log_SOURCES = $(XMLFIXES_C) $(HTMLISH_C)
+$(call ADD_TO news_log_SOURCES, $(srcdir)/src,
+  news-log.c repo.c)
+
+news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
 
 make_log_SOURCES = make-log.c itoa.c db.c note.c become.c o/template/make-log.html.c
 
@@ -53,7 +54,7 @@ o/template:
 	mkdir $@
 
 $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
-	make -C $(dir $@) generate
+	$(make) -C $(dir $@) generate
 
 statements2source_SOURCES = o/template/statements2source.c.c
 
@@ -62,14 +63,14 @@ BUILT_SOURCES += o/template/statements2source.c.c
 describe_SOURCES = describe.c itoa.c db.c note.c
 
 define make_sublib
-o/$(name)/$(target): | o/$(name)/Makefile | o/$(name)
-	$(MAKE) -C $(name)
+$(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
+	$(MAKE) -C $(srcdir)/$(name)/build
 
-o/$(name)/Makefile: $(srcdir)/$(name)/configure | o/$(name)
-	(cd o/$(name); . $(srcdir)/$(name)/configure)
+$(srcdir)/$(name)/build/Makefile: $(srcdir)/$(name)/configure | $(srcdir)/$(name)/build
+	(cd $(srcdir)/$(name)/build; . ../$(srcdir)/$(name)/configure)
 
-o/$(name): | o
-	mkdir $@
+$(srcdir)/$(name)/build: | $(srcdir)/$(name)
+	mkdir $$@
 
 $(srcdir)/$(name)/configure: | $(srcdir)/$(name)/configure.ac
 	(cd $(srcdir)/$(name); . ./autogen.sh)
