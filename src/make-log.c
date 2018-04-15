@@ -1,3 +1,5 @@
+#define _GNU_SOURCE // futimens
+
 #include "itoa.h"
 #include "storygit.h"
 #include "repo.h"
@@ -5,10 +7,11 @@
 #include "db.h"
 #include "mystring.h"
 
+#include "become.h"
 
 #include <git2/revparse.h>
 
-#include <sys/stat.h>
+#include <sys/stat.h> // futimens
 #include <unistd.h> // chdir
 #include <assert.h>
 #include <stdio.h> // fwrite
@@ -25,16 +28,9 @@ int main(int argc, char *argv[])
 	db_all_finished = getenv("sneakpeek") != NULL;
 	db_only_censored = getenv("censored") != NULL;
 
-	const char* destname = argv[1];
-	size_t destlen = strlen(destname);
-	char* temp = malloc(destlen+5);
-	memcpy(temp,destname,destlen);
-	memcpy(temp+destlen,".tmp\0",5);
-	FILE* dest = fopen(temp,"wt");
-	bool got_modified = false;
-	time_t last_modified = 0;
-#define output_literal(lit) fwrite(LITLEN(lit),1,dest)
-#define output_buf(s,l) fwrite(s,l,1,dest)
+	struct becomer* dest = become_start(argv[1]);
+#define output_literal(lit) fwrite(LITLEN(lit),1,dest->out)
+#define output_buf(s,l) fwrite(s,l,1,dest->out)
 
 	void on_chapter(identifier story,
 									size_t chapnum,
@@ -42,9 +38,11 @@ int main(int argc, char *argv[])
 									const string chapter_title,
 									const string location,
 									git_time_t timestamp) {
-		if(!got_modified) {
-			got_modified = true;
-			last_modified = timestamp;
+		if(!dest->got_times) {
+			dest->got_times = true;
+			printf("lastdos %ld\n",timestamp);
+			dest->times[0].tv_sec = = timestamp;
+			dest->times[1].tv_sec = = timestamp;
 		}
 		if(db_in_storycache(cache,story,chapnum)) {
 			fwrite(LITLEN("yayayay"),1,stderr);
@@ -74,16 +72,7 @@ int main(int argc, char *argv[])
 #include "o/template/make-log.html.c"
 
 	db_storycache_free(cache);
-
-	if(got_modified) {
-		struct timespec times[2] = {
-			{ .tv_sec = last_modified },
-			{ .tv_sec = last_modified }
-		};
-		futimens(fileno(dest), times);
-	}
-	fclose(dest);
-		
+	become_commit(&dest);
 	
 	return 0;
 }
