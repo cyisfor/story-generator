@@ -20,22 +20,29 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc != 2) abort();
+	if(argc != 2) {
+		printf("arg no %d\n",argc);
+		exit(1);
+	}
 
 	xmlDoc* out = htmlParseFile("template/news-log.html","UTF-8");
 	if(out == NULL) abort();
 
-	xmlNode* entry_template = fuckXPathDivId(out->children, "entry");
+	xmlNode* entry_template = fuckXPath(out->children, "body");
 	if(entry_template == NULL) abort();
-	xmlRemoveProp(entry_template, "id");
-	xmlNode* body = entry_template->parent;
-	xmlUnlinkNode(entry_template);
+	entry_template = xmlCopyNode(entry_template, 1);
+	xmlNode* body = entry_template;
+	while(body->children) {
+		xmlUnlinkNode(body->children);
+	}
 	void entry(time_t time, const char* subject, const char* message) {
 		xmlNode* all = xmlCopyNode(entry_template, 1);
 		// code
-		xmlNodeAddContent(all->children, ctime(&time));
-		xmlNodeAddContent(all->children->next, subject);
-		htmlish_str(all->children->last, message, strlen(message), true);
+		xmlNode* p1 = all->children;
+		xmlNode* p2 = p1->next;
+		xmlNodeAddContent(p1->children, ctime(&time));
+		xmlNodeAddContent(p1->children->next, subject);
+		htmlish_str(p2, message, strlen(message), true);
 		xmlAddChild(body, all);
 	};
 	
