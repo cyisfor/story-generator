@@ -18,8 +18,6 @@ AM_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
-ADD_TO=$(foreach file, $(3), $(eval $(1) += $(2)/$(file)))
-
 generate_SOURCES = \
 	src/main.c \
 	src/storygit.c \
@@ -30,13 +28,17 @@ generate_SOURCES = \
 
 generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 
-generate_CFLAGS = $(SQLITE_CFLAGS)
+generate_SOURCES += cystuff/src/itoa.c
+
+generate_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS)
 
 generate_CFLAGS += $(AM_CFLAGS)
 
-generate_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
-generate_LDADD += $(srcdir)/htmlish/libhtmlish.la
-generate_LDADD += $(srcdir)/htmlish/html_when/libhtmlwhen.la
+generate_LDADD = $(srcdir)/libxml2/build/libxml2.la \
+	$(SQLITE_LIBS) $(GIT_LIBS) \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+
 BUILT_SOURCES += o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
@@ -44,9 +46,11 @@ o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
-news_log_SOURCES = $(XMLFIXES_C)
-$(call ADD_TO news_log_SOURCES, $(srcdir)/src, \
-  news-log.c repo.c)
+news_log_SOURCES = $(XMLFIXES_C) \
+	src/news-log.c \
+	src/repo.c
+
+news_log_CFLAGS = -I$(srcdir)/cystuff/src
 
 news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
 
@@ -96,6 +100,7 @@ db_oid/gen.h: db_oid/make
 db_oid_make_SOURCES = src/db_oid/make.c
 
 BUILT_SOURCES+=o/db.sql.gen.c
+BUILT_SOURCES+=o/indexes.sql.gen.c
 
 o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
 	o/make-sql <$< >$@.temp
