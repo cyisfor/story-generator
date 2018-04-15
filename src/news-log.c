@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 		xmlNodeAddContent(all->children, ctime(&time));
 		xmlNodeAddContent(all->children->next, subject);
 		htmlish_str(all->children->last, message, strlen(message), true);
-		xmlNodeAddChild(body, all);
+		xmlAddChild(body, all);
 	};
 	
 	int count = 0;

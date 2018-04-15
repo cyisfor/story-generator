@@ -11,9 +11,8 @@ CYSTUFF=$(call SOMEWHERE,$(1),cystuff/src)
 XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
-AM_CFLAGS = -I $(srcdir)/libxml2/include -I $(srcdir)/libxml2/build/include
-AM_CFLAGS += -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src
-AM_CFLAGS += -I $(srcdir)/libxmlfixes/src -I $(srcdir)/ddate
+XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
+HISHINC=-I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src 
 
 bin_PROGRAMS = generate news-log make-log describe
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
@@ -32,7 +31,9 @@ generate_SOURCES += cystuff/src/itoa.c
 
 generate_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS)
 
-generate_CFLAGS += $(AM_CFLAGS)
+generate_CFLAGS += $(XMLINC) $(HISHINC) \
+	-I $(srcdir)/ddate
+
 
 generate_LDADD = $(srcdir)/libxml2/build/libxml2.la \
 	$(SQLITE_LIBS) $(GIT_LIBS) \
@@ -48,11 +49,15 @@ o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 
 news_log_SOURCES = $(XMLFIXES_C) \
 	src/news-log.c \
-	src/repo.c
+	src/repo.c \
+	cystuff/src/become.c
 
-news_log_CFLAGS = -I$(srcdir)/cystuff/src
+news_log_CFLAGS = -I$(srcdir)/cystuff/src $(XMLINC) $(HISHINC)
 
-news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la $(SQLITE_LIBS)
+news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la \
+	$(GIT_LIBS) \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/htmlish/html_when/libhtmlwhen.la
 
 make_log_SOURCES = make-log.c itoa.c db.c note.c become.c o/template/make-log.html.c
 
