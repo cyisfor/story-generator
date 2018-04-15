@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
 	db_only_censored = getenv("censored") != NULL;
 
 	struct becomer* dest = become_start(argv[1]);
-#define output_literal(lit) fwrite(LITLEN(lit),1,dest->out)
-#define output_buf(s,l) fwrite(s,l,1,dest->out)
+#define output_literal(lit) fwrite(lit, LITSIZ(lit),1,dest->out)
+#define output_buf(s,l) fwrite((s),(l),1,dest->out)
 
 	void on_chapter(identifier story,
 									size_t chapnum,
@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
 		
 		const string stitle = story_title.s ? story_title : location;
 		const string ctitle = chapter_title.s ? chapter_title : stitle;
-	}
 
 #include "o/template/make-log.row.html.c"
+	}
 
 	void output_rows(void) {
 		db_for_recent_chapters(10000, on_chapter);

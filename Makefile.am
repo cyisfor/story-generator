@@ -63,11 +63,15 @@ make_log_SOURCES = \
 	src/make-log.c \
 	src/db.c \
 	src/note.c \
-	o/template/make-log.html.c \
 	cystuff/src/itoa.c \
 	cystuff/src/become.c
 
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
+make_log_CFLAGS += $(SQLITE_CFLAGS)
+make_log_LDADD = $(srcdir)/libxml2/build/libxml2.la \
+	$(SQLITE_LIBS) $(GIT_LIBS) \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/htmlish/html_when/libhtmlwhen.la
 
 BUILT_SOURCES += \
 	o/template/make-log.html.c \
@@ -87,7 +91,11 @@ statements2source_SOURCES = o/template/statements2source.c.c
 
 BUILT_SOURCES += o/template/statements2source.c.c
 
-describe_SOURCES = describe.c itoa.c db.c note.c
+describe_SOURCES = \
+	src/describe.c \
+	cystuff/src/itoa.c \
+	src/db.c \
+	src/note.c
 
 define make_sublib
 $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
