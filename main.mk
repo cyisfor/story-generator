@@ -33,6 +33,10 @@ N=cystuff/mmapfile
 $(OBJ): cystuff/src/mmapfile.c | $(O)/cystuff
 	$(COMPILE)
 
+N=cystuff/become
+$(OBJ): cystuff/src/become.c | $(O)/cystuff
+	$(COMPILE)
+
 o/cystuff: | o/
 	mkdir $@
 
@@ -40,7 +44,7 @@ N=main storygit repo create itoa db note category.gen
 OUT=generate
 $(eval $(PROGRAM))
 
-N=make-log itoa db note
+N=make-log itoa db note cystuff/become
 OUT=make-log
 $(eval $(PROGRAM))
 

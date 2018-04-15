@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
 		if(!dest->got_times) {
 			dest->got_times = true;
 			printf("lastdos %ld\n",timestamp);
-			dest->times[0].tv_sec = = timestamp;
-			dest->times[1].tv_sec = = timestamp;
+			dest->times[0].tv_sec = timestamp;
+			dest->times[1].tv_sec = timestamp;
 		}
 		if(db_in_storycache(cache,story,chapnum)) {
 			fwrite(LITLEN("yayayay"),1,stderr);
