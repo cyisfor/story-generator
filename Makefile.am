@@ -92,6 +92,9 @@ make_contents_SOURCES = \
 	src/make-contents.c \
 	src/db.c
 
+BUILT_SOURCES += o/template/page.html.c \
+	o/template/contents-body.html.c \
+	o/template/contents-story.html.c
 
 statements2source_SOURCES = \
 	src/statements2source.c \

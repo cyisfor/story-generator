@@ -8,12 +8,12 @@ void output_story(identifier story,
 									const string location,
 									bool finished,
 									size_t numchaps,
-									git_time_t timestamp) {
+									git_time_t modified) {
 	string title;
 	void derp(string title, string description, string source) {
-#include "o/template/contents-story.html"
+#include "o/template/contents-story.html.c"
 	}
-	db_with_story_info(identifier, derp);
+	db_with_story_info(story, derp);
 }
 
 int main(int argc, char *argv[])
@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
 		db_for_stories(output_story, 0);
 	}
 	void output_body() {
-#include "o/template/contents-body.html"
+#include "o/template/contents-body.html.c"
 	}
-#include "o/template/page.html"
+#include "o/template/page.html.c"
 	return 0;
 }
