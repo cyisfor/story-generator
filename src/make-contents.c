@@ -1,5 +1,6 @@
 #include "db.h"
 #include "mystring.h"
+#include "create.h"
 
 #include <stdio.h>
 
@@ -11,7 +12,7 @@ void output_story(identifier story,
 									bool finished,
 									size_t numchaps,
 									git_time_t modified) {
-	string title;
+	CHAPTER_NAME(numchaps, latest);
 	void derp(string title, string description, string source) {
 #include "o/template/contents-story.html.c"
 	}
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	db_open();
 	void output_stories() {
-		db_for_stories(output_story, 0);
+		db_for_stories(output_story, time(NULL));
 	}
 	string title = {
 		.s = "Table of Contents",
