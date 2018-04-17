@@ -91,6 +91,12 @@ make_contents_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
 make_contents_SOURCES = \
 	src/make-contents.c \
 	src/db.c
+make_contents_LDADD = \
+	$(SQLITE_LIBS) $(GIT_LIBS) \
+	$(srcdir)/libxml2/build/libxml2.la \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+
 
 BUILT_SOURCES += o/template/page.html.c \
 	o/template/contents-body.html.c \

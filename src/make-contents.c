@@ -23,6 +23,10 @@ int main(int argc, char *argv[])
 	void output_stories() {
 		db_for_stories(output_story, 0);
 	}
+	string title = {
+		.s = "Table of Contents",
+		.l = LITSIZ("Table of Contents")
+	};
 	void output_body() {
 #include "o/template/contents-body.html.c"
 	}
