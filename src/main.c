@@ -125,33 +125,33 @@ int main(int argc, char *argv[])
 
 	// but not older than the last commit we dealt with
 	struct bad results = {
-		.until = false,
-		.since = false
+		.after = false,
+		.before = false
 	};
-	git_time_t until;
-	db_oid since;
+	git_time_t after;
+	db_oid before;
 	BEGIN_TRANSACTION;
-	if(getenv("until")) {
-		results.until = true;
+	if(getenv("after")) {
+		results.after = true;
 		git_object* thing1;
-		repo_check(git_revparse_single(&thing1, repo, getenv("until")));
+		repo_check(git_revparse_single(&thing1, repo, getenv("after")));
 		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 		git_commit* thing2 = (git_commit*)thing1;
 		const git_oid* oid = git_commit_id(thing2);
-		INFO("going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
-		until = git_author_time(thing2);
+		INFO("going back after commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
+		after = git_author_time(thing2);
 		git_object_free(thing1);
 	} else {
-		db_last_seen_commit(&results,&until,since);
-		if(results.until)
-			INFO("going back until %d",until);
+		db_last_seen_commit(&results,&after,before);
+		if(results.after)
+			INFO("going back after %d",after);
 
-		if(results.since)
-			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(since));
+		if(results.before)
+			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(before));
 	}
 
-	git_for_commits(results.until, until, results.since, since, on_commit);
-	// check this even when until is set, so we don't clear a since in progress?
+	git_for_commits(results.after, after, results.before, before, on_commit);
+	// check this even when after is set, so we don't clear a before in progress?
 	if(num > 0) {
 		db_caught_up_committing();
 		//putchar('\n');
@@ -199,13 +199,13 @@ int main(int argc, char *argv[])
 	const string scategory = get_category();
 	identifier category = db_get_category(scategory, &timestamp);
 	if(getenv("recheck")) timestamp = 0;
-	else if(getenv("since")) {
-		long res = strtol(getenv("since"),NULL,0);
+	else if(getenv("before")) {
+		long res = strtol(getenv("before"),NULL,0);
 		if(res)
 			timestamp = res;
 	}
-	else if(results.until) {
-		timestamp = until;
+	else if(results.after) {
+		timestamp = after;
 	}
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
 				numchaps_changed = true;
 				WARN("#chapters changed %d -> %d",numchaps,countchaps);
 				/* if we've reduced our chapters, mark the new last chapter as seen recently
-					 since it needs its next link removed
+					 before it needs its next link removed
 					 if we've increased our chapters, need to add the next link, or
 					 create if it was the previous last chapter.
 				*/
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
 				if(chapter > 2 && !db_all_finished && !finished) {
-					// two chapters before this needs updating, since it now has a "next" link
+					// two chapters before this needs updating, before it now has a "next" link
 					db_saw_chapter(false,story,chapter_timestamp,chapter-2);
 				}
 				return;
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
 		}
 
 		// NOT story_timestamp
-//		SPAM("for chapters since %d",timestamp);
+//		SPAM("for chapters before %d",timestamp);
 		db_for_chapters(story, for_chapter, timestamp, only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
 	}
 
 	db_retransaction();
-	INFO("stories since %d",timestamp);
+	INFO("stories before %d",timestamp);
 	db_for_stories(for_story, true, timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
