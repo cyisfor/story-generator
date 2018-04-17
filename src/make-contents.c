@@ -15,9 +15,14 @@ void output_story(identifier story,
 									git_time_t timestamp) {
 	CHAPTER_NAME(numchaps, latest);
 	char modbuf[0x100];
+	char modbuf2[0x100]; // sigh
 	string modified = {
 		modbuf,
-		strftime(modbuf, 0x100, "%B %e, %Y (%I:%M %p)")
+		strftime(modbuf, 0x100, "%B %e, %Y", localtime(&timestamp))
+	};
+	string modified_time = {
+		modbuf2,
+		strftime(modbuf2, 0x100, "%I:%M %p", localtime(&timestamp))
 	};
 	void derp(string title, string description, string source) {
 		if(!title.l) {
