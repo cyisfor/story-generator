@@ -1,6 +1,8 @@
 <tr>
 	<td><a href="<?cS location?>"><?cS title ?></a></td> 
 	<td><?csl ctime(&modified) ?></td>
-	<td><a href="<?cS location?>/">Start</a></td>
-	<td><a href="<?cS location?>/chapter<?cs latest, latestlen ?>">Latest</a></td>
+	<td>
+		<a href="<?cS location?>/">Start</a> 
+		<a href="<?cS location?>/<?cs latest, latestlen ?>" title="Chapter <?c "%d", numchaps ?>">Latest</a>
+	</td>
 </tr>

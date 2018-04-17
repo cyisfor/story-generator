@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
 
 	db_retransaction();
 	INFO("stories since %d",timestamp);
-	db_for_stories(for_story, timestamp);
+	db_for_stories(for_story, true, timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();

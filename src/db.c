@@ -576,7 +576,7 @@ void db_for_stories(void (*handle)(identifier story,
 	if(forward)
 		find = findfor;
 	else
-		find = findrev.
+		find = findrev;
 
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {

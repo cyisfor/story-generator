@@ -6,6 +6,7 @@
 
 #define output_buf(s,l) fwrite(s,l,1,stdout)
 #define output_literal(lit) output_buf(lit,sizeof(lit)-1)
+#define output_fmt printf
 
 void output_story(identifier story,
 									const string location,
