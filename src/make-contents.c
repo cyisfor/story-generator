@@ -12,9 +12,17 @@ void output_story(identifier story,
 									const string location,
 									bool finished,
 									size_t numchaps,
-									git_time_t modified) {
+									git_time_t timestamp) {
 	CHAPTER_NAME(numchaps, latest);
+	char modbuf[0x100];
+	string modified = {
+		modbuf,
+		strftime(modbuf, 0x100, "%B %e, %Y (%I:%M %p)")
+	};
 	void derp(string title, string description, string source) {
+		if(!title.l) {
+			title = location;
+		}
 #include "o/template/contents-story.html.c"
 	}
 	db_with_story_info(story, derp);
