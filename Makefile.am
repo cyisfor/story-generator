@@ -90,7 +90,9 @@ $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 make_contents_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
 make_contents_SOURCES = \
 	src/make-contents.c \
-	src/db.c
+	src/db.c \
+	src/note.c \
+	cystuff/src/itoa.c
 make_contents_LDADD = \
 	$(SQLITE_LIBS) $(GIT_LIBS) \
 	$(srcdir)/libxml2/build/libxml2.la \

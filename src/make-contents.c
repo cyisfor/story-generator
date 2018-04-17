@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#define output_buf(s,l) fwrite(s,l,1,stdout)
+#define output_literal(lit) output_buf(lit,sizeof(lit)-1)
 
 void output_story(identifier story,
 									const string location,
@@ -18,8 +20,7 @@ void output_story(identifier story,
 
 int main(int argc, char *argv[])
 {
-#define output_buf(s,l) fwrite(s,l,1,stdout)
-#define output_lit(lit) output_buf(lit,sizeof(lit)-1)
+	db_open();
 	void output_stories() {
 		db_for_stories(output_story, 0);
 	}
