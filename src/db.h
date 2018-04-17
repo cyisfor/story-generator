@@ -16,7 +16,7 @@ extern bool db_all_finished;
 
 #include "db_oid/base.h"
 
-void db_open(const char* filename);
+void db_open();
 void db_close_and_exit(void);
 
 void db_set_category(const string category);
@@ -67,6 +67,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 bool finished,																	 
 																	 size_t numchaps,
 																	 git_time_t timestamp),
+										bool forward,
 										git_time_t since);
 
 void db_for_undescribed_stories(void (*handle)(identifier story,

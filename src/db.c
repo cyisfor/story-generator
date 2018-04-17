@@ -115,7 +115,9 @@ struct {
 	identifier i;
 } only_story = {};
 
-void db_open(const char* filename) {
+void db_open() {
+	const char* filename = "storyinfo.sqlite";
+	if(NULL != getenv("db")) filename = getenv("db");
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
 	PREPARE(begin_stmt,"BEGIN");
@@ -545,6 +547,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 bool finished,
 																	 size_t numchaps,
 																	 git_time_t updated),
+										bool forward,
 										git_time_t since) {
 	if(only_story.ye) {
 		DECLARE_STMT(find,"SELECT location,finished,chapters,updated FROM stories WHERE id = ?1\n"
@@ -566,7 +569,14 @@ void db_for_stories(void (*handle)(identifier story,
 		return;
 	}
 
-	DECLARE_STMT(find,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated");
+	DECLARE_STMT(findfor,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated");
+	DECLARE_STMT(findrev,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated DESC");\
+
+	sqlite3_stmt* find;
+	if(forward)
+		find = findfor;
+	else
+		find = findrev.
 
 	sqlite3_bind_int64(find,1,since);
 	for(;;) {

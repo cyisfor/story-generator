@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	db_open();
 	void output_stories() {
-		db_for_stories(output_story, time(NULL));
+		db_for_stories(output_story, false, 0);
 	}
 	string title = {
 		.s = "Table of Contents",
