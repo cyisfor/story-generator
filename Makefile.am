@@ -14,7 +14,7 @@ DDATE_C=$(srcdir)/ddate/ddate.c
 XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
 HISHINC=-I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src 
 
-bin_PROGRAMS = generate news-log make-log describe
+bin_PROGRAMS = generate news-log make-log describe make-contents
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
 generate_SOURCES = \
@@ -86,6 +86,12 @@ o/template:
 
 $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
+
+make_contents_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
+make_contents_SOURCES = \
+	src/make-contents.c \
+	src/db.c
+
 
 statements2source_SOURCES = \
 	src/statements2source.c \
