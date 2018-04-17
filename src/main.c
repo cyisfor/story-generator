@@ -59,6 +59,7 @@ void close_with_time(int dest, git_time_t timestamp) {
 int main(int argc, char *argv[])
 {
 	note_init();
+	libxmlfixes_setup();
 	struct stat info;
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");

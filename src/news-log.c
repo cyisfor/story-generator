@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include <stdio.h>
+#include <assert.h>
 
 
 int main(int argc, char *argv[])
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
 	}
 	repo_check(repo_discover_init(LITLEN(".git")));
 
+	libxmlfixes_setup();
 	xmlDoc* out = htmlParseFile("template/news-log.html","UTF-8");
 	if(out == NULL) {
 		printf("Couldn't parse html?");
@@ -43,12 +45,18 @@ int main(int argc, char *argv[])
 		xmlNode* all = xmlCopyNode(entry_template, 1);
 		// code
 		xmlNode* p1 = nextE(all->children);
+		assert(p1);
 		xmlNode* p2 = nextE(p1->next);
+		assert(p2);
 		xmlNode* code = nextE(p1->children);
+		assert(code);
 		xmlNode* bold = nextE(code->next);
+		assert(bold);
 		xmlNodeAddContent(code, ctime(&time));
 		xmlNodeAddContent(bold, subject);
+		p2->doc = out;
 		htmlish_str(p2, message, strlen(message), true);
+		p2->doc = NULL;
 		xmlAddChild(body, all);
 	};
 	
