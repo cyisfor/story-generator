@@ -2,12 +2,6 @@ BUILT_SOURCES =
 
 ACLOCAL_AMFLAGS = -I m4
 
-SOMEWHERE=$(patsubst %, $(srcdir)/$(2)/%, $(1))
-XML2=$(call SOMEWHERE,$(1),libxml2)
-HWHEN=$(call SOMEWHERE,$(1),htmlish/html_when/src)
-GENERATE=$(call SOMEWHERE,$(1),src)
-CYSTUFF=$(call SOMEWHERE,$(1),cystuff/src)
-
 XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
@@ -23,6 +17,8 @@ HISH_libs = \
 	$(srcdir)/htmlish/libhtmlish.la \
 	$(srcdir)/htmlish/html_when/libhtmlwhen.la
 
+HISH_cflags = $(XMLINC) $(HISHINC)
+
 libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
@@ -31,7 +27,7 @@ libstorydb_la_LIBADD = \
 	$(SQLITE_LIBS) $(GIT_LIBS) \
 	$(HISH_libs)
 
-libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS)
+libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
 
 generate_SOURCES = \
 	src/main.c \

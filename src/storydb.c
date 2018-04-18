@@ -1,4 +1,6 @@
-#include "db.h"
+#include "storydb.h"
+#include <sqlite3.h>
+
 
 bool storydb_only_censored = false;
 bool storydb_all_ready = false;

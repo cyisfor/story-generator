@@ -60,4 +60,23 @@ void db_rollback(void);
 	__attribute__((__cleanup__(CONCAT_SYM(committer,__LINE__))))	\
 	int CONCAT_SYM(sentinel,__LINE__)
 
+
+
+#define PREPARE(stmt,sql) {																	 \
+		stmt = db_preparen(LITLEN(sql));													 \
+		add_stmt(stmt);																						 \
+	}
+
+#define DECLARE_STMT(stmt,sql)																		\
+	static sqlite3_stmt* stmt = NULL;																\
+	if(stmt == NULL) {																							\
+		PREPARE(stmt, sql);																						\
+	}
+
+#define DECLARE_DB_FUNC(name,sql) static void name(void) { \
+	DECLARE_STMT(stmt, sql);																 \
+	db_once(stmt);																					 \
+	}
+
+
 #endif /* _DB_H_ */
