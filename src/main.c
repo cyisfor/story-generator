@@ -104,9 +104,9 @@ int main(int argc, char *argv[])
 //			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
 
 		// XXX: todo: handle if unreadable
-			//printf("saw %d of ",chapnum);
-			//STRPRINT(loc);
-			//fputc('\n',stdout);
+			printf("%d saw %d of ",timestamp, chapnum);
+			STRPRINT(loc);
+			fputc('\n',stdout);
 			struct stat derp;
 			if(0!=stat(src.s,&derp)) {
 				WARN("%s wasn't there",src.s);

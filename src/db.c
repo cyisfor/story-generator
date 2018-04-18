@@ -357,7 +357,7 @@ void db_saw_chapter(bool deleted, identifier story,
 	DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
 							 "WHERE story = ? AND chapter = ?");
-	DECLARE_STMT(update_story,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?2 AND ( finished OR chapters > ?3");
+	DECLARE_STMT(update_story,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?2 AND ( finished OR chapters > ?3)");
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);

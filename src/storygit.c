@@ -189,7 +189,7 @@ git_for_commits(bool do_after,
 			if(nparents == 1) {
 				enum gfc_action op = handle(DB_OID(*me.oid),
 																		DB_OID(*parent.oid),
-																		parent.time,
+																		me.time,
 																		me.tree,
 																		parent.tree);
 				switch(op) {
