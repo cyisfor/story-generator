@@ -189,7 +189,7 @@ int create_contents(identifier story,
 		}
 	
 		if(newtitle || newsource || newdesc) {
-			db_set_story_info(story,title,description,source);
+			storydb_set_info(story,title,description,source);
 		}
 		// if STILL no title, just use location on a temporary unstored basis
 		if(!title.s) {
@@ -295,7 +295,7 @@ int create_contents(identifier story,
 			munmap((char*)description.s,description.l);
 		}
 	}
-	db_with_story_info(story, got_info);
+	storydb_with_info(story, got_info);
 
 	unsetenv("titlehead");
 
@@ -337,7 +337,7 @@ void create_chapter(int src, int dest,
 			.s = title->children->content
 		};
 		t.l = strlen(t.s);
-		db_set_chapter_title(t, story, chapter, title_changed);
+		storydb_set_chapter_title(t, story, chapter, title_changed);
 	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);
 	}*/

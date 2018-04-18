@@ -9,7 +9,7 @@ XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
 HISHINC=-I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src 
 
 bin_PROGRAMS = generate news-log make-log describe make-contents
-lib_LIBRARIES = libstorydb.la
+lib_LTLIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
 HISH_libs = \
@@ -44,7 +44,8 @@ generate_CFLAGS = $(XMLINC) $(HISHINC) \
 	$(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
-generate_LDADD = libstorydb.la
+generate_LDADD = libstorydb.la $(STORYDB_libs)
+generate_LDFLAGS = $(AM_LDFLAGS) 
 
 BUILT_SOURCES += o/category.gen.c
 
