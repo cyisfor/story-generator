@@ -56,12 +56,12 @@ void storydb_with_chapter_title(identifier story,
 													 identifier chapter,
 													 void (*handle)(const string));
 
-void storydb_with_story_info(const identifier story, void (*handle)(const string title,
+void storydb_with_info(const identifier story, void (*handle)(const string title,
 																															 const string description,
 																															 const string source));
 
 // for storydb_set_* empty strings will set the db value to NULL
-void storydb_set_story_info(identifier story,
+void storydb_set_info(identifier story,
 											 const string title,
 											 const string description,
 											 const string source)

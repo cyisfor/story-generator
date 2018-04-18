@@ -410,7 +410,7 @@ void storydb_with_chapter_title(identifier story,
 }
 
 bool derp = false;
-void storydb_with_story_info(const identifier story, void (*handle)(string title,
+void storydb_with_info(const identifier story, void (*handle)(string title,
 																												 string description,
 																												 string source)) {
 	assert(derp == false); // not reentrant!
@@ -472,7 +472,7 @@ void storydb_set_chapter_title(const string title,
 	END_TRANSACTION;
 }
 
-void storydb_set_story_info(identifier story,
+void storydb_set_info(identifier story,
 											 const string title,
 											 const string description,
 											 const string source) {

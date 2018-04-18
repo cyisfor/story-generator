@@ -6,18 +6,17 @@ XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 DDATE_C=$(srcdir)/ddate/ddate.c
 
 XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
-HISHINC=-I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src 
 
 bin_PROGRAMS = generate news-log make-log describe make-contents
 lib_LTLIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
+HISH_cflags=$(XMLINC) -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src
+
 HISH_libs = \
 	$(srcdir)/libxml2/build/libxml2.la \
 	$(srcdir)/htmlish/libhtmlish.la \
 	$(srcdir)/htmlish/html_when/libhtmlwhen.la
-
-HISH_cflags = $(XMLINC) $(HISHINC)
 
 libstorydb_la_SOURCES = \
 	src/db.c \
@@ -40,7 +39,7 @@ generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 
 generate_SOURCES += cystuff/src/itoa.c
 
-generate_CFLAGS = $(XMLINC) $(HISHINC) \
+generate_CFLAGS = $(HISH_cflags) \
 	$(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
@@ -63,7 +62,7 @@ news_log_CFLAGS = -I$(srcdir)/cystuff/src \
 	$(XMLINC) $(HISHINC) \
 	$(libstorydb_la_CFLAGS)
 
-news_log_LDADD = libstorydb.la
+news_log_LDADD = libstorydb.la $(HISH_libs)
 
 make_log_SOURCES = \
 	src/make-log.c \
