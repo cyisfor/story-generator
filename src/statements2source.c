@@ -15,6 +15,8 @@
 #define output_literal(lit) fwrite(LITLEN(lit), 1, stdout)
 #define output_buf(s,l) fwrite(s, l, 1, stdout)
 
+bool onlydefine = false;
+
 static
 void output_sql(string sql) {
 	int j = 0;
@@ -25,7 +27,11 @@ void output_sql(string sql) {
 			output_literal("\\\"");
 			continue;
 		case '\n':
-			output_literal("\\n\"\n\t\""); // logically break up the lines
+			// logically break up the lines
+			output_literal("\\n\"");
+			if(onlydefine)
+				output_literal(" \\");
+			output_literal("\n\t\""); 
 			continue;
 		default:
 			fputc(sql.s[j],stdout);
@@ -123,7 +129,7 @@ int main(int argc, char *argv[]) {
 		for(i=0;i<nstmts;++i) {
 			output_literal("#define ");
 			output_buf(stmts[i].name.s, stmts[i].name.l);
-			output_literal(" \"");
+			output_literal(" \\\n\t\"");
 			output_sql(stmts[i].sql);
 			output_literal("\"\n\n");
 		}
