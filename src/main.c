@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 				WARN("%s wasn't there",src.s);
 				return GFC_CONTINUE;
 			}
-			db_saw_chapter(deleted,db_get_story(loc,timestamp),timestamp,chapnum);
+			db_saw_chapter(deleted,db_get_story(loc, timestamp),timestamp,chapnum);
 
 			return GFC_CONTINUE;
 		}

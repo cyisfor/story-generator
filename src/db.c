@@ -319,23 +319,19 @@ bool db_set_censored(identifier story, bool censored) {
 	return sqlite3_changes(db) > 0; // operation did something, or not.
 }
 
-identifier db_get_story(const string location, git_time_t updated) {
+identifier db_get_story(const string location, git_time_t created) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
-	DECLARE_STMT(update,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?");
 
 	sqlite3_bind_text(find,1,location.s,location.l,NULL);
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		identifier id = sqlite3_column_int64(find,0);
-		sqlite3_bind_int64(update,1,updated);
-		sqlite3_bind_int64(update,2,id);
-		db_once_trans(update);
 		return id;
 	} else {
 		sqlite3_bind_text(insert,1,location.s, location.l, NULL);
-		sqlite3_bind_int64(insert,2,updated);
+		sqlite3_bind_int64(insert,2,created);
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
 		INFO("creating story %.*s: %lu",location.l,location.s,story);
@@ -354,38 +350,45 @@ void db_saw_chapter(bool deleted, identifier story,
 		sqlite3_bind_int64(delete,1,story);
 		sqlite3_bind_int64(delete,2,chapter);
 		db_once_trans(delete);
-	} else {
-		//INFO("SAW %d:%d %d",story,chapter,updated);
-		DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
-		DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
-								 "WHERE story = ? AND chapter = ?");
-		DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
-		sqlite3_bind_int64(find,1,story);
-		sqlite3_bind_int64(find,2,chapter);
-		TRANSACTION;
-		RESETTING(find) int res = sqlite3_step(find);
-		switch(res) {
-		case SQLITE_ROW:
-			// update if new updated is higher
-			if(sqlite3_column_int64(find,0) < updated) {
-				sqlite3_bind_int64(update,1,updated);
-				sqlite3_bind_int64(update,2,story);
-				sqlite3_bind_int64(update,3,chapter);
-				db_once(update);
-				assert(sqlite3_changes(db) > 0);
-				// any for_chapters iterator has to be restarted now.
-				need_restart_for_chapters = true;
-			}
-			return;
-		case SQLITE_DONE:
-			sqlite3_bind_int64(insert,1,updated);
-			sqlite3_bind_int64(insert,2,story);
-			sqlite3_bind_int64(insert,3,chapter);
-			db_once(insert);
-			INFO("creating chapter %lu:%lu",story,chapter);
-			return;
-		};
+		return;
 	}
+	
+	//INFO("SAW %d:%d %d",story,chapter,updated);
+	DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
+	DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
+							 "WHERE story = ? AND chapter = ?");
+	DECLARE_STMT(update_story,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?2 AND ( finished OR chapters > ?3");
+	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
+	sqlite3_bind_int64(find,1,story);
+	sqlite3_bind_int64(find,2,chapter);
+	TRANSACTION;
+	RESETTING(find) int res = sqlite3_step(find);
+	switch(res) {
+	case SQLITE_ROW:
+		// update if new updated is higher
+		if(sqlite3_column_int64(find,0) < updated) {
+			sqlite3_bind_int64(update,1,updated);
+			sqlite3_bind_int64(update,2,story);
+			sqlite3_bind_int64(update,3,chapter);
+			db_once(update);
+			assert(sqlite3_changes(db) > 0);
+			// any for_chapters iterator has to be restarted now.
+			need_restart_for_chapters = true;
+		}
+		return;
+	case SQLITE_DONE:
+		sqlite3_bind_int64(insert,1,updated);
+		sqlite3_bind_int64(insert,2,story);
+		sqlite3_bind_int64(insert,3,chapter);
+		db_once(insert);
+		INFO("creating chapter %lu:%lu",story,chapter);
+		return;
+	};
+
+	sqlite3_bind_int64(update_story, 1, updated);
+	sqlite3_bind_int64(update_story, 2, story);
+	sqlite3_bind_int64(update_story, 3, chapter);
+	db_once(update_story);
 }
 
 struct storycache {
