@@ -19,10 +19,11 @@ void output_story(identifier story,
 									size_t numchaps,
 									git_time_t timestamp) {
 	string latest, bleeding_edge;
-	CHAPTER_NAME_STRING(numchaps,
-											bleeding_edge,
-											derpbuf1);
-	ready = ready ? ready : numchaps > 1 ? numchaps -1 : 1;
+	if(ready != numchaps) {
+		CHAPTER_NAME_STRING(ready + 1,
+												bleeding_edge,
+												derpbuf1);
+	}
 	CHAPTER_NAME_STRING(ready,
 											latest,
 											derpbuf2);
