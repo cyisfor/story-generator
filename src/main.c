@@ -2,7 +2,7 @@
 
 #include "o/category.gen.h"
 
-#include "db.h"
+#include "storydb.h"
 #include "ensure.h"
 #include "storygit.h"
 #include "string.h"
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) chdir("..");
 	repo_check(repo_discover_init(LITLEN(".git")));
-	db_open();
+	storydb_open();
 
 	LIBXML_TEST_VERSION;
 
@@ -112,7 +112,9 @@ int main(int argc, char *argv[])
 				WARN("%s wasn't there",src.s);
 				return GFC_CONTINUE;
 			}
-			db_saw_chapter(deleted,db_get_story(loc, timestamp),timestamp,chapnum);
+			storydb_saw_chapter(deleted,
+													storydb_get_story(loc, timestamp),
+													timestamp,chapnum);
 
 			return GFC_CONTINUE;
 		}
@@ -173,10 +175,10 @@ int main(int argc, char *argv[])
 				//WARN("censored is a special category. set censored=1 instead plz");
 				setenv("censored","1",1);
 				c.l = LITSIZ("censored");
-				db_only_censored = true;
+				storydb_only_censored = true;
 				break;
 			case CATEGORY_sneakpeek:
-				db_all_finished = true;
+				storydb_all_ready = true;
 				INFO("sneak peek!");
 				c.l = LITSIZ("sneakpeek");
 				break;
@@ -188,7 +190,7 @@ int main(int argc, char *argv[])
 			c.l = strlen(c.s);
 			return c;
 		} else if(getenv("censored")!=NULL) {
-			db_only_censored = true;
+			storydb_only_censored = true;
 			return (const string){LITLEN("censored")};
 		} else {
 			return (const string){LITLEN("html")};
@@ -216,7 +218,7 @@ int main(int argc, char *argv[])
 			getenv("story"),
 			strlen(getenv("story"))
 		};
-		only_story = db_find_story(s);
+		only_story = storydb_find_story(s);
 	}
 
 	void for_story(identifier story,
@@ -281,7 +283,7 @@ int main(int argc, char *argv[])
 		bool title_changed = false;
 		bool numchaps_changed = false;
 		{
-			int countchaps = db_count_chapters(story);
+			int countchaps = storydb_count_chapters(story);
 			if(countchaps != numchaps) {
 				numchaps_changed = true;
 				WARN("#chapters changed %d -> %d",numchaps,countchaps);
@@ -290,7 +292,7 @@ int main(int argc, char *argv[])
 					 if we've increased our chapters, need to add the next link, or
 					 create if it was the previous last chapter.
 				*/
-				db_saw_chapter(false,story,story_timestamp,countchaps);
+				storydb_saw_chapter(false,story,story_timestamp,countchaps);
 				numchaps = countchaps;
 			}
 		}
@@ -298,7 +300,7 @@ int main(int argc, char *argv[])
 		// save numchaps to update story later.
 		const int savenumchaps = numchaps;
 		// XXX: if finished, numchaps, otherwise
-		if(!db_all_finished && !finished && numchaps > 1) --numchaps;
+		if(!storydb_all_ready && !finished && numchaps > 1) --numchaps;
 
 		git_time_t max_timestamp = story_timestamp;
 
@@ -344,9 +346,9 @@ int main(int argc, char *argv[])
 			if(chapter == numchaps + 1) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
-				if(chapter > 2 && !db_all_finished && !finished) {
+				if(chapter > 2 && !storydb_all_ready && !finished) {
 					// two chapters before this needs updating, before it now has a "next" link
-					db_saw_chapter(false,story,chapter_timestamp,chapter-2);
+					storydb_saw_chapter(false,story,chapter_timestamp,chapter-2);
 				}
 				return;
 			}
@@ -358,7 +360,7 @@ int main(int argc, char *argv[])
 				/* be sure to mark the previous chapter as "seen" if we are the last chapter
 					 being exported (previous needs a "next" link) */
 				if(chapter == numchaps) {
-					db_saw_chapter(false,story,chapter_timestamp,chapter-1);
+					storydb_saw_chapter(false,story,chapter_timestamp,chapter-1);
 				}
 			}
 
@@ -388,7 +390,7 @@ int main(int argc, char *argv[])
 
 		// NOT story_timestamp
 //		SPAM("for chapters before %d",timestamp);
-		db_for_chapters(story, for_chapter, timestamp, only_ready);
+		storydb_for_chapters(story, for_chapter, timestamp, only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));
@@ -438,7 +440,7 @@ int main(int argc, char *argv[])
 					handle(title);
 				}
 			}
-			db_with_chapter_title(story,chapter,on_title);
+			storydb_with_chapter_title(story,chapter,on_title);
 		}
 
 		int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
@@ -450,14 +452,14 @@ int main(int argc, char *argv[])
 
 		destloc_done();
 		if(numchaps_changed) {
-			db_set_chapters(story,savenumchaps);
+			storydb_set_chapters(story,savenumchaps);
 		}
 		// but if only the title of a chapter changed, we still recreate contents
 	}
 
 	db_retransaction();
 	INFO("stories before %d",timestamp);
-	db_for_stories(for_story, true, timestamp);
+	storydb_for_stories(for_story, true, timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();

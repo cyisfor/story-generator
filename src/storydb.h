@@ -13,7 +13,6 @@ identifier storydb_get_story(const string location, git_time_t timestamp);
 void storydb_saw_chapter(bool deleted, identifier story,
 										git_time_t timestamp, identifier chapter);
 
-
 struct storycache;
 
 struct storycache* storydb_start_cache(void);
