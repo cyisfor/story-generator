@@ -260,14 +260,6 @@ void storydb_for_recent_chapters(int limit,
 	}
 }
 
-static size_t get_ready(size_t ready, size_t numchaps) {
-	if(ready == 0) {
-		if(numchaps == 1)
-			return 1;
-		return numchaps-1;
-	}
-	return ready;
-}
 
 void storydb_for_stories(void (*handle)(identifier story,
 																	 const string location,
@@ -290,7 +282,7 @@ void storydb_for_stories(void (*handle)(identifier story,
 
 		handle(only_story.i,
 					 location,
-					 get_ready(sqlite3_column_int64(find,1), numchaps),
+					 sqlite3_column_int64(find,1),
 					 sqlite3_column_int64(find,2),
 					 sqlite3_column_int64(find,3));
 		return;

@@ -42,12 +42,35 @@ WHERE
   )
 ORDER BY chapters.updated DESC LIMIT ?3;
 FOR_ONLY_STORY
-SELECT location,ready,chapters,updated FROM stories WHERE id = ?1
+SELECT location,
+	  (SELECT 
+  	  CASE WHEN ready = 0 THEN
+	  	  CASE WHEN chapters = 1 THEN
+				  1
+				ELSE
+				  chapters - 1
+			  END
+			ELSE
+			  ready
+			END)
+,chapters,updated FROM stories WHERE id = ?1
 -- not only censored, and this story is censored
   AND NOT(?2 AND id IN (SELECT story FROM censored_stories));
 FOR_STORIES
-SELECT id,location,ready,chapters,updated FROM stories WHERE
+SELECT id,location,
+	  (SELECT 
+  	  CASE WHEN ready = 0 THEN
+	  	  CASE WHEN chapters = 1 THEN
+				  1
+				ELSE
+				  chapters - 1
+			  END
+			ELSE
+			  ready
+			END)
+,chapters,updated FROM stories WHERE
   updated AND updated > ? ORDER BY updated;
+	
 FOR_UNDESCRIBED_STORIES
 SELECT id,COALESCE(title,location),description,source
 FROM stories WHERE 
