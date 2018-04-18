@@ -22,9 +22,8 @@ libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
-STORYDB_libs = \
-	$(SQLITE_LIBS) $(GIT_LIBS) \
-	$(HISH_libs)
+STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS)
+STORYDB_libs = $(HISH_libs)
 
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
 
@@ -44,7 +43,7 @@ generate_CFLAGS = $(HISH_cflags) \
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la $(STORYDB_libs)
-generate_LDFLAGS = $(AM_LDFLAGS) 
+generate_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
 
 BUILT_SOURCES += o/category.gen.c
 
@@ -63,6 +62,7 @@ news_log_CFLAGS = -I$(srcdir)/cystuff/src \
 	$(libstorydb_la_CFLAGS)
 
 news_log_LDADD = libstorydb.la $(HISH_libs)
+news_log_LDFLAGS = $(STORYDB_ldflags)
 
 make_log_SOURCES = \
 	src/make-log.c \
@@ -73,7 +73,8 @@ make_log_SOURCES = \
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
 	$(HISHINC) \
 	$(libstorydb_la_CFLAGS)
-make_log_LDADD = libstorydb.la
+make_log_LDADD = libstorydb.la $(STORYDB_libs)
+make_log_LDFLAGS = $(STORYDB_ldflags)
 
 BUILT_SOURCES += \
 	o/template/make-log.html.c \
@@ -123,10 +124,9 @@ describe_SOURCES = \
 
 describe_CFLAGS = $(XMLINC) $(HISHINC)
 describe_LDADD = \
-	$(SQLITE_LIBS) $(GIT_LIBS) -lreadline \
 	$(srcdir)/htmlish/libhtmlish.la \
 	$(srcdir)/libxml2/build/libxml2.la
-
+describe_LDFLAGS = $(SQLITE_LIBS) $(GIT_LIBS) -lreadline
 
 define make_sublib
 $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 

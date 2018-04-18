@@ -4,7 +4,7 @@
 #include "storygit.h"
 #include "repo.h"
 #include "ensure.h"
-#include "db.h"
+#include "storydb.h"
 #include "mystring.h"
 
 #include "become.h"
@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
 
 	struct storycache* cache = db_start_storycache();
 	
-	db_all_finished = getenv("sneakpeek") != NULL;
-	db_only_censored = getenv("censored") != NULL;
+	storydb_all_ready = getenv("sneakpeek") != NULL;
+	storydb_only_censored = getenv("censored") != NULL;
 
 	struct becomer* dest = become_start(argv[1]);
 #define output_literal(lit) fwrite(lit, LITSIZ(lit),1,dest->out)
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			fwrite(LITLEN("yayayay"),1,stderr);
 			return;
 		}
-		if(!db_all_finished) {
+		if(!storydb_all_ready) {
 			if(db_count_chapters(story) == chapnum) return;
 		}
 
