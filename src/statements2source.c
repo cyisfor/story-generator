@@ -23,8 +23,10 @@ void output_sql(string sql) {
 		switch(sql.s[j]) {
 		case '"':
 			output_literal("\\\"");
+			continue;
 		case '\n':
 			output_literal("\\n\"\n\t\""); // logically break up the lines
+			continue;
 		default:
 			fputc(sql.s[j],stdout);
 		}
@@ -114,5 +116,15 @@ int main(int argc, char *argv[]) {
 		cur = db_next + 1;
 	}
 	int i;
+	if(getenv("onlydefine")) {
+		for(i=0;i<nstmts;++i) {
+			output_literal("#define ");
+			output_buf(nstmts[i].s, nstmts[i].l);
+			output_literal(" ");
+			output_sql(nstmts[i].sql);
+			output_literal("\n");
+		}
+	} else {
 #include "o/template/statements2source.c.c"
+	}
 }

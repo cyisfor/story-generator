@@ -5,10 +5,7 @@ UPDATE stories SET
 WHERE
   id = ?2 AND
 	?3 OR
-	(CASE WHEN ready IS NULL THEN
-	  (chapters > ?4)
-	ELSE
-	  ready >= ?4);
+	?4 <= COALESCE(ready, chapters-1);
 RECENT_CHAPTERS
 SELECT story, chapter, stories.title, chapters.title,
        location,
@@ -27,7 +24,7 @@ WHERE
 		-- always stories with one chapter are ready
     1 = stories.chapters
   )
-ORDER BY chapters.updated DESC LIMIT ?3);
+ORDER BY chapters.updated DESC LIMIT ?3;
 FOR_ONLY_STORY
 SELECT location,ready,chapters,updated FROM stories WHERE id = ?1
 -- not only censored, and this story is censored
