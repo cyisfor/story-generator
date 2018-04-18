@@ -119,7 +119,6 @@ statements2source_LDADD = \
 	$(srcdir)/htmlish/libhtmlish.la
 
 
-
 BUILT_SOURCES += o/template/statements2source.c.c
 
 describe_SOURCES = \
@@ -169,3 +168,7 @@ o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
 
 o_make_sql_SOURCES = src/make-sql.c
 
+
+o/%.sql.c: $(srcdir)/src/%.sql statements2source
+	./statements2source derp <$< >$@.temp
+	mv $@.temp $@

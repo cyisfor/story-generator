@@ -1,45 +1,51 @@
-CREATE TABLE IF NOT EXISTS categories (
-			 id INTEGER PRIMARY KEY,
-			 category TEXT NOT NULL UNIQUE,
-			 updated INTEGER NOT NULL DEFAULT 0);
-
-CREATE TABLE IF NOT EXISTS committing (
--- NULLs okay
--- we can't use after/before as a primary key, before they can't be NULL then b/c sqlite sux
-			 after INTEGER,
-			 before BLOB);
-
-CREATE TABLE IF NOT EXISTS stories (
-			 id INTEGER PRIMARY KEY,
-			 location TEXT NOT NULL UNIQUE,
-			 created INTEGER NOT NULL,
-			 updated INTEGER NOT NULL,
-			 finished BOOLEAN NOT NULL DEFAULT FALSE,
-			 -- these are how many chapters the story had the LAST
-			 -- time its contents were calculated. COUNT(1) FROM chapters for current count
-			 chapters INTEGER NOT NULL DEFAULT 0,
-			 -- this is the latest chapter that is "ready"
-			 -- i.e. no longer in draft.
-			 -- TODO: readiness levels?
-			 ready INTEGER,
-			 title TEXT,
-			 description TEXT,
-			 source TEXT);
-
-CREATE TABLE IF NOT EXISTS chapters (
-			 story INTEGER NOT NULL REFERENCES stories(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-			 chapter INTEGER NOT NULL,
-			 created INTEGER NOT NULL,
-			 updated INTEGER NOT NULL,
-			 seen INTEGER NOT NULL,
-			 -- seen = acts like it was updated, but was marked by an auxiliary process
-			 -- greatest(updated,seen) -> actual
-			 title TEXT,
-			 PRIMARY KEY(story,chapter)) WITHOUT ROWID;
-
-CREATE TABLE IF NOT EXISTS cool_xml_tags (
-	tag TEXT PRIMARY KEY) WITHOUT ROWID;
-
-CREATE TABLE IF NOT EXISTS censored_stories (
-	story INTEGER PRIMARY KEY NOT NULL REFERENCES stories(id)
-	ON DELETE CASCADE ON UPDATE CASCADE);
+SAW_CHAPTER_UPDATE_STORY
+UPDATE stories SET
+  updated = MAX(updated,?1)
+WHERE
+  id = ?2 AND
+	?3 OR
+	(CASE WHEN ready IS NULL THEN
+	  (chapters > ?4)
+	ELSE
+	  ready >= ?4);
+RECENT_CHAPTERS
+SELECT story, chapter, stories.title, chapters.title,
+       location,
+			 chapters.updated
+FROM chapters
+  INNER JOIN stories on stories.id = chapters.story
+WHERE 
+-- not (only censored and in censored_stories)
+  NOT (?1 AND story IN (select story from censored_stories)) 
+  AND (
+    -- all ready, or this one ready, or not last chapter
+    ?2
+    OR
+		chapter <= COALESCE(stories.ready, stories.chapters - 1)
+		OR
+		-- always stories with one chapter are ready
+    1 = stories.chapters
+  )
+ORDER BY chapters.updated DESC LIMIT ?3);
+FOR_ONLY_STORY
+SELECT location,ready,chapters,updated FROM stories WHERE id = ?1
+-- not only censored, and this story is censored
+  AND NOT(?2 AND id IN (SELECT story FROM censored_stories));
+FOR_STORIES
+SELECT id,location,ready,chapters,updated FROM stories WHERE
+  updated AND updated > ? ORDER BY updated;
+FOR_UNDESCRIBED_STORIES
+SELECT id,COALESCE(title,location),description,source
+FROM stories WHERE 
+  title IS NULL OR
+	title = '' OR 
+  description IS NULL OR
+	description = '';
+FOR_CHAPTERS
+SELECT chapter,updated FROM chapters
+WHERE 
+  story = ?1 AND
+	(updated > ?2 OR seen > ?2) AND 
+	(?3 OR 
+		chapter <= (SELECT COALESCE(ready, chapters-1)
+		  FROM stories WHERE id = chapters.story));

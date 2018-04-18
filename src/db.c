@@ -15,7 +15,7 @@
 #include "db-private.h"
 
 bool db_only_censored = false;
-bool db_all_finished = false;
+bool db_all_ready = false;
 
 sqlite3* db = NULL;
 
@@ -253,7 +253,6 @@ void db_caught_up_committing(void) {
 		db_once_trans(unset_before);
 }
 
-
 identifier db_get_category(const string name, git_time_t* updated) {
 	DECLARE_STMT(find,"SELECT id,updated FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
@@ -357,7 +356,7 @@ void db_saw_chapter(bool deleted, identifier story,
 	DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
 							 "WHERE story = ? AND chapter = ?");
-	DECLARE_STMT(update_story,"UPDATE stories SET updated = MAX(updated,?1) WHERE id = ?2 AND ( finished OR chapters > ?3)");
+	DECLARE_STMT(update_story,SAW_CHAPTER_UPDATE_STORY);
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);
@@ -387,7 +386,8 @@ void db_saw_chapter(bool deleted, identifier story,
 
 	sqlite3_bind_int64(update_story, 1, updated);
 	sqlite3_bind_int64(update_story, 2, story);
-	sqlite3_bind_int64(update_story, 3, chapter);
+	sqlite3_bind_int64(update_story, 3, db_all_ready ? 1 : 0);
+	sqlite3_bind_int64(update_story, 4, chapter);
 	db_once(update_story);
 }
 
@@ -475,34 +475,10 @@ void db_for_recent_chapters(int limit,
 																					 const string location,
 																					 git_time_t updated)) {
 
-	DECLARE_STMT(find,"SELECT story,"
-							 "chapter,"
-							 "stories.title,"
-							 "chapters.title,"
-							 "location,"
-							 "chapters.updated "
-#ifdef DEBUGGINGTHISQUERY
-							 ","
-							 "  (select count(1) from chapters as sub where sub.story = chapters.story),"
-							 "  stories.finished,"
-							 "story IN (select story from censored_stories) "
-#endif
-							 "FROM chapters inner join stories on stories.id = chapters.story "
-							 "WHERE "
-							 // not (only censored and in censored_stories)
-							 "NOT (?1 AND story IN (select story from censored_stories)) "
-							 " AND "
-							 // all finished, or this one finished, or not last chapter
-							 "(?2 OR stories.finished OR chapter + 1 < "
-							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
-							 // always stories with one chapter are "finished"
-							 " OR 1 = "
-							 "  (select count(1) from chapters as sub where sub.story = chapters.story)"
-							 ")"
-							 "ORDER BY chapters.updated DESC LIMIT ?3");
+	DECLARE_STMT(find,RECENT_CHAPTERS);
 	RESETTING(find) int res;
 	sqlite3_bind_int(find,1,db_only_censored ? 1 : 0);
-	sqlite3_bind_int(find,2,db_all_finished ? 1 : 0);
+	sqlite3_bind_int(find,2,db_all_ready ? 1 : 0);
 	sqlite3_bind_int(find,3,limit);
 
 
@@ -547,14 +523,13 @@ void db_for_recent_chapters(int limit,
 
 void db_for_stories(void (*handle)(identifier story,
 																	 const string location,
-																	 bool finished,
+																	 size_t ready,
 																	 size_t numchaps,
 																	 git_time_t updated),
 										bool forward,
 										git_time_t before) {
 	if(only_story.ye) {
-		DECLARE_STMT(find,"SELECT location,finished,chapters,updated FROM stories WHERE id = ?1\n"
-								 " AND NOT(?2 AND id IN (SELECT story FROM censored_stories))");
+		DECLARE_STMT(find, FOR_ONLY_STORY);
 
 		sqlite3_bind_int64(find,1,only_story.i);
 		sqlite3_bind_int(find,2,db_only_censored ? 1 : 0);
@@ -566,14 +541,14 @@ void db_for_stories(void (*handle)(identifier story,
 		};
 		handle(only_story.i,
 					 location,
-					 sqlite3_column_int(find,1) == 1,
+					 sqlite3_column_int64(find,1),
 					 sqlite3_column_int64(find,2),
 					 sqlite3_column_int64(find,3));
 		return;
 	}
 
-	DECLARE_STMT(findfor,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated");
-	DECLARE_STMT(findrev,"SELECT id,location,finished,chapters,updated FROM stories WHERE updated AND updated > ? ORDER BY updated DESC");\
+	DECLARE_STMT(findfor,FOR_STORIES);
+	DECLARE_STMT(findrev,FOR_STORIES " DESC");\
 
 	sqlite3_stmt* find;
 	if(forward)
@@ -611,9 +586,7 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 																							 const string title,
 																							 const string description,
 																							 const string source)) {
-	DECLARE_STMT(find,"SELECT id,coalesce(title,location),description,source FROM stories WHERE "
-							 "title IS NULL OR title = '' OR "
-							 "description IS NULL OR description = ''");
+	DECLARE_STMT(find,FOR_UNDESCRIBED_STORIES);
 	for(;;) {
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		if(res == SQLITE_DONE) return;
@@ -641,13 +614,8 @@ void db_for_chapters(identifier story,
 																	 git_time_t updated),
 										git_time_t before,
 										bool only_ready) {
-#define READY "(select ready FROM stories WHERE id = chapters.story)"
-	DECLARE_STMT(find,
-							 "SELECT chapter,updated FROM chapters WHERE "
-							 "story = ?1 AND (updated > ?2 OR seen > ?2) AND "
-							 "(?3 OR (SELECT finished FROM stories WHERE id = chapters.story) OR "
-							 "(chapter <= " READY ")) "
-							 "ORDER BY updated");
+	DECLARE_STMT(find,FOR_CHAPTERS);
+
 #undef READY
 RESTART:
 	sqlite3_bind_int64(find,1,story);
