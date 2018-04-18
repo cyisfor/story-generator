@@ -115,6 +115,8 @@ int main(int argc, char *argv[]) {
 		left -= db_next-cur + 1;
 		cur = db_next + 1;
 	}
+
+	// nothing has been output yet, by the way.
 	int i;
 	if(getenv("onlydefine")) {
 		for(i=0;i<nstmts;++i) {
