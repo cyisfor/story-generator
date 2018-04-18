@@ -44,5 +44,16 @@ SELECT chapter,updated FROM chapters
 WHERE 
   story = ?1 AND
 	(updated > ?2 OR seen > ?2) AND 
-	(?3 OR 
+	(?3 OR
+	  (SELECT 
+  	  CASE WHEN ready = 0 THEN
+	  	  CASE WHEN chapters = 1 THEN
+				  1
+				ELSE
+				  chapters - 1
+			  END
+			ELSE
+			  ready
+			END
+			FROM stories WHERE stories.id = chapters.story))
 		chapter <= ?4);
