@@ -1,4 +1,4 @@
-#include "db.h"
+#include "storydb.h"
 #include "mystring.h"
 #include "create.h"
 
@@ -10,12 +10,11 @@
 
 void output_story(identifier story,
 									const string location,
-									bool finished,
+									size_t ready,
 									size_t numchaps,
 									git_time_t timestamp) {
-	if(!finished) --numchaps;
-	CHAPTER_NAME(numchaps + 1, bleeding_edge);
-	CHAPTER_NAME(numchaps, latest);
+	CHAPTER_NAME(numchaps, bleeding_edge);
+	CHAPTER_NAME(ready ? ready : numchaps > 1 ? numchaps -1 : 1, latest);
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
 	string modified = {
@@ -32,14 +31,14 @@ void output_story(identifier story,
 		}
 #include "o/template/contents-story.html.c"
 	}
-	db_with_story_info(story, derp);
+	storydb_with_info(story, derp);
 }
 
 int main(int argc, char *argv[])
 {
 	db_open();
 	void output_stories() {
-		db_for_stories(output_story, false, 0);
+		storydb_for_stories(output_story, false, 0);
 	}
 	string title = {
 		.s = "Table of Contents",

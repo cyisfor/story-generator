@@ -114,6 +114,7 @@ statements2source_SOURCES = \
 	cystuff/src/mmapfile.c
 statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
 statements2source_LDADD = $(STORYDB_libs)
+statements2source_LDFLAGS = $(STORYDB_ldflags)
 
 BUILT_SOURCES += o/template/statements2source.c.c
 

@@ -26,3 +26,6 @@ void db_add_stmt(sqlite3_stmt* stmt);
 	DECLARE_STMT(stmt, sql);																 \
 	db_once(stmt);																					 \
 	}
+
+// call storydb_open please
+void db_open();

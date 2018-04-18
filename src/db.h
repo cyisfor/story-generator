@@ -8,7 +8,6 @@
 
 #include "db_oid/base.h"
 
-void db_open();
 void db_close_and_exit(void);
 
 void db_set_category(const string category);
