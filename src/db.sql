@@ -5,7 +5,16 @@ UPDATE stories SET
 WHERE
   id = ?2 AND
 	?3 OR
-	?4 <= COALESCE(ready, chapters-1);
+	  (SELECT 
+  	  CASE WHEN ready = 0 THEN
+	  	  CASE WHEN chapters = 1 THEN
+				  1
+				ELSE
+				  ?4 <= chapters - 1
+			  END
+			ELSE
+			  ?4 <= ready
+			END);
 RECENT_CHAPTERS
 SELECT story, chapter, stories.title, chapters.title,
        location,
@@ -17,9 +26,16 @@ WHERE
   NOT (?1 AND story IN (select story from censored_stories)) 
   AND (
     -- all ready, or this one ready, or not last chapter
-    ?2
-    OR
-		chapter <= COALESCE(stories.ready, stories.chapters - 1)
+	  (SELECT 
+  	  CASE WHEN ready = 0 THEN
+	  	  CASE WHEN chapters = 1 THEN
+				  1
+				ELSE
+				  chapter <= chapters - 1
+			  END
+			ELSE
+			  chapter <= ready
+			END)
 		OR
 		-- always stories with one chapter are ready
     1 = stories.chapters
@@ -55,5 +71,4 @@ WHERE
 			ELSE
 			  ready
 			END
-			FROM stories WHERE stories.id = chapters.story))
-		chapter <= ?4);
+			FROM stories WHERE stories.id = chapters.story));
