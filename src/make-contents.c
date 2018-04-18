@@ -18,7 +18,8 @@ void output_story(identifier story,
 									size_t ready,
 									size_t numchaps,
 									git_time_t timestamp) {
-	string latest, bleeding_edge;
+	string latest = {}, bleeding_edge = {};
+	char derpbuf1[0x100], derpbuf2[0x100];
 	if(ready != numchaps) {
 		CHAPTER_NAME_STRING(ready + 1,
 												bleeding_edge,
