@@ -45,5 +45,4 @@ WHERE
   story = ?1 AND
 	(updated > ?2 OR seen > ?2) AND 
 	(?3 OR 
-		chapter <= (SELECT COALESCE(ready, chapters-1)
-		  FROM stories WHERE id = chapters.story));
+		chapter <= ?4);

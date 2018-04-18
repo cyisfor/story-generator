@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS stories (
 			 -- this is the latest chapter that is "ready"
 			 -- i.e. no longer in draft.
 			 -- TODO: readiness levels?
-			 ready INTEGER,
+			 ready INTEGER NOT NULL DEFAULT 0,
 			 title TEXT,
 			 description TEXT,
 			 source TEXT);
