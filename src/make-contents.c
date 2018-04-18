@@ -22,11 +22,10 @@ void output_story(identifier story,
 	CHAPTER_NAME_STRING(numchaps,
 											bleeding_edge,
 											derpbuf1);
-	ready = ready ? ready : numchaps > 1 ? numchaps -1 : 1
+	ready = ready ? ready : numchaps > 1 ? numchaps -1 : 1;
 	CHAPTER_NAME_STRING(ready,
 											latest,
 											derpbuf2);
-	latest.which = ready;
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
 	string modified = {

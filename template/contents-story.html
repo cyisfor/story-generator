@@ -3,10 +3,9 @@
 	<td title="<?cS modified_time ?>"><?cS modified ?></td>
 	<td>
 		<a href="<?cS location?>/">Start</a> 
-		<a href="<?cS location?>/<?cs latest, latestlen ?>" title="Chapter <?c "%ld", numchaps ?>">Latest</a>
+		<a href="<?cS location?>/<?cS latest ?>" title="Chapter <?c "%ld", ready ?>">Latest</a>
 		<?C if(ready < numchaps) { ?>
-		  <a href="../sneakpeek/<?cS location?>/<?cs bleeding_edge, bleeding_edgelen ?>" title="Chapter <?c "%ld", numchaps + 1 ?>">Sneak Peek</a>
+		  <a href="../sneakpeek/<?cS location?>/<?cS bleeding_edge ?>" title="Chapter <?c "%ld", numchaps ?>">Sneak Peek</a>
     <?C } ?>
-
 	</td>
 </tr>

@@ -22,7 +22,7 @@ void create_chapter(int src, int dest,
 	char buf[0x100] = "index.html";													\
 	(name).s = buf;																					\
 	if(i > 1) {																							\
-		(name).len = snprintf(buf,0x100,"chapter%ld.html",i);	\
+		(name).l = snprintf(buf,0x100,"chapter%ld.html",i);		\
 	} else {																								\
-		(name).len = 10;																			\
+		(name).l = 10;																				\
 	}

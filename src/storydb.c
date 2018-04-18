@@ -287,7 +287,8 @@ void storydb_for_stories(void (*handle)(identifier story,
 	}
 
 	DECLARE_STMT(findfor,FOR_STORIES);
-	DECLARE_STMT(findrev,FOR_STORIES " DESC");\
+	// Note: this is why statements2source.c must have onlydefine
+	DECLARE_STMT(findrev,FOR_STORIES " DESC");
 
 	sqlite3_stmt* find;
 	if(forward)
@@ -306,7 +307,7 @@ void storydb_for_stories(void (*handle)(identifier story,
 			};
 			handle(sqlite3_column_int64(find,0),
 						 location,
-						 sqlite3_column_int(find,2) == 1,
+						 sqlite3_column_int64(find,2),
 						 sqlite3_column_int64(find,3),
 						 sqlite3_column_int64(find,4));
 			continue;
