@@ -1,4 +1,5 @@
 #include "db.h"
+
 // censor stories that are "bad"
 extern bool storydb_only_censored;
 // include last chapter for all stories

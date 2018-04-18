@@ -41,7 +41,7 @@ generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 generate_SOURCES += cystuff/src/itoa.c
 
 generate_CFLAGS = $(XMLINC) $(HISHINC) \
-	$(libstorydb_la_CFLAGS)
+	$(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la
@@ -110,7 +110,7 @@ statements2source_SOURCES = \
 	src/note.c \
 	cystuff/src/itoa.c \
 	cystuff/src/mmapfile.c
-statements2source_CFLAGS = $(libstorydb_la_CFLAGS)
+statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
 statements2source_LDADD = $(libstorydb_la_LIBADD)
 
 BUILT_SOURCES += o/template/statements2source.c.c
@@ -164,7 +164,7 @@ o_make_sql_SOURCES = src/make-sql.c
 
 
 o/%.sql.c: $(srcdir)/src/%.sql o statements2source
-	./statements2source derp <$< >$@.temp
+	onlydefine=1 ./statements2source derp <$< >$@.temp
 	mv $@.temp $@
 
 BUILT_SOURCES+=o/db.sql.c

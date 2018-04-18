@@ -2,7 +2,6 @@
 #include "db.h"
 #include "ensure.h"
 #include "htmlish.h"
-#include "itoa.h"
 
 #include <sqlite3.h>
 #include <error.h>
@@ -87,12 +86,6 @@ sqlite3_stmt* db_preparen(const char* s, int l) {
 	assert(stmt != NULL);
 	return stmt;
 }
-
-
-struct {
-	bool ye;
-	identifier i;
-} only_story = {};
 
 void db_open() {
 	const char* filename = "storyinfo.sqlite";

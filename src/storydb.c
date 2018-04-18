@@ -1,9 +1,23 @@
 #include "storydb.h"
 #include <sqlite3.h>
 
+#include "db-private.h"
+
+#include "o/db.sql.c"
+
+#include "itoa.h"
+
 
 bool storydb_only_censored = false;
 bool storydb_all_ready = false;
+
+static
+struct {
+	bool ye;
+	identifier i;
+} only_story = {};
+
+
 
 void storydb_open() {
 	db_open();
