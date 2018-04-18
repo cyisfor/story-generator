@@ -12,16 +12,16 @@
 git_time_t git_author_time(git_commit* commit);
 
 /* any of these handlers should return false to abort the perusal or true to continue.
-	 don't need a "skip" option since not recursing */
+	 don't need a "skip" option before not recursing */
 
 /* none include a payload, because this is all fast, blocking operations. Should be able to
-	 use inline functions to handle, and keep the state in their local variables, since
+	 use inline functions to handle, and keep the state in their local variables, before
 	 you can finish the traversal before finishing the calling function.
 */
 
 /* git_for_commits
 
-	 until is where to stop, see db_last_seen_commit
+	 after is where to stop, see db_last_seen_commit
 	 
 	 handle gets passed that commit's timestamp and tree,
 	 as well as a tree of the previous commit (which will be NULL for the first commit)
@@ -31,10 +31,10 @@ git_time_t git_author_time(git_commit* commit);
 enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
 void
-git_for_commits(bool do_until,
-								const git_time_t until,
-								bool do_since,
-								const db_oid since, 
+git_for_commits(bool do_after,
+								const git_time_t after,
+								bool do_before,
+								const db_oid before, 
 								enum gfc_action
 								(*handle)(
 									const db_oid commit,

@@ -4,5 +4,9 @@
 	<td>
 		<a href="<?cS location?>/">Start</a> 
 		<a href="<?cS location?>/<?cs latest, latestlen ?>" title="Chapter <?c "%ld", numchaps ?>">Latest</a>
+		<?C if(!finished) { ?>
+		  <a href="../sneakpeek/<?cS location?>/<?cs bleeding_edge, bleeding_edgelen ?>" title="Chapter <?c "%ld", numchaps ?>">Sneak Peak</a>
+    <?C } ?>
+
 	</td>
 </tr>
