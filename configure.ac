@@ -45,6 +45,7 @@ AC_CHECK_FUNCS([dup2 memchr memset mkdir munmap pow setenv setlocale strcasecmp 
 
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES(SQLITE, sqlite3)
+PKG_CHECK_MODULES(GIT, libgit2)
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
