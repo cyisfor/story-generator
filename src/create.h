@@ -18,11 +18,11 @@ void create_chapter(int src, int dest,
 		buf ## len = snprintf(buf,0x100,"chapter%ld.html",i);	\
 	}
 
-#define CHAPTER_NAME_STRING(i,name)																\
-	char name ## buf[0x100] = "index.html";													\
-	(name).s = name ## buf;																					\
-	if(i > 1) {																											\
-		(name).len = snprintf(name ## buf,0x100,"chapter%ld.html",i);	\
-	} else {																												\
-		(name).len = 10;																							\
+#define CHAPTER_NAME_STRING(i,name,buf)										\
+	char buf[0x100] = "index.html";													\
+	(name).s = buf;																					\
+	if(i > 1) {																							\
+		(name).len = snprintf(buf,0x100,"chapter%ld.html",i);	\
+	} else {																								\
+		(name).len = 10;																			\
 	}
