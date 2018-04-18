@@ -15,30 +15,39 @@ XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
 HISHINC=-I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src 
 
 bin_PROGRAMS = generate news-log make-log describe make-contents
+lib_LIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
+
+HISH_libs = \
+	$(srcdir)/libxml2/build/libxml2.la \
+	$(srcdir)/htmlish/libhtmlish.la \
+	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+
+libstorydb_la_SOURCES = \
+	src/db.c \
+	src/storydb.c
+
+libstorydb_la_LIBADD = \
+	$(SQLITE_LIBS) $(GIT_LIBS) \
+	$(HISH_libs)
+
+libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS)
 
 generate_SOURCES = \
 	src/main.c \
 	src/storygit.c \
 	src/repo.c \
 	src/create.c \
-	src/db.c \
 	src/note.c
 
 generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 
 generate_SOURCES += cystuff/src/itoa.c
 
-generate_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS)
-
-generate_CFLAGS += $(XMLINC) $(HISHINC) \
+generate_CFLAGS = $(XMLINC) $(HISHINC) \
 	-I $(srcdir)/ddate
 
-
-generate_LDADD = $(srcdir)/libxml2/build/libxml2.la \
-	$(SQLITE_LIBS) $(GIT_LIBS) \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+generate_LDADD = libstorydb.la
 
 BUILT_SOURCES += o/category.gen.c
 
@@ -54,24 +63,16 @@ news_log_SOURCES = $(XMLFIXES_C) \
 
 news_log_CFLAGS = -I$(srcdir)/cystuff/src $(XMLINC) $(HISHINC)
 
-news_log_LDADD = $(srcdir)/libxml2/build/libxml2.la \
-	$(GIT_LIBS) \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+news_log_LDADD = libstorydb.la
 
 make_log_SOURCES = \
 	src/make-log.c \
-	src/db.c \
 	src/note.c \
 	cystuff/src/itoa.c \
 	cystuff/src/become.c
 
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
-make_log_CFLAGS += $(SQLITE_CFLAGS)
-make_log_LDADD = $(srcdir)/libxml2/build/libxml2.la \
-	$(SQLITE_LIBS) $(GIT_LIBS) \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+make_log_LDADD = libstorydb.la
 
 BUILT_SOURCES += \
 	o/template/make-log.html.c \
@@ -110,14 +111,8 @@ statements2source_SOURCES = \
 	src/note.c \
 	cystuff/src/itoa.c \
 	cystuff/src/mmapfile.c
-statements2source_CFLAGS = $(XMLINC) $(HISHINC) \
-	$(SQLITE_CFLAGS) $(GIT_CFLAGS) \
-	-I$(srcdir)/cystuff/src
-statements2source_LDADD = \
-	$(SQLITE_LIBS) $(GIT_LIBS)\
-	$(srcdir)/libxml2/build/libxml2.la \
-	$(srcdir)/htmlish/libhtmlish.la
-
+statements2source_CFLAGS = $(libstorydb_la_CFLAGS)
+statements2source_LDADD = $(libstorydb_la_LIBADD)
 
 BUILT_SOURCES += o/template/statements2source.c.c
 
