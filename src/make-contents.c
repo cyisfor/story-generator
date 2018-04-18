@@ -13,9 +13,9 @@ void output_story(identifier story,
 									bool finished,
 									size_t numchaps,
 									git_time_t timestamp) {
+	if(!finished) --numchaps;
+	CHAPTER_NAME(numchaps + 1, bleeding_edge);
 	CHAPTER_NAME(numchaps, latest);
-	if(!finished) ++numchaps;
-	CHAPTER_NAME(numchaps, bleeding_edge);
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
 	string modified = {

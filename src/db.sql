@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS categories (
 
 CREATE TABLE IF NOT EXISTS committing (
 -- NULLs okay
--- we can't use until/since as a primary key, since they can't be NULL then b/c sqlite sux
-			 until INTEGER,
-			 since BLOB);
+-- we can't use after/before as a primary key, before they can't be NULL then b/c sqlite sux
+			 after INTEGER,
+			 before BLOB);
 
 CREATE TABLE IF NOT EXISTS stories (
 			 id INTEGER PRIMARY KEY,
