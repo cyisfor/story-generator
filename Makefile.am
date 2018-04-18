@@ -45,6 +45,7 @@ generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
 generate_SOURCES += cystuff/src/itoa.c
 
 generate_CFLAGS = $(XMLINC) $(HISHINC) \
+	$(libstorydb_la_CFLAGS)
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la
@@ -61,7 +62,9 @@ news_log_SOURCES = $(XMLFIXES_C) \
 	src/repo.c \
 	cystuff/src/become.c
 
-news_log_CFLAGS = -I$(srcdir)/cystuff/src $(XMLINC) $(HISHINC)
+news_log_CFLAGS = -I$(srcdir)/cystuff/src \
+	$(XMLINC) $(HISHINC) \
+	$(libstorydb_la_CFLAGS)
 
 news_log_LDADD = libstorydb.la
 
@@ -71,7 +74,9 @@ make_log_SOURCES = \
 	cystuff/src/itoa.c \
 	cystuff/src/become.c
 
-make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
+make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
+	$(HISHINC) \
+	$(libstorydb_la_CFLAGS)
 make_log_LDADD = libstorydb.la
 
 BUILT_SOURCES += \
@@ -88,17 +93,15 @@ o/template:
 $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
 
-make_contents_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC)
+make_contents_CFLAGS = \
+	$(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC) \
+	$(libstorydb_la_CFLAGS)
+
 make_contents_SOURCES = \
 	src/make-contents.c \
-	src/db.c \
 	src/note.c \
 	cystuff/src/itoa.c
-make_contents_LDADD = \
-	$(SQLITE_LIBS) $(GIT_LIBS) \
-	$(srcdir)/libxml2/build/libxml2.la \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/htmlish/html_when/libhtmlwhen.la
+make_contents_LDADD = libstorydb.la
 
 
 BUILT_SOURCES += o/template/page.html.c \

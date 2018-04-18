@@ -1,7 +1,8 @@
+#include "db.h"
 // censor stories that are "bad"
 extern bool storydb_only_censored;
 // include last chapter for all stories
-extern bool storydb_all_finished;
+extern bool storydb_all_ready;
 
 
 bool storydb_set_censored(identifier story, bool censored);
@@ -32,10 +33,10 @@ void storydb_for_recent_chapters(int limit,
 																					 git_time_t timestamp));
 
 void storydb_for_stories(void (*handle)(identifier story,
-																	 const string location,
-																	 bool finished,																	 
-																	 size_t numchaps,
-																	 git_time_t timestamp),
+																				const string location,
+																				size_t ready,
+																				size_t numchaps,
+																				git_time_t timestamp),
 										bool forward,
 										git_time_t after);
 
