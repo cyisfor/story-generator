@@ -278,9 +278,16 @@ void storydb_for_stories(void (*handle)(identifier story,
 			.s = sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};
+		size_t ready = sqlite3_column_int64(find,1);
+		if(ready == 0) {
+			if(numchaps == 1)
+				ready = 1;
+			else
+				ready = numchaps-1;
+		} 
 		handle(only_story.i,
 					 location,
-					 sqlite3_column_int64(find,1),
+					 ready,
 					 sqlite3_column_int64(find,2),
 					 sqlite3_column_int64(find,3));
 		return;

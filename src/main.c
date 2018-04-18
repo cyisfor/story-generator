@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 
 		// save numchaps to update story later.
 		const int savenumchaps = numchaps;
-		// XXX: if finished, numchaps, otherwise
+		// XXX: reduce numchaps to ready, unless all are ready
 		if(!storydb_all_ready && ready)
 			numchaps = ready; // + 1 ?
 
