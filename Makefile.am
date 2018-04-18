@@ -23,7 +23,7 @@ libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
-libstorydb_la_LIBADD = \
+STORYDB_libs = \
 	$(SQLITE_LIBS) $(GIT_LIBS) \
 	$(HISH_libs)
 
@@ -111,7 +111,7 @@ statements2source_SOURCES = \
 	cystuff/src/itoa.c \
 	cystuff/src/mmapfile.c
 statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
-statements2source_LDADD = $(libstorydb_la_LIBADD)
+statements2source_LDADD = $(STORYDB_libs)
 
 BUILT_SOURCES += o/template/statements2source.c.c
 

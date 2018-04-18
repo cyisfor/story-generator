@@ -73,7 +73,7 @@ DECLARE_BUILTIN(rollback) {
 	 before the database won't close after we finalize them all. */
 sqlite3_stmt** stmts = NULL;
 size_t nstmt = 0;
-void add_stmt(sqlite3_stmt* stmt) {
+void db_add_stmt(sqlite3_stmt* stmt) {
 	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
 	stmts[nstmt-1] = stmt;
 }
@@ -317,17 +317,17 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 		sqlite3_bind_int64(find,2,working.chapter);
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		if(res == SQLITE_ROW) {
-			fprintf(stderr,"=== %.*s:%d ",
+			fprintf(stderr,"=== %.*s:%ld ",
 							sqlite3_column_bytes(find,0),
-							sqlite3_column_blob(find,0),
+							(char*)sqlite3_column_blob(find,0),
 							working.chapter);
 			if(sqlite3_column_type(find,1) != SQLITE_NULL) {
 				fprintf(stderr,"(%.*s) ",
 								sqlite3_column_bytes(find,1),
-								sqlite3_column_blob(find,1));
+								(char*)sqlite3_column_blob(find,1));
 			}
 		} else {
-			fprintf(stderr,"??? %d:%d ",working.story,working.chapter);
+			fprintf(stderr,"??? %ld:%ld ",working.story,working.chapter);
 		}
 		fputc('\n',stderr);
 		working.story = 0;

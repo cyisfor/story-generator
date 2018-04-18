@@ -13,7 +13,7 @@ void db_add_stmt(sqlite3_stmt* stmt);
 
 #define PREPARE(stmt,sql) {																	 \
 		stmt = db_preparen(LITLEN(sql));													 \
-		add_stmt(stmt);																						 \
+		db_add_stmt(stmt);																						 \
 	}
 
 #define DECLARE_STMT(stmt,sql)																		\
