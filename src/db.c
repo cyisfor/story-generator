@@ -13,7 +13,7 @@
 #include "db-private.h"
 sqlite3* db = NULL;
 
-static int db_check(int res) {
+int db_check(int res) {
 	switch(res) {
 	case SQLITE_OK:
 	case SQLITE_DONE:
@@ -73,7 +73,7 @@ DECLARE_BUILTIN(rollback) {
 	 before the database won't close after we finalize them all. */
 sqlite3_stmt** stmts = NULL;
 size_t nstmt = 0;
-static void add_stmt(sqlite3_stmt* stmt) {
+void add_stmt(sqlite3_stmt* stmt) {
 	stmts = realloc(stmts,sizeof(*stmts)*(++nstmt));
 	stmts[nstmt-1] = stmt;
 }
