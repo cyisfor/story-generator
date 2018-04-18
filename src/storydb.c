@@ -1,3 +1,5 @@
+#include "db.h"
+
 bool storydb_only_censored = false;
 bool storydb_all_ready = false;
 
@@ -114,7 +116,7 @@ struct storycache {
 	sqlite3_stmt* insert;
 };
 
-struct storycache* storydb_start_storycache(void) {
+struct storycache* storydb_start_cache(void) {
 	static int counter = 0;
 #define PREFIX "CREATE TEMPORARY TABLE storycache"
 	{
@@ -162,7 +164,7 @@ struct storycache* storydb_start_storycache(void) {
 }
 
 // return true if it's in the cache, add it if not in the cache->
-bool storydb_in_storycache(struct storycache* cache, identifier story, size_t chapter) {
+bool storydb_in_cache(struct storycache* cache, identifier story, size_t chapter) {
 	sqlite3_bind_int64(cache->find, 1, story);
 	sqlite3_bind_int64(cache->find, 2, chapter);
 	TRANSACTION;
@@ -176,7 +178,7 @@ bool storydb_in_storycache(struct storycache* cache, identifier story, size_t ch
 	return false;
 }
 
-void storydb_storycache_free(struct storycache* cache) {
+void storydb_cache_free(struct storycache* cache) {
 	sqlite3_finalize(cache->find);
 	sqlite3_finalize(cache->insert);
 	free(cache);

@@ -6,14 +6,6 @@
 #include <stdint.h> // int64_t
 #include <stdbool.h>
 
-// censor stories that are "bad"
-extern bool db_only_censored;
-// include last chapter for all stories
-extern bool db_all_finished;
-
-
-
-
 #include "db_oid/base.h"
 
 void db_open();
@@ -33,86 +25,6 @@ typedef int64_t identifier;
 
 identifier db_get_category(const string name, git_time_t* timestamp);
 void db_caught_up_category(identifier category);
-
-bool db_set_censored(identifier story, bool censored);
-
-identifier db_find_story(const string location);
-identifier db_get_story(const string location, git_time_t timestamp);
-
-
-void db_saw_chapter(bool deleted, identifier story,
-										git_time_t timestamp, identifier chapter);
-
-
-struct storycache;
-
-struct storycache* db_start_storycache(void);
-// return true if it's in the cache, add it if not in the cache.
-bool db_in_storycache(struct storycache* cache, identifier story, size_t chapter);
-void db_storycache_free(struct storycache* cache);
-
-
-/* be CAREFUL none of these iterators are re-entrant! */
-
-void db_for_recent_chapters(int limit,
-														void (*handle)(identifier story,
-																					 size_t chapnum,
-																					 const string story_title,
-																					 const string chapter_title,
-																					 const string location,
-																					 git_time_t timestamp));
-
-void db_for_stories(void (*handle)(identifier story,
-																	 const string location,
-																	 bool finished,																	 
-																	 size_t numchaps,
-																	 git_time_t timestamp),
-										bool forward,
-										git_time_t after);
-
-void db_for_undescribed_stories(void (*handle)(identifier story,
-																							 const string title,
-																							 const string description,
-																							 const string source));
-
-void db_for_chapters(identifier story,
-										 void (*handle)(identifier chapter,
-																		git_time_t timestamp),
-										 git_time_t after,
-										 bool only_ready);
-
-void db_with_chapter_title(identifier story,
-													 identifier chapter,
-													 void (*handle)(const string));
-
-void db_with_story_info(const identifier story, void (*handle)(const string title,
-																															 const string description,
-																															 const string source));
-
-// for db_set_* empty strings will set the db value to NULL
-void db_set_story_info(identifier story,
-											 const string title,
-											 const string description,
-											 const string source)
-;
-void db_set_chapters(identifier story, size_t numchaps);
-
-void db_get_chapter_title(string* dest, identifier story, identifier chapter);
-void db_get_story_title(string* dest, identifier story);
-void db_get_story_description(string* dest, identifier story);
-void db_get_story_source(string* dest, identifier story);
-
-identifier db_count_chapters(identifier story);
-
-// db should set to NULL if string is empty
-void db_set_chapter_title(const string title,
-													identifier story, identifier chapter,
-													bool* title_changed);
-
-void db_set_story_info(identifier story,
-											 const string title,
-											 const string description,
-											 const string source);
 
 // XXX: just for the error handler...
 void db_working_on(identifier story, identifier chapter);
