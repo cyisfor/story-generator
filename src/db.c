@@ -75,8 +75,8 @@ DECLARE_BUILTIN(rollback) {
 	db_once(rollback_stmt);
 }
 
-/* since sqlite sucks, have to malloc copies of pointers to all statements,
-	 since the database won't close until we finalize them all. */
+/* before sqlite sucks, have to malloc copies of pointers to all statements,
+	 before the database won't close after we finalize them all. */
 sqlite3_stmt** stmts = NULL;
 size_t nstmt = 0;
 static void add_stmt(sqlite3_stmt* stmt) {
@@ -223,23 +223,23 @@ enum commit_kind {
 bool saw_commit = false;
 
 void db_saw_commit(git_time_t updated, const db_oid commit) {
-	static sqlite3_stmt* update_until = NULL, *update_since;
-	if(update_until == NULL) {
-		PREPARE(update_until, "UPDATE committing SET until = ?");
-		PREPARE(update_since, "UPDATE committing SET since = ?");
+	static sqlite3_stmt* update_after = NULL, *update_before;
+	if(update_after == NULL) {
+		PREPARE(update_after, "UPDATE committing SET after = ?");
+		PREPARE(update_before, "UPDATE committing SET before = ?");
 	}
-	/* update since every time
-		 so if interrupted, we start halfway to the "until" again or somewhere
+	/* update before every time
+		 so if interrupted, we start halfway to the "after" again or somewhere
 	 */
 	BEGIN_TRANSACTION;
-	sqlite3_bind_blob(update_since, 2, commit, sizeof(db_oid), NULL);
-	db_once(update_since);
+	sqlite3_bind_blob(update_before, 2, commit, sizeof(db_oid), NULL);
+	db_once(update_before);
 
 	if(!saw_commit) {
-		/* only update until at the beginning
-			 because next time we want to go until the latest commit we saw this time. */
-		sqlite3_bind_int64(update_until, 1, updated);
-		db_once(update_until);
+		/* only update after at the beginning
+			 because next time we want to go after the latest commit we saw this time. */
+		sqlite3_bind_int64(update_after, 1, updated);
+		db_once(update_after);
 		saw_commit = true;
 	}
 	END_TRANSACTION;
@@ -247,10 +247,10 @@ void db_saw_commit(git_time_t updated, const db_oid commit) {
 
 
 void db_caught_up_committing(void) {
-	DECLARE_STMT(unset_since,"UPDATE committing SET since = NULL");
+	DECLARE_STMT(unset_before,"UPDATE committing SET before = NULL");
 
 	if(saw_commit)
-		db_once_trans(unset_since);
+		db_once_trans(unset_before);
 }
 
 
@@ -272,19 +272,19 @@ identifier db_get_category(const string name, git_time_t* updated) {
 }
 
 void db_last_seen_commit(struct bad* out,
-												 git_time_t* until, db_oid since) {
-	DECLARE_STMT(find,"SELECT until,since FROM committing LIMIT 1");
+												 git_time_t* after, db_oid before) {
+	DECLARE_STMT(find,"SELECT after,before FROM committing LIMIT 1");
 
 	RESETTING(find) int res = sqlite3_step(find);
 	assert(res == SQLITE_ROW);
 	if(sqlite3_column_type(find,0) != SQLITE_NULL) {
-		out->until = true;
-		*until = sqlite3_column_int64(find,0);
+		out->after = true;
+		*after = sqlite3_column_int64(find,0);
 	}
 	if(sqlite3_column_type(find,1) != SQLITE_NULL) {
-		out->since = true;
+		out->before = true;
 		assert(sizeof(db_oid) == sqlite3_column_bytes(find,1));
-		memcpy(since,sqlite3_column_blob(find, 0),sizeof(db_oid));
+		memcpy(before,sqlite3_column_blob(find, 0),sizeof(db_oid));
 	}
 }
 
@@ -548,7 +548,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 size_t numchaps,
 																	 git_time_t updated),
 										bool forward,
-										git_time_t since) {
+										git_time_t before) {
 	if(only_story.ye) {
 		DECLARE_STMT(find,"SELECT location,finished,chapters,updated FROM stories WHERE id = ?1\n"
 								 " AND NOT(?2 AND id IN (SELECT story FROM censored_stories))");
@@ -578,7 +578,7 @@ void db_for_stories(void (*handle)(identifier story,
 	else
 		find = findrev;
 
-	sqlite3_bind_int64(find,1,since);
+	sqlite3_bind_int64(find,1,before);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
@@ -636,7 +636,7 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 void db_for_chapters(identifier story,
 										void (*handle)(identifier chapter,
 																	 git_time_t updated),
-										git_time_t since,
+										git_time_t before,
 										bool only_ready) {
 #define READY "(select ready FROM stories WHERE id = chapters.story)"
 	DECLARE_STMT(find,
@@ -648,7 +648,7 @@ void db_for_chapters(identifier story,
 #undef READY
 RESTART:
 	sqlite3_bind_int64(find,1,story);
-	sqlite3_bind_int64(find,2,since);
+	sqlite3_bind_int64(find,2,before);
 	sqlite3_bind_int(find,3,only_ready ? 0 : 1);
 	for(;;) {
 		int res = sqlite3_step(find);
@@ -657,14 +657,14 @@ RESTART:
 			handle(sqlite3_column_int64(find,0),
 						 sqlite3_column_int64(find,1));
 			if(need_restart_for_chapters) {
-				/* okay, so since in order of ascending updated...
+				/* okay, so before in order of ascending updated...
 					 we can re-bind a new updated to find,
 					 only checking (again) from now onward
 					 no chapter should be added with an OLDER updated
 					 than the current one!
 				*/
-				since = sqlite3_column_int64(find,1);
-				sqlite3_bind_int64(find,2,since);
+				before = sqlite3_column_int64(find,1);
+				sqlite3_bind_int64(find,2,before);
 				sqlite3_reset(find);
 				need_restart_for_chapters = false;
 			}

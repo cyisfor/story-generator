@@ -23,11 +23,11 @@ void db_set_category(const string category);
 void db_saw_commit(git_time_t timestamp, const db_oid commit);
 void db_caught_up_committing(void);
 struct bad {
-	bool until;
-	bool since;
+	bool after;
+	bool before;
 };
 void db_last_seen_commit(struct bad* out,
-												 git_time_t* until, db_oid since);
+												 git_time_t* after, db_oid before);
 
 typedef int64_t identifier;
 
@@ -68,7 +68,7 @@ void db_for_stories(void (*handle)(identifier story,
 																	 size_t numchaps,
 																	 git_time_t timestamp),
 										bool forward,
-										git_time_t since);
+										git_time_t after);
 
 void db_for_undescribed_stories(void (*handle)(identifier story,
 																							 const string title,
@@ -78,7 +78,7 @@ void db_for_undescribed_stories(void (*handle)(identifier story,
 void db_for_chapters(identifier story,
 										 void (*handle)(identifier chapter,
 																		git_time_t timestamp),
-										 git_time_t since,
+										 git_time_t after,
 										 bool only_ready);
 
 void db_with_chapter_title(identifier story,
