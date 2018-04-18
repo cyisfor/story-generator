@@ -1,4 +1,4 @@
-#include "db.h"
+#include "storydb.h"
 #include "ensure.h"
 
 #include <sys/mman.h>
@@ -63,23 +63,23 @@ int main(int argc, char *argv[])
 			newsauce.s = readline("Source: ");
 			newsauce.l = strlen(newsauce.s);
 		}
-		db_set_story_info(story,newtit,CSTR(newdesc),newsauce);
+		storydb_set_info(story,newtit,CSTR(newdesc),newsauce);
 		munmap(newdesc.s,newdesc.l);
 	}
 	
 	if(argc == 1) {
-		db_for_undescribed_stories(for_story);
+		storydb_for_undescribed(for_story);
 	} else {
 		int i;
 		for(i=1;i<argc;++i) {
 			string location = { argv[i], strlen(argv[i]) };
-			identifier story = db_find_story(location);
+			identifier story = storydb_find_story(location);
 			void have_info(const string title,
 										 const string description,
 										 const string source) {
 				for_story(story, title, description, source);
 			}
-			db_with_story_info(story, have_info);
+			storydb_with_info(story, have_info);
 		}
 	}
 	db_close_and_exit();

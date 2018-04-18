@@ -41,7 +41,7 @@ void storydb_for_stories(void (*handle)(identifier story,
 										bool forward,
 										git_time_t after);
 
-void storydb_for_undescribed_stories(void (*handle)(identifier story,
+void storydb_for_undescribed(void (*handle)(identifier story,
 																							 const string title,
 																							 const string description,
 																							 const string source));

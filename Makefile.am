@@ -98,7 +98,8 @@ make_contents_SOURCES = \
 	src/make-contents.c \
 	src/note.c \
 	cystuff/src/itoa.c
-make_contents_LDADD = libstorydb.la
+make_contents_LDADD = libstorydb.la $(STORYDB_libs)
+make_contents_LDFLAGS = $(STORYDB_ldflags) 
 
 
 BUILT_SOURCES += o/template/page.html.c \
@@ -124,7 +125,7 @@ describe_SOURCES = \
 
 describe_CFLAGS = $(HISH_cflags)
 describe_LDADD = libstorydb.la $(STORYDB_libs) 
-describe_LDFLAGS = $(STORYDB_ldflags)
+describe_LDFLAGS = $(STORYDB_ldflags) -lreadline
 
 define make_sublib
 $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
