@@ -6,7 +6,10 @@
 #include "o/db.sql.c"
 
 #include "itoa.h"
+#include "ensure.h"
 
+
+#include <assert.h>
 
 bool storydb_only_censored = false;
 bool storydb_all_ready = false;
