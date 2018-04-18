@@ -14,9 +14,7 @@
 
 int main(int argc, char *argv[])
 {
-	const char* dbs = "generate.sqlite";
-	if(NULL != getenv("db")) dbs = getenv("db");
-	db_open(dbs);
+	storydb_open();
 
 	void for_story(identifier story,
 								 const string title,

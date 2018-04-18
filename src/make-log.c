@@ -21,9 +21,9 @@ int main(int argc, char *argv[])
 	assert(argc == 2);
 	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
-	db_open();
+	storydb_open();
 
-	struct storycache* cache = db_start_storycache();
+	struct storycache* cache = storydb_start_cache();
 	
 	storydb_all_ready = getenv("sneakpeek") != NULL;
 	storydb_only_censored = getenv("censored") != NULL;
@@ -44,12 +44,12 @@ int main(int argc, char *argv[])
 			dest->times[0].tv_sec = timestamp;
 			dest->times[1].tv_sec = timestamp;
 		}
-		if(db_in_storycache(cache,story,chapnum)) {
+		if(storydb_in_cache(cache,story,chapnum)) {
 			fwrite(LITLEN("yayayay"),1,stderr);
 			return;
 		}
 		if(!storydb_all_ready) {
-			if(db_count_chapters(story) == chapnum) return;
+			if(storydb_count_chapters(story) == chapnum) return;
 		}
 
 		char numbuf[0x10];
@@ -66,12 +66,12 @@ int main(int argc, char *argv[])
 	}
 
 	void output_rows(void) {
-		db_for_recent_chapters(10000, on_chapter);
+		storydb_for_recent_chapters(10000, on_chapter);
 	}
 
 #include "o/template/make-log.html.c"
 
-	db_storycache_free(cache);
+	storydb_cache_free(cache);
 	become_commit(&dest);
 	
 	return 0;

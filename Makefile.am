@@ -122,11 +122,9 @@ describe_SOURCES = \
 	src/db.c \
 	src/note.c
 
-describe_CFLAGS = $(XMLINC) $(HISHINC)
-describe_LDADD = \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/libxml2/build/libxml2.la
-describe_LDFLAGS = $(SQLITE_LIBS) $(GIT_LIBS) -lreadline
+describe_CFLAGS = $(HISH_cflags)
+describe_LDADD = libstorydb.la $(STORYDB_libs) 
+describe_LDFLAGS = $(STORYDB_ldflags)
 
 define make_sublib
 $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
