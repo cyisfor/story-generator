@@ -117,14 +117,15 @@ int main(int argc, char *argv[]) {
 	}
 
 	// nothing has been output yet, by the way.
+	onlydefine = getenv("onlydefine") != NULL;
 	int i;
-	if(getenv("onlydefine")) {
+	if(onlydefine) {
 		for(i=0;i<nstmts;++i) {
 			output_literal("#define ");
-			output_buf(nstmts[i].s, nstmts[i].l);
-			output_literal(" ");
-			output_sql(nstmts[i].sql);
-			output_literal("\n");
+			output_buf(stmts[i].name.s, stmts[i].name.l);
+			output_literal(" \"");
+			output_sql(stmts[i].sql);
+			output_literal("\"\n\n");
 		}
 	} else {
 #include "o/template/statements2source.c.c"

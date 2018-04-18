@@ -125,7 +125,7 @@ void db_open() {
 #endif
 
 	{
-#include "o/db.sql.gen.c"
+#include "o/schema.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 #ifdef UPGRADEME

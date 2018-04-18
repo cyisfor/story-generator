@@ -159,7 +159,7 @@ db_oid/gen.h: db_oid/make
 
 db_oid_make_SOURCES = src/db_oid/make.c
 
-BUILT_SOURCES+=o/db.sql.gen.c
+BUILT_SOURCES+=o/schema.sql.gen.c
 BUILT_SOURCES+=o/indexes.sql.gen.c
 
 o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
@@ -172,3 +172,5 @@ o_make_sql_SOURCES = src/make-sql.c
 o/%.sql.c: $(srcdir)/src/%.sql o statements2source
 	./statements2source derp <$< >$@.temp
 	mv $@.temp $@
+
+BUILT_SOURCES+=o/db.sql.c
