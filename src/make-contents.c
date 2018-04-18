@@ -8,12 +8,20 @@
 #define output_literal(lit) output_buf(lit,sizeof(lit)-1)
 #define output_fmt printf
 
+struct chapter {
+	char buf[0x100];
+	string name;
+	size_t which;
+};
+
 void output_story(identifier story,
 									const string location,
 									size_t ready,
 									size_t numchaps,
 									git_time_t timestamp) {
-	CHAPTER_NAME(numchaps, bleeding_edge);
+	struct chapter latest, bleeding_edge;
+	latest.s = 
+	CHAPTER_NAME(numchaps, latest.buf, latest.s);
 	CHAPTER_NAME(ready ? ready : numchaps > 1 ? numchaps -1 : 1, latest);
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
