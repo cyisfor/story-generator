@@ -4,6 +4,7 @@
 #include "htmlish.h"
 #include "itoa.h"
 
+//#include "o/db.sql.c"
 
 #include <sqlite3.h>
 #include <error.h>

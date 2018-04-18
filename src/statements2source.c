@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
 		left -= i;
 	}
 
+	fprintf(stderr, "Parsing %.*s\n",name.l, name.s);
+
 	while(left != 0) {
 		while(isspace(cur[0])) {
 			if(left == 0) break;
@@ -97,6 +99,10 @@ int main(int argc, char *argv[]) {
 			--left;
 		}
 
+		fprintf(stderr, "Parsing %.*s\n",
+						stmts[nstmts-1].name.l,
+						stmts[nstmts-1].name.s);
+		
 		// now parse the SQL statement
 		sqlite3_stmt* stmt = db_preparen(cur,left);
 		sqlite3_finalize(stmt);

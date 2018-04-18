@@ -169,6 +169,6 @@ o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
 o_make_sql_SOURCES = src/make-sql.c
 
 
-o/%.sql.c: $(srcdir)/src/%.sql statements2source
+o/%.sql.c: $(srcdir)/src/%.sql o statements2source
 	./statements2source derp <$< >$@.temp
 	mv $@.temp $@

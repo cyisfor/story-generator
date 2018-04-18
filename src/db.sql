@@ -1,3 +1,4 @@
+derp
 SAW_CHAPTER_UPDATE_STORY
 UPDATE stories SET
   updated = MAX(updated,?1)
