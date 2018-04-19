@@ -412,16 +412,23 @@ int main(int argc, char *argv[])
 			// be sure to create anyway if contents.html doesn't exist
 			bool contents_exist = (0 == fstatat(destloc,"contents.html",&info,0));
 			if(contents_exist) {
-				int dest = openat(destloc,"contents.html",O_WRONLY);
-				if(dest >= 0) {
-					close_with_time(dest, max_timestamp);
+				if(info.st_mtime >= max_timestamp) {
+					// contents was created recently.
+					// we don't have to recreate
+					int dest = openat(destloc,"contents.html",O_WRONLY);
+					if(dest >= 0) {
+						close_with_time(dest, max_timestamp);
+					}
+					destloc_done();
+					return;
 				}
-				destloc_done();
-				return;
 			}
 		}
 
-		if(!any_chapter) return;
+		if(!any_chapter) {
+			DEBUG("not recreating contents of %d because no chapters",story);
+			return;
+		}
 
 		WARN("recreating contents of %d", story);
 
