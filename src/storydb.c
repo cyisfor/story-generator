@@ -113,14 +113,15 @@ void storydb_saw_chapter(bool deleted, identifier story,
 			// any for_chapters iterator has to be restarted now.
 			need_restart_for_chapters = true;
 		}
-		return;
+		INFO("chapter found %lu:%lu",story,chapter);
+		break;
 	case SQLITE_DONE:
 		sqlite3_bind_int64(insert,1,updated);
 		sqlite3_bind_int64(insert,2,story);
 		sqlite3_bind_int64(insert,3,chapter);
 		db_once(insert);
 		INFO("creating chapter %lu:%lu",story,chapter);
-		return;
+		break;
 	};
 
 	sqlite3_bind_int64(update_story, 1, updated);

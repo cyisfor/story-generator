@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
 	}
 
 	db_retransaction();
-	INFO("stories before %d",timestamp);
+	INFO("stories after %d",timestamp);
 	storydb_for_stories(for_story, true, timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
