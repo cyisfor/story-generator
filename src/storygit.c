@@ -115,7 +115,7 @@ git_for_commits(bool do_after,
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 
 			parent.time = git_author_time(parent.commit);
-			if(do_after && parent.time <= after) {
+			if(do_after && parent.time < after) {
 				git_commit_free(parent.commit);
 				continue;
 			}

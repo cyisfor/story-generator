@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		if(only_story != -1) {
 			if(story != only_story) return;
 		}
-		INFO("story %lu %lu %.*s",story,numchaps,location.l,location.s);
+		//DEBUG("story %lu %lu %.*s",story,numchaps,location.l,location.s);
 
 		// we can spare two file descriptors, to track the directories
 		// use openat from there.
@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
 		}
 
 		if(!any_chapter) {
-			DEBUG("not recreating contents of %d because no chapters",story);
+			//DEBUG("not recreating contents of %d because no chapters",story);
 			return;
 		}
 
