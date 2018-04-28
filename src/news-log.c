@@ -45,8 +45,12 @@ int main(int argc, char *argv[])
 	
 	void entry(time_t time, const char* subject, const char* message) {
 
-		xmlParserCtxtPtr parser = xmlNewParserCtxt();
-		xmlParseChunk(parsed,
+		// can't just xmlNodeAddContent because < => &lt;
+		
+		xmlParserCtxtPtr parser = xmlCreatePushParserCtxt(
+			NULL, NULL,
+			NULL, NULL, "input.xml");
+		xmlParseChunk(parser,
 									LITLEN(
 										"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 										"<top><s>"),
@@ -75,8 +79,8 @@ int main(int argc, char *argv[])
 			xmlNode* subject;
 			xmlNode* message;
 		} inp = {
-			xmlFirstElementChild(doc->children),
-			xmlNextElementSibling(xmlFirstElementChild(doc->children))
+			xmlFirstElementChild(parser->myDoc->children),
+			xmlNextElementSibling(xmlFirstElementChild(parser->myDoc->children))
 		};
 		
 		xmlNode* all = xmlCopyNode(entry_template, 1);
@@ -117,7 +121,10 @@ int main(int argc, char *argv[])
 		htmlish_str(p2, message, strlen(message), true);
 		p2->doc = NULL;
 		xmlAddChild(body, all);
-	};
+
+		xmlFreeDoc(parser->myDoc);
+    xmlFreeParserCtxt(parser);
+	}
 	
 	int count = 0;
 
