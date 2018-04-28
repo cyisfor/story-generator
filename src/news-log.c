@@ -41,7 +41,44 @@ int main(int argc, char *argv[])
 	while(body->children) {
 		xmlUnlinkNode(body->children);
 	}
+	xmlDOMWrapCtxtPtr	wrap = xmlDOMWrapNewCtxt();
+	
 	void entry(time_t time, const char* subject, const char* message) {
+
+		xmlParserCtxtPtr parser = xmlNewParserCtxt();
+		xmlParseChunk(parsed,
+									LITLEN(
+										"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+										"<top><s>"),
+									0);
+
+		int res = xmlParseChunk(parser,
+									subject,
+									strlen(subject),
+									0);
+		assert(res == 0);
+		res = xmlParseChunk(parser,
+									LITLEN("</s><b>"),
+									0);
+		assert(res == 0);
+		res = xmlParseChunk(parser,
+									message,
+									strlen(message),
+									0);
+		assert(res == 0);
+		res = xmlParseChunk(parser,
+									LITLEN("</b></top>"),
+									1);
+		assert(res == 0);
+
+		struct {
+			xmlNode* subject;
+			xmlNode* message;
+		} inp = {
+			xmlFirstElementChild(doc->children),
+			xmlNextElementSibling(xmlFirstElementChild(doc->children))
+		};
+		
 		xmlNode* all = xmlCopyNode(entry_template, 1);
 		// code
 		xmlNode* p1 = nextE(all->children);
@@ -53,7 +90,29 @@ int main(int argc, char *argv[])
 		xmlNode* bold = nextE(code->next);
 		assert(bold);
 		xmlNodeAddContent(code, ctime(&time));
-		xmlNodeAddContent(bold, subject);
+
+		while(inp.subject->children) {
+			xmlNode* c = inp.subject->children;
+			xmlUnlinkNode(c);
+			res = xmlDOMWrapAdoptNode(wrap,
+													inp.subject->doc,
+													c,
+													bold->doc,
+													bold,
+													0);
+			assert(res == 0);
+		}
+		while(inp.message->children) {
+			xmlNode* c = inp.message->children;
+			xmlUnlinkNode(c);
+			res = xmlDOMWrapAdoptNode(wrap,
+																inp.message->doc,
+																c,
+																body->doc,
+																body,
+																0);
+			assert(res == 0);
+		}
 		p2->doc = out;
 		htmlish_str(p2, message, strlen(message), true);
 		p2->doc = NULL;
