@@ -70,6 +70,12 @@ int repo_discover_init(char* start, int len) {
 																		start,
 																		0,
 																		NULL);
+	if(res == 0) {
+		if(git_repository_state(repo) != GIT_REPOSITORY_STATE_NONE) {
+			puts("repo in a recovery state, not generating");
+			exit(0);
+		}
+	}
 	if(end != NULL) {
 		*end = save;
 	}
