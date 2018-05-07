@@ -28,12 +28,15 @@ STORYDB_libs = $(HISH_libs)
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
 
 ready_SOURCES = \
-	src/ready.c
+	src/ready.c \
+	src/note.c \
+	cystuff/src/itoa.c
+
 ready_LDADD = libstorydb.la $(STORYDB_libs)
 
 ready_CFLAGS = $(HISH_cflags) \
 	$(libstorydb_la_CFLAGS)
-
+ready_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
 
 generate_SOURCES = \
 	src/main.c \

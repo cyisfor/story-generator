@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	storydb_open();
 
 	DECLARE_STMT(set_ready,
-							 "UPDATE stories SET ready = MAX(ready,?) WHERE location = ?");
+							 "UPDATE stories SET ready = ?1 WHERE location = ?2 AND ready != ?1");
 	sqlite3_bind_int(set_ready, 1, chapter);
 	sqlite3_bind_text(set_ready, 2, location, strlen(location), NULL);
 	int res = db_check(sqlite3_step(set_ready));
@@ -30,5 +30,7 @@ int main(int argc, char *argv[])
 	} else {
 		printf("Story %s ready on chapter %ld\n",location, chapter);
 	}
+	sqlite3_reset(set_ready);
+	db_close_and_exit();
 	return 0;
 }
