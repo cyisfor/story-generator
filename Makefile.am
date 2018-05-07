@@ -7,7 +7,7 @@ DDATE_C=$(srcdir)/ddate/ddate.c
 
 XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
 
-bin_PROGRAMS = generate news-log make-log describe make-contents
+bin_PROGRAMS = generate news-log make-log describe make-contents ready
 lib_LTLIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
@@ -26,6 +26,14 @@ STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS)
 STORYDB_libs = $(HISH_libs)
 
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
+
+ready_SOURCES = \
+	src/ready.c
+ready_LDADD = libstorydb.la $(STORYDB_libs)
+
+ready_CFLAGS = $(HISH_cflags) \
+	$(libstorydb_la_CFLAGS)
+
 
 generate_SOURCES = \
 	src/main.c \

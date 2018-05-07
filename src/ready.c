@@ -1,8 +1,12 @@
+#include <sqlite3.h>
+
 #include "db-private.h"
-#include "db.h"
+#include "storydb.h"
 
 #include <stdio.h>
 #include <stdlib.h> // exit
+#include <unistd.h> // chdir
+#include <sys/stat.h> // stat
 
 
 int main(int argc, char *argv[])
@@ -12,6 +16,7 @@ int main(int argc, char *argv[])
 	long int chapter = strtol(argv[2], NULL, 0);
 	if(chapter == 0) exit(2);
   // make sure we're outside the code directory
+	struct stat info;
   while(0 != stat("code",&info)) chdir("..");
 	storydb_open();
 
