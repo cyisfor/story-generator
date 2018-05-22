@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 			return;
 		}
 		if(!storydb_all_ready) {
-			if(storydb_count_chapters(story) == chapnum) return;
+			if(storydb_count_chapters(story) == chapnum + 1) return;
 		}
 
 		char numbuf[0x10];
