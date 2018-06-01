@@ -11,15 +11,37 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc != 3) exit(1);
+	bool get_current = argc == 2 ? false : true;
+	if(!(get_current || argc == 3)) {
+		puts("ready <location> <chapter>");
+		exit(1);
+	}
+	
 	const char* location = argv[1];
-	long int chapter = strtol(argv[2], NULL, 0);
-	if(chapter == 0) exit(2);
+	long int chapter;
+	if(!get_current) {
+		chapter = strtol(argv[2], NULL, 0);
+		if(chapter == 0) exit(2);
+	}
   // make sure we're outside the code directory
 	struct stat info;
   while(0 != stat("code",&info)) chdir("..");
 	storydb_open();
 
+	size_t loclen = strlen(location);
+	if(get_current) {
+		DECLARE_STMT(get_ready,
+								 "SELECT ready FROM stories WHERE location = ?1");
+		sqlite3_bind_int(get_ready, 1, location, loclen, NULL);
+		int res = db_check(sqlite3_step(get_ready));
+		if(res == SQLITE_ROW) {
+			printf("Story %.*s ready on chapter %ld\n",
+						 loclen, location, sqlite3_column_int(get_ready, 0));
+			exit(0);
+		}
+		exit(1);
+	}
+	
 	DECLARE_STMT(set_ready,
 							 "UPDATE stories SET ready = ?1 WHERE location = ?2 AND ready != ?1");
 	sqlite3_bind_int(set_ready, 1, chapter);
