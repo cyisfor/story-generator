@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-	bool get_current = argc == 2 ? false : true;
+	bool get_current = argc == 2;
 	if(!(get_current || argc == 3)) {
 		puts("ready <location> <chapter>");
 		exit(1);
@@ -31,12 +31,14 @@ int main(int argc, char *argv[])
 	size_t loclen = strlen(location);
 	if(get_current) {
 		DECLARE_STMT(get_ready,
-								 "SELECT ready FROM stories WHERE location = ?1");
-		sqlite3_bind_int(get_ready, 1, location, loclen, NULL);
+								 "SELECT ready,chapters FROM stories WHERE location = ?1");
+		sqlite3_bind_text(get_ready, 1, location, loclen, NULL);
 		int res = db_check(sqlite3_step(get_ready));
 		if(res == SQLITE_ROW) {
-			printf("Story %.*s ready on chapter %ld\n",
-						 loclen, location, sqlite3_column_int(get_ready, 0));
+			printf("Story %.*s ready on chapter %ld/%ld\n",
+						 loclen, location,
+						 sqlite3_column_int(get_ready, 0),
+						 sqlite3_column_int(get_ready, 1));
 			exit(0);
 		}
 		exit(1);
