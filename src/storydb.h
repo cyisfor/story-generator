@@ -51,7 +51,7 @@ void storydb_for_chapters(identifier story,
 																		git_time_t timestamp),
 													git_time_t after,
 													int numchaps,
-													bool only_ready);
+													bool all_ready);
 
 void storydb_with_chapter_title(identifier story,
 													 identifier chapter,

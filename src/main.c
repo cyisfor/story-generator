@@ -307,7 +307,8 @@ int main(int argc, char *argv[])
 
 		bool any_chapter = false; // stays false when no chapters are ready
 		void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-//			SPAM("chapter %d %d",chapter,chapter_timestamp - timestamp);
+			SPAM("chapter %.*s%d %d",location.l,location.s,
+					 chapter,chapter_timestamp - timestamp);
 			any_chapter = true;
 			//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 			if(chapter_timestamp > max_timestamp)
@@ -395,7 +396,7 @@ int main(int argc, char *argv[])
 												 for_chapter,
 												 timestamp,
 												 numchaps,
-												 storydb_all_ready || only_ready);
+												 storydb_all_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));

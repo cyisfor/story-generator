@@ -358,13 +358,13 @@ void storydb_for_chapters(identifier story,
 																	 git_time_t updated),
 													git_time_t before,
 													int numchaps,
-													bool only_ready) {
+													bool all_ready) {
 	DECLARE_STMT(find,FOR_CHAPTERS);
 
 RESTART:
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,before);
-	sqlite3_bind_int(find,3,only_ready ? 0 : 1);
+	sqlite3_bind_int(find,3,all_ready ? 1 : 0);
 	sqlite3_bind_int(find,4,numchaps);
 	for(;;) {
 		int res = sqlite3_step(find);
