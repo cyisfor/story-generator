@@ -49,8 +49,9 @@ void storydb_for_undescribed(void (*handle)(identifier story,
 void storydb_for_chapters(identifier story,
 										 void (*handle)(identifier chapter,
 																		git_time_t timestamp),
-										 git_time_t after,
-										 bool only_ready);
+													git_time_t after,
+													int numchaps,
+													bool only_ready);
 
 void storydb_with_chapter_title(identifier story,
 													 identifier chapter,

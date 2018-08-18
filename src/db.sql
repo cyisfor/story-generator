@@ -3,18 +3,7 @@ SAW_CHAPTER_UPDATE_STORY
 UPDATE stories SET
   updated = MAX(updated,?1)
 WHERE
-  id = ?2 AND
-	?3 OR
-	  (SELECT 
-  	  CASE WHEN ready = 0 THEN
-	  	  CASE WHEN chapters = 1 THEN
-				  1
-				ELSE
-				  ?4 <= chapters - 1
-			  END
-			ELSE
-			  ?4 <= ready
-			END);
+  id = ?2;
 RECENT_CHAPTERS
 SELECT story, chapter, stories.title, chapters.title,
        location,
@@ -59,7 +48,7 @@ SELECT location,
 FOR_STORIES
 SELECT id,location,
 	  (SELECT 
-  	  CASE WHEN ?1
+  	  CASE WHEN ?1 THEN
 			  chapters
 			ELSE
 			  CASE WHEN ready = 0 THEN
@@ -88,7 +77,7 @@ WHERE
   story = ?1 AND
 	(updated > ?2 OR seen > ?2) AND 
 	(?3 OR
-	  (SELECT 
+		chapter <= (SELECT 
   	  CASE WHEN ready = 0 THEN
 	  	  CASE WHEN chapters = 1 THEN
 				  1
@@ -98,4 +87,4 @@ WHERE
 			ELSE
 			  ready
 			END
-			FROM stories WHERE stories.id = chapters.story));
+		  FROM stories WHERE stories.id = chapters.story));

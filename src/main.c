@@ -391,7 +391,11 @@ int main(int argc, char *argv[])
 
 		// NOT story_timestamp
 //		SPAM("for chapters before %d",timestamp);
-		storydb_for_chapters(story, for_chapter, timestamp, storydb_all_ready || only_ready);
+		storydb_for_chapters(story,
+												 for_chapter,
+												 timestamp,
+												 numchaps,
+												 storydb_all_ready || only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));
