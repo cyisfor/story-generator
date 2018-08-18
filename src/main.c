@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			if(chapter == numchaps + 1) {
+			if(!storydb_all_ready && (chapter == numchaps + 1)) {
 				// or other criteria, env, db field, etc
 				WARN("not exporting last chapter");
 				if(chapter > 2 && !storydb_all_ready && ready > 0) {
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
 
 		// NOT story_timestamp
 //		SPAM("for chapters before %d",timestamp);
-		storydb_for_chapters(story, for_chapter, timestamp, only_ready);
+		storydb_for_chapters(story, for_chapter, timestamp, storydb_all_ready || only_ready);
 
 		// we create contents.html strictly from the db, not the markup directory
 		ensure0(close(srcloc));

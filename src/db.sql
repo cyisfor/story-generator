@@ -59,17 +59,21 @@ SELECT location,
 FOR_STORIES
 SELECT id,location,
 	  (SELECT 
-  	  CASE WHEN ready = 0 THEN
-	  	  CASE WHEN chapters = 1 THEN
-				  1
-				ELSE
-				  chapters - 1
-			  END
+  	  CASE WHEN ?1
+			  chapters
 			ELSE
-			  ready
+			  CASE WHEN ready = 0 THEN
+	  	  	CASE WHEN chapters = 1 THEN
+				  	1
+					ELSE
+					  chapters - 1
+				  END
+				ELSE
+					ready
+				END
 			END)
 ,chapters,updated FROM stories WHERE
-  updated AND updated > ? ORDER BY updated;
+  updated AND updated > ?2 ORDER BY updated;
 	
 FOR_UNDESCRIBED_STORIES
 SELECT id,COALESCE(title,location),description,source

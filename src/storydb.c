@@ -299,7 +299,8 @@ void storydb_for_stories(void (*handle)(identifier story,
 	else
 		find = findrev;
 
-	sqlite3_bind_int64(find,1,before);
+	sqlite3_bind_int(find,1,storydb_all_ready);
+	sqlite3_bind_int64(find,2,before);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
