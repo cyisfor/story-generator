@@ -37,13 +37,16 @@ void storydb_for_recent_chapters(
 			const string location,
 			git_time_t timestamp));
 
-void storydb_for_stories(void (*handle)(identifier story,
-																				const string location,
-																				size_t ready,
-																				size_t numchaps,
-																				git_time_t timestamp),
-										bool forward,
-										git_time_t after);
+void storydb_for_stories(
+	void* udata,
+	void (*handle)(void* udata,
+								 identifier story,
+								 const string location,
+								 size_t ready,
+								 size_t numchaps,
+								 git_time_t updated),
+	bool forward,
+	git_time_t before);
 
 void storydb_for_undescribed(void (*handle)(identifier story,
 																							 const string title,

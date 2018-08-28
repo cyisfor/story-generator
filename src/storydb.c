@@ -266,13 +266,16 @@ void storydb_for_recent_chapters(
 }
 
 
-void storydb_for_stories(void (*handle)(identifier story,
-																	 const string location,
-																	 size_t ready,
-																	 size_t numchaps,
-																	 git_time_t updated),
-										bool forward,
-										git_time_t before) {
+void storydb_for_stories(
+	void* udata,
+	void (*handle)(void* udata,
+								 identifier story,
+								 const string location,
+								 size_t ready,
+								 size_t numchaps,
+								 git_time_t updated),
+	bool forward,
+	git_time_t before) {
 	if(only_story.ye) {
 		DECLARE_STMT(find, FOR_ONLY_STORY);
 
