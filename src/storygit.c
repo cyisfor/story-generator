@@ -66,17 +66,20 @@ const char* myctime(time_t time) {
 }
 
 void
-git_for_commits(bool do_after,
-								const git_time_t after,
-								bool do_before,
-								const db_oid before, 
-								enum gfc_action
-								(*handle)(
-									const db_oid commit,
-									const db_oid parent,
-									git_time_t timestamp,
-									git_tree* last,
-									git_tree* cur)) {
+git_for_commits(
+	void* udata,
+	enum gfc_action
+	(*handle)(
+		void* udata,
+		const db_oid commit,
+		const db_oid parent,
+		git_time_t timestamp,
+		git_tree* last,
+		git_tree* cur),
+	bool do_after,
+	const git_time_t after,
+	bool do_before,
+	const db_oid before) {
 
 	struct item me = {};
 	struct item* todo = NULL;
@@ -187,7 +190,8 @@ git_for_commits(bool do_after,
 			}
 
 			if(nparents == 1) {
-				enum gfc_action op = handle(DB_OID(*me.oid),
+				enum gfc_action op = handle(udata,
+																		DB_OID(*me.oid),
 																		DB_OID(*parent.oid),
 																		me.time,
 																		me.tree,
@@ -248,12 +252,16 @@ git_for_commits(bool do_after,
 
 // note: this is the DIFF not the changes of each commit in between.
 enum gfc_action
-git_for_chapters_changed(git_tree* from, git_tree* to,
-												 enum gfc_action
-												 (*handle)(long int num,
-																	 bool deleted,
-																	 const string location,
-																	 const string name)) {
+git_for_chapters_changed(
+	void* udata,
+	enum gfc_action
+	(*handle)(
+			void* udata,
+			long int num,
+			bool deleted,
+			const string location,
+			const string name),
+	git_tree* from, git_tree* to) {
 	if(from == NULL) return true;
 	assert(to != NULL);
 
@@ -295,7 +303,7 @@ git_for_chapters_changed(git_tree* from, git_tree* to,
 				.l = slash-path.s
 			};
 
-			result = handle(chapnum, deleted, location, path);
+			result = handle(udata, chapnum, deleted, location, path);
 		}
 		// XXX: todo: handle if unreadable
 		switch(delta->status) {

@@ -251,6 +251,7 @@ void storydb_for_recent_chapters(
 				.l = sqlite3_column_bytes(find,4)
 			};
 			handle(
+				udata,
 				sqlite3_column_int64(find,0),
 				sqlite3_column_int64(find,1),
 				story_title,
@@ -288,7 +289,8 @@ void storydb_for_stories(
 			.l = sqlite3_column_bytes(find,0)
 		};
 
-		handle(only_story.i,
+		handle(udata,
+					 only_story.i,
 					 location,
 					 sqlite3_column_int64(find,1),
 					 sqlite3_column_int64(find,2),

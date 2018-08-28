@@ -422,9 +422,9 @@ int main(int argc, char *argv[])
 		.counter = 0
 	};
 	
-	git_for_commits(results.after, after, results.before, before, on_commit, &g);
+	git_for_commits(on_commit, &g, results.after, after, results.before, before);
 	// check this even when after is set, so we don't clear a before in progress?
-	if(num > 0) {
+	if(g.num > 0) {
 		db_caught_up_committing();
 		//putchar('\n');
 	}

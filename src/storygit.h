@@ -31,17 +31,20 @@ git_time_t git_author_time(git_commit* commit);
 enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
 void
-git_for_commits(bool do_after,
-								const git_time_t after,
-								bool do_before,
-								const db_oid before, 
-								enum gfc_action
-								(*handle)(
-									const db_oid commit,
-									const db_oid parent,
-									git_time_t timestamp,
-									git_tree* last,
-									git_tree* cur));
+git_for_commits(
+	void* udata,
+	enum gfc_action
+	(*handle)(
+		void* udata,
+		const db_oid commit,
+		const db_oid parent,
+		git_time_t timestamp,
+		git_tree* last,
+		git_tree* cur),
+	bool do_after,
+	const git_time_t after,
+	bool do_before,
+	const db_oid before);
 
 /*
 	git_for_chapters_changed
@@ -57,12 +60,15 @@ git_for_commits(bool do_after,
 	note: this is the DIFF of the trees not the changes of each commit in between.
 */
 enum gfc_action
-git_for_chapters_changed(git_tree* from, git_tree* to,
-												 enum gfc_action
-												 (*handle)(long int num,
-																	 bool deleted,
-																	 const string location,
-																	 const string name));
-
+git_for_chapters_changed(
+	void* udata,
+	enum gfc_action
+	(*handle)(
+			void* udata,
+			long int num,
+			bool deleted,
+			const string location,
+			const string name),
+	git_tree* from, git_tree* to);
 
 #endif /* _STORYGIT_H_ */
