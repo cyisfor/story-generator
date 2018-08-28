@@ -207,13 +207,17 @@ void storydb_cache_free(struct storycache* cache) {
 
 /* be CAREFUL none of these iterators are re-entrant! */
 
-void storydb_for_recent_chapters(int limit,
-														void (*handle)(identifier story,
-																					 size_t chapnum,
-																					 const string story_title,
-																					 const string chapter_title,
-																					 const string location,
-																					 git_time_t updated)) {
+void storydb_for_recent_chapters(
+	void* udata,
+	int limit,
+	void (*handle)(
+		void* udata,
+		identifier story,
+		size_t chapnum,
+		const string story_title,
+		const string chapter_title,
+		const string location,
+		git_time_t updated)) {
 
 	DECLARE_STMT(find,RECENT_CHAPTERS);
 	RESETTING(find) int res;
