@@ -5,6 +5,7 @@
 #include "storydb.h"
 #include "ensure.h"
 #include "storygit.h"
+#include "storydb.h"
 #include "string.h"
 #include "repo.h"
 #include "create.h"
@@ -68,7 +69,7 @@ void for_story(
 	void* udata,
 	identifier story,
 	const string location,
-	int ready,
+	size_t ready,
 	size_t numchaps,
 	git_time_t story_timestamp) {
 
@@ -364,10 +365,10 @@ enum gfc_action on_commit(
 
 	GDERP;
 	
-	INFO("commit %d %d",timestamp, ++g.counter);
+	INFO("commit %d %d",timestamp, ++G(counter));
 	int chapspercom = 0;
 	
-	enum gfc_action ret = git_for_chapters_changed(&g,last,cur,on_chapter);
+	enum gfc_action ret = git_for_chapters_changed(&g,on_chapter,last,cur);
 	
 	return ret;
 }
@@ -378,7 +379,7 @@ int main(int argc, char *argv[])
 	libxmlfixes_setup();
 	struct stat info;
 	// make sure we're outside the code directory
-	while(0 != stat("code",&info)) chdir("..");
+	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	repo_check(repo_discover_init(LITLEN(".git")));
 	storydb_open();
 
@@ -422,7 +423,7 @@ int main(int argc, char *argv[])
 		.counter = 0
 	};
 	
-	git_for_commits(on_commit, &g, results.after, after, results.before, before);
+	git_for_commits(on_commit, (void*)&g, results.after, after, results.before, before);
 	// check this even when after is set, so we don't clear a before in progress?
 	if(g.num > 0) {
 		db_caught_up_committing();

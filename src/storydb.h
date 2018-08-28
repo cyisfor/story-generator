@@ -5,6 +5,8 @@ extern bool storydb_only_censored;
 // include last chapter for all stories
 extern bool storydb_all_ready;
 
+// open the story database
+void storydb_open();
 
 bool storydb_set_censored(identifier story, bool censored);
 
