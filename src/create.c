@@ -87,7 +87,7 @@ void got_title(void* udata, const string title) {
 		char buf[0x100];
 		string fallback = {
 			.s = buf,
-			.l = snprintf(buf,0x100,"Chapter %lu",g->chapter)
+			.l = snprintf(buf,0x100,"Chapter %u",g->chapter)
 		};
 		xmlNodeAddContentLen(g->a,fallback.s,fallback.l);
 	} else
@@ -152,7 +152,7 @@ void got_info(
 		
 	// title is sometimes a file
 	// .../description => .../title
-	memcpy(path+location.l+1,LITLEN("title\0"));
+	memcpy(path+g->location.l+1,LITLEN("title\0"));
 	int tf = open(path,O_RDONLY);
 	if(tf > 0) {
 		// eh, should be sorta limited, also saves a stat
@@ -173,7 +173,7 @@ void got_info(
 	}
 	// if STILL no title, just use location on a temporary unstored basis
 	if(!title.s) {
-		title = location;
+		title = g->location;
 	}
 
 	// setup titlehead for htmlish
@@ -331,7 +331,7 @@ int create_contents(identifier story,
 	{
 		struct csucksballs g = {
 			.head = head,
-			.body = body
+			.body = body,
 			.location = location,
 			.story = story
 		};

@@ -318,7 +318,8 @@ void storydb_for_stories(
 				.s = sqlite3_column_blob(find,1),
 				.l = sqlite3_column_bytes(find,1)
 			};
-			handle(sqlite3_column_int64(find,0),
+			handle(udata,
+						 sqlite3_column_int64(find,0),
 						 location,
 						 sqlite3_column_int64(find,2),
 						 sqlite3_column_int64(find,3),
@@ -368,7 +369,7 @@ void storydb_for_chapters(
 		identifier chapter,
 		git_time_t timestamp),
 	identifier story,
-	git_time_t after,
+	git_time_t before,
 	int numchaps,
 	bool all_ready) {
 	DECLARE_STMT(find,FOR_CHAPTERS);

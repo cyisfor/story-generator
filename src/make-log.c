@@ -17,6 +17,7 @@
 #include <stdio.h> // fwrite
 
 struct becomer* dest = NULL;
+struct storycache* cache = NULL;
 
 #define output_literal(lit) fwrite(lit, LITSIZ(lit),1,dest->out)
 #define output_buf(s,l) fwrite((s),(l),1,dest->out)
@@ -57,7 +58,7 @@ void on_chapter(void* udata,
 
 
 void output_rows(void) {
-	storydb_for_recent_chapters(10000, on_chapter);
+	storydb_for_recent_chapters(NULL, 10000, on_chapter);
 }
 
 
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	storydb_open();
 
-	struct storycache* cache = storydb_start_cache();
+	cache = storydb_start_cache();
 	
 	storydb_all_ready = getenv("sneakpeek") != NULL;
 	storydb_only_censored = getenv("censored") != NULL;
