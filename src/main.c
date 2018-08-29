@@ -70,9 +70,11 @@ struct csucks {
 	int ready;
 	bool adjust_times;
 	int destloc;
+	int srcloc;
 	size_t numchaps;
 	identifier story;
 	bool fixing_srctimes;
+	string location;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
@@ -100,7 +102,8 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s%d %d",location.l,location.s,
+	SPAM("chapter %.*s%d %d",
+			 g->location.l,g->location.s,
 			 chapter,chapter_timestamp - g->timestamp);
 	g->any_chapter = true;
 	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
@@ -113,10 +116,10 @@ void for_chapter(
 
 	bool setupsrc(void) {
 		snprintf(srcname,0x100,"chapter%ld.hish",chapter);
-		src = openat(srcloc, srcname, O_RDONLY, 0755);
+		src = openat(g->srcloc, srcname, O_RDONLY, 0755);
 		ensure_ge(src,0);
 		// for adjusting dest timestamp
-		ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+		ensure0(fstatat(g->srcloc,srcname,&srcinfo,0));
 		if(srcinfo.st_mtime > chapter_timestamp) {
 			// git ruins file modification times... we probably cloned this, and lost
 			// all timestamps. Just set the source file to have changed with the commit then.
@@ -154,7 +157,7 @@ void for_chapter(
 		assert(amt < 0x100);
 		/* be sure to mark the previous chapter as "seen" if we are the last chapter
 			 being exported (previous needs a "next" link) */
-		if(chapter == numchaps) {
+		if(chapter == g->numchaps) {
 			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-1);
 		}
 	}
@@ -175,7 +178,7 @@ void for_chapter(
 	if(!g->fixing_srctimes)
 		setupsrc();
 
-	create_chapter(src,dest,chapter,numchaps,g->story,&g->title_changed);
+	create_chapter(src,dest,chapter,g->numchaps,g->story,&g->title_changed);
 
 	ensure0(close(src));
 	close_with_time(dest,chapter_timestamp);
@@ -195,7 +198,7 @@ void for_story(
 	g->ready = ready;
 	g->story = story;
 	g->numchaps = numchaps;
-	
+	g->location = location;
 	if(g->only_story != -1) {
 		if(story != g->only_story) return;
 	}
@@ -221,17 +224,19 @@ void for_story(
 		return sub;
 	}
 
-	CLOSING int srcloc = descend(AT_FDCWD, location, false);
+	CLOSING int srcloc = descend(AT_FDCWD, g->location, false);
+	g->srcloc = srcloc;
 	if(srcloc < 0) return; // glorious moved
 	{ string markup = {LITLEN("markup")};
 		srcloc = descend(srcloc, markup, false);
 		if(srcloc < 0) {
-			WARN("ehhh... something got their markup directory removed? %s",location);
+			WARN("ehhh... something got their markup directory removed? %.*s",
+					 g->location.l, g->location.s);
 			return;
 		}
 	}
 	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
-	destloc = descend(destloc, location, true);
+	destloc = descend(destloc, g->location, true);
 
 	g->title_changed = false;
 	bool numchaps_changed = false;
@@ -331,7 +336,7 @@ void for_story(
 
 	int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 	ensure_ge(dest,0);
-	create_contents(story, location, dest, numchaps, with_title);
+	create_contents(story, g->location, dest, numchaps, with_title);
 
 	close_with_time(dest,max_timestamp);
 	ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
