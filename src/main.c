@@ -69,11 +69,15 @@ struct csucks {
 	bool only_story;
 	int ready;
 	bool adjust_times;
+	int destloc;
+	size_t numchaps;
+	identifier story;
+	bool fixing_srctimes;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
 
-bool skip(struct csuck* g, git_time_t srcstamp, const char* destname) {
+bool skip(struct csucks* g, git_time_t srcstamp, const char* destname) {
 	struct stat destinfo;
 	bool dest_exists = (0==fstatat(g->destloc,destname,&destinfo,0));
 	if(dest_exists) {
@@ -122,7 +126,7 @@ void for_chapter(
 		return false;
 	}
 
-	if(fixing_srctimes) {
+	if(g->fixing_srctimes) {
 		if(setupsrc()) {
 			struct timespec times[2] = {
 				srcinfo.st_mtim,
@@ -134,12 +138,12 @@ void for_chapter(
 		}
 	}
 
-	if(!storydb_all_ready && (chapter == numchaps + 1)) {
+	if(!storydb_all_ready && (chapter == g->numchaps + 1)) {
 		// or other criteria, env, db field, etc
 		WARN("not exporting last chapter");
-		if(chapter > 2 && !storydb_all_ready && ready > 0) {
+		if(chapter > 2 && !storydb_all_ready && g->ready > 0) {
 			// two chapters before this needs updating, before it now has a "next" link
-			storydb_saw_chapter(false,story,chapter_timestamp,chapter-2);
+			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-2);
 		}
 		return;
 	}
@@ -151,11 +155,11 @@ void for_chapter(
 		/* be sure to mark the previous chapter as "seen" if we are the last chapter
 			 being exported (previous needs a "next" link) */
 		if(chapter == numchaps) {
-			storydb_saw_chapter(false,story,chapter_timestamp,chapter-1);
+			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-1);
 		}
 	}
 
-	if(skip(chapter_timestamp,destname)) {
+	if(skip(g, chapter_timestamp,destname)) {
 		if(g->adjust_times) {
 			// mleh
 			int dest = openat(g->destloc,destname,O_WRONLY);
@@ -168,10 +172,10 @@ void for_chapter(
 	int dest = openat(g->destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 	ensure_ge(dest,0);
 
-	if(!fixing_srctimes)
+	if(!g->fixing_srctimes)
 		setupsrc();
 
-	create_chapter(src,dest,chapter,numchaps,story,&g->title_changed);
+	create_chapter(src,dest,chapter,numchaps,g->story,&g->title_changed);
 
 	ensure0(close(src));
 	close_with_time(dest,chapter_timestamp);
@@ -189,6 +193,8 @@ void for_story(
 
 	GDERP;
 	g->ready = ready;
+	g->story = story;
+	g->numchaps = numchaps;
 	
 	if(g->only_story != -1) {
 		if(story != g->only_story) return;
@@ -239,7 +245,7 @@ void for_story(
 				 if we've increased our chapters, need to add the next link, or
 				 create if it was the previous last chapter.
 			*/
-			storydb_saw_chapter(false,story,story_timestamp,countchaps);
+			storydb_saw_chapter(false,g->story,story_timestamp,countchaps);
 			numchaps = countchaps;
 		}
 	}
