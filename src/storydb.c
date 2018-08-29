@@ -361,13 +361,16 @@ void storydb_for_undescribed(void (*handle)(identifier story,
 	}
 }
 
-
-void storydb_for_chapters(identifier story,
-										void (*handle)(identifier chapter,
-																	 git_time_t updated),
-													git_time_t before,
-													int numchaps,
-													bool all_ready) {
+void storydb_for_chapters(
+	void* udata,
+	void (*handle)(
+		void* udata,
+		identifier chapter,
+		git_time_t timestamp),
+	identifier story,
+	git_time_t after,
+	int numchaps,
+	bool all_ready) {
 	DECLARE_STMT(find,FOR_CHAPTERS);
 
 RESTART:
@@ -379,7 +382,8 @@ RESTART:
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW:
-			handle(sqlite3_column_int64(find,0),
+			handle(udata,
+						 sqlite3_column_int64(find,0),
 						 sqlite3_column_int64(find,1));
 			if(need_restart_for_chapters) {
 				/* okay, so before in order of ascending updated...
