@@ -75,18 +75,23 @@ void create_setup(void) {
 	}
 }
 
+struct csucks {
+	xmlNode* a;
+	int chapter;
+};
+
 static
 void got_title(void* udata, const string title) {
-	xmlNode* a = (xmlNode*)udata;
+	struct csucks* g = (struct csucks*)udata;
 	if(title.s == NULL) {
 		char buf[0x100];
 		string fallback = {
 			.s = buf,
-			.l = snprintf(buf,0x100,"Chapter %lu",chapter)
+			.l = snprintf(buf,0x100,"Chapter %lu",g->chapter)
 		};
-		xmlNodeAddContentLen(a,fallback.s,fallback.l);
+		xmlNodeAddContentLen(g->a,fallback.s,fallback.l);
 	} else
-		xmlNodeAddContentLen(a,title.s,title.l);
+		xmlNodeAddContentLen(g->a,title.s,title.l);
 }
 
 static
@@ -301,13 +306,18 @@ int create_contents(identifier story,
 	size_t i;
 	for(i=1;i<=chapters;++i) {
 		xmlNode* li = xmlNewNode(toc->ns,"li");
-		xmlNode* a = xmlNewNode(li->ns,"a");
-		xmlAddChild(li,a);
+		struct csucks g = {
+			.a = xmlNewNode(li->ns,"a"),
+			.chapter = i
+		};
+		xmlAddChild(li,g.a);
 		xmlAddChild(toc,li);
 		CHAPTER_NAME(i,buf);
-		xmlSetProp(a,"href",buf);
+		xmlSetProp(g.a,"href",buf);
+
 		storydb_with_chapter_title(
-			a, got_title,
+			&g,
+			got_title,
 			story, i);
 	}
 	
