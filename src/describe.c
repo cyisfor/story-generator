@@ -68,7 +68,7 @@ void have_info(void* udata,
 							 const string title,
 							 const string description,
 							 const string source) {
-	for_story(udata, story, title, description, source);
+	for_story(NULL, (intptr_t)udata, title, description, source);
 }
 
 int main(int argc, char *argv[])
@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
 
 	
 	if(argc == 1) {
-		storydb_for_undescribed(for_story);
+		storydb_for_undescribed(NULL, for_story);
 	} else {
 		int i;
 		for(i=1;i<argc;++i) {
 			string location = { argv[i], strlen(argv[i]) };
 			identifier story = storydb_find_story(location);
-			storydb_with_info(NULL, have_info, story);
+			storydb_with_info((void*)story, have_info, story);
 		}
 	}
 	db_close_and_exit();

@@ -13,38 +13,63 @@ struct chapter {
 	size_t which;
 };
 
+struct csucks {
+	string location;
+	string modified;
+	string latest;
+	int ready;
+	int numchaps;
+	string bleeding_edge;
+};
+
+static
+void have_info(void* udata, string title, string description, string source) {
+	if(!title.l) {
+		title = location;
+	}
+	struct csucks* g = (struct csucks*) udata;
+	const string location = g->location;
+	const string modified = g->modified;
+	const string latest = g->latest;
+	int ready = g->ready;
+	int numchaps = g->numchaps;
+	const string bleeding_edge = g->bleeding_edge;
+
+#include "o/template/contents-story.html.c"
+}
+
+#define output_buf(s,l) fwrite(s,l,1,stdout)
+#define output_literal(lit) output_buf(lit,sizeof(lit)-1)
+#define output_fmt printf
+
 void output_story(identifier story,
 									const string location,
 									size_t ready,
 									size_t numchaps,
 									git_time_t timestamp) {
-	string latest = {}, bleeding_edge = {};
+	struct csucks g = {
+		.location = location,
+		.ready = ready,
+		.numchaps = numchaps
+	}
 	char derpbuf1[0x100], derpbuf2[0x100];
 	if(ready != numchaps) {
 		CHAPTER_NAME_STRING(ready + 1,
-												bleeding_edge,
+												g.bleeding_edge,
 												derpbuf1);
 	}
 	CHAPTER_NAME_STRING(ready,
-											latest,
+											g.latest,
 											derpbuf2);
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
-	string modified = {
-		modbuf,
-		strftime(modbuf, 0x100, "%B %e, %Y", localtime(&timestamp))
-	};
-	string modified_time = {
-		modbuf2,
-		strftime(modbuf2, 0x100, "%I:%M %p", localtime(&timestamp))
-	};
-	void derp(string title, string description, string source) {
-		if(!title.l) {
-			title = location;
-		}
-#include "o/template/contents-story.html.c"
-	}
-	storydb_with_info(story, derp);
+	g.modified.s = modbuf;
+	g.modified.l = strftime(modbuf, 0x100, "%B %e, %Y", localtime(&timestamp));
+	g.modified_time.s = modbuf2;
+	g.modified_time.l = strftime(modbuf2, 0x100,
+															 "%I:%M %p", localtime(&timestamp));
+
+	storydb_with_info(&g, have_info, story);
 }
 
 int main(int argc, char *argv[])
