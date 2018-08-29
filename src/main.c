@@ -64,7 +64,9 @@ struct csucks {
 	git_time_t timestamp;
 	bool any_chapter;
 	git_time_t max_timestamp;
-	bool title_changed
+	bool title_changed;
+	string scategory;
+	bool only_story;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
@@ -168,8 +170,8 @@ void for_story(
 	GDERP;
 	g->ready = ready;
 	
-	if(only_story != -1) {
-		if(story != only_story) return;
+	if(g->only_story != -1) {
+		if(story != g->only_story) return;
 	}
 	//DEBUG("story %lu %lu %.*s",story,numchaps,location.l,location.s);
 
@@ -202,7 +204,7 @@ void for_story(
 			return;
 		}
 	}
-	CLOSING int destloc = descend(AT_FDCWD, scategory, true);
+	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, location, true);
 
 	struct stat destinfo;
@@ -351,7 +353,7 @@ enum gfc_action on_chapter(
 //			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
 
 	// XXX: todo: handle if unreadable
-	printf("%d saw %d of ",g->timestamp, chapnum);
+	printf("%ld saw %ld of ",g->timestamp, chapnum);
 	STRPRINT(loc);
 	fputc('\n',stdout);
 	struct stat derp;
@@ -360,8 +362,8 @@ enum gfc_action on_chapter(
 		return GFC_CONTINUE;
 	}
 	storydb_saw_chapter(deleted,
-											storydb_get_story(loc, timestamp),
-											timestamp,chapnum);
+											storydb_get_story(loc, g->timestamp),
+											g->timestamp,chapnum);
 
 	return GFC_CONTINUE;
 }
@@ -483,8 +485,8 @@ int main(int argc, char *argv[])
 			return (const string){LITLEN("html")};
 		}
 	}
-	const string scategory = get_category();
-	identifier category = db_get_category(scategory, &g.timestamp);
+	g.scategory = get_category();
+	identifier category = db_get_category(g.scategory, &g.timestamp);
 	if(getenv("recheck")) {
 		g.timestamp = 0;
 	} else if(getenv("before")) {
@@ -498,13 +500,13 @@ int main(int argc, char *argv[])
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
 
-	identifier only_story = -1;
+	g.only_story = -1;
 	if(getenv("story")) {
 		string s = {
 			getenv("story"),
 			strlen(getenv("story"))
 		};
-		only_story = storydb_find_story(s);
+		g.only_story = storydb_find_story(s);
 	}
 
 	db_retransaction();
