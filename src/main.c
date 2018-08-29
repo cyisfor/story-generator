@@ -187,23 +187,6 @@ void for_chapter(
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
 
-void on_title_for_contents(
-	void* udata,
-	void(*handle)(const string title),
-	const string title) {
-	// we temporarily have the title from the database.
-	GDERP;
-	if(title.s == NULL) {
-		char buf[0x100];
-		string fallback = {
-			.s = buf,
-			.l = snprintf(buf,0x100,"Chapter %lu",chapter)
-		};
-		create_contents(g->story, g->location, g->contents, g->numchaps, fallback);
-	} else {
-		create_contents(g->story, g->location, g->contents, g->numchaps, title);
-	}
-}
 
 void for_story(
 	void* udata,

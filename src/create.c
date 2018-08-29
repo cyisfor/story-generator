@@ -74,6 +74,20 @@ void create_setup(void) {
 	}
 }
 
+static
+void got_title(void* udata, const string title) {
+	xmlNode* a = (xmlNode*)udata;
+	if(title.s == NULL) {
+		char buf[0x100];
+		string fallback = {
+			.s = buf,
+			.l = snprintf(buf,0x100,"Chapter %lu",chapter)
+		};
+		xmlNodeAddContentLen(a,fallback.s,fallback.l);
+	} else
+		xmlNodeAddContentLen(a,title.s,title.l);
+}
+
 int create_contents(identifier story,
 										const string location,
 										int dest,
@@ -109,7 +123,7 @@ int create_contents(identifier story,
 		htmlDocDump(stdout,doc);
 	}
 	assert(toc);
-	
+
 	size_t i;
 	for(i=1;i<=chapters;++i) {
 		xmlNode* li = xmlNewNode(toc->ns,"li");
@@ -118,12 +132,10 @@ int create_contents(identifier story,
 		xmlAddChild(toc,li);
 		CHAPTER_NAME(i,buf);
 		xmlSetProp(a,"href",buf);
-		void got_title(const string title) {
-			xmlNodeAddContentLen(a,title.s,title.l);
-		}
-		with_title(i, got_title);
+		storydb_with_chapter_title(
+			a, got_title,
+			g->story, i);
 	}
-	
 	void got_info(string title, string description, string source) {
 
 		// check for changes first
