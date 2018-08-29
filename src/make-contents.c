@@ -16,6 +16,7 @@ struct chapter {
 struct csucks {
 	string location;
 	string modified;
+	string modified_time;
 	string latest;
 	int ready;
 	int numchaps;
@@ -24,12 +25,13 @@ struct csucks {
 
 static
 void have_info(void* udata, string title, string description, string source) {
-	if(!title.l) {
-		title = location;
-	}
 	struct csucks* g = (struct csucks*) udata;
+	if(!title.l) {
+		title = g->location;
+	}
 	const string location = g->location;
 	const string modified = g->modified;
+	const string modified_time = g->modified_time;
 	const string latest = g->latest;
 	int ready = g->ready;
 	int numchaps = g->numchaps;
@@ -42,7 +44,8 @@ void have_info(void* udata, string title, string description, string source) {
 #define output_literal(lit) output_buf(lit,sizeof(lit)-1)
 #define output_fmt printf
 
-void output_story(identifier story,
+void output_story(void* udata,
+									identifier story,
 									const string location,
 									size_t ready,
 									size_t numchaps,
@@ -51,7 +54,7 @@ void output_story(identifier story,
 		.location = location,
 		.ready = ready,
 		.numchaps = numchaps
-	}
+	};
 	char derpbuf1[0x100], derpbuf2[0x100];
 	if(ready != numchaps) {
 		CHAPTER_NAME_STRING(ready + 1,
@@ -74,9 +77,9 @@ void output_story(identifier story,
 
 int main(int argc, char *argv[])
 {
-	db_open();
+	storydb_open();
 	void output_stories() {
-		storydb_for_stories(output_story, false, 0);
+		storydb_for_stories(NULL, output_story, false, 0);
 	}
 	string title = {
 		.s = "Table of Contents",

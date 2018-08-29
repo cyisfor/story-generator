@@ -1,7 +1,8 @@
-#include <sqlite3.h>
-
-#include "db-private.h"
+#include "ensure.h"
 #include "storydb.h"
+
+#include <sqlite3.h>
+#include "db-private.h"
 
 #include <stdio.h>
 #include <stdlib.h> // exit
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
 	}
   // make sure we're outside the code directory
 	struct stat info;
-  while(0 != stat("code",&info)) chdir("..");
+  while(0 != stat("code",&info)) ensure0(chdir(".."));
 	storydb_open();
 
 	size_t loclen = strlen(location);
@@ -35,8 +36,8 @@ int main(int argc, char *argv[])
 		sqlite3_bind_text(get_ready, 1, location, loclen, NULL);
 		int res = db_check(sqlite3_step(get_ready));
 		if(res == SQLITE_ROW) {
-			printf("Story %.*s ready on chapter %ld/%ld\n",
-						 loclen, location,
+			printf("Story %.*s ready on chapter %d/%d\n",
+						 (int)loclen, location,
 						 sqlite3_column_int(get_ready, 0),
 						 sqlite3_column_int(get_ready, 1));
 			exit(0);
