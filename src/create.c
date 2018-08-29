@@ -94,6 +94,11 @@ void got_title(void* udata, const string title) {
 		xmlNodeAddContentLen(g->a,title.s,title.l);
 }
 
+struct csucksballs {
+	xmlNode* head;
+	xmlNode* body;
+};
+
 static
 void got_info(
 	void* udata,
