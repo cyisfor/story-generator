@@ -98,7 +98,7 @@ static
 void got_info(
 	void* udata,
 	string title, string description, string source) {
-
+	struct csucksballs* g = (struct csucksballs*)udata;
 	// check for changes first
 
 	bool newdesc = false;
@@ -259,10 +259,10 @@ void got_info(
 		return setup_body(cur->next);
 	}
 	if(title.s || description.s) {
-		setup_head(head);
-		setup_body(body);		
+		setup_head(g->head);
+		setup_body(g->body);		
 	} else if(source.s) {
-		setup_body(body);
+		setup_body(g->body);
 	}
 	if(newdesc) {
 		munmap((char*)description.s,description.l);
@@ -320,8 +320,14 @@ int create_contents(identifier story,
 			got_title,
 			story, i);
 	}
-	
-	storydb_with_info(story, got_info);
+
+	{
+		struct csucksballs g = {
+			.head = head,
+			.body = body
+		};
+		storydb_with_info(&g, got_info, story);
+	}
 
 	unsetenv("titlehead");
 

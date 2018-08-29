@@ -432,9 +432,13 @@ void storydb_with_chapter_title(
 }
 
 bool derp = false;
-void storydb_with_info(const identifier story, void (*handle)(string title,
-																												 string description,
-																												 string source)) {
+void storydb_with_info(
+	void* udata,
+	void (*handle)(
+		void* udata,
+		string title,
+		string description,
+		string source)) {
 	assert(derp == false); // not reentrant!
 	derp = true;
 	DECLARE_STMT(find,"SELECT title,description,source FROM stories WHERE id = ? AND ("
@@ -459,7 +463,7 @@ void storydb_with_info(const identifier story, void (*handle)(string title,
 	}
 	// handle if nothing in the db, so we can search for files and stuff.
 	// XXX: TODO: only call a special creation function if not found?
-	handle(title,description,source);
+	handle(udata,title,description,source);
 	derp = false;
 }
 
