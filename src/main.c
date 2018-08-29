@@ -67,6 +67,8 @@ struct csucks {
 	bool title_changed;
 	string scategory;
 	bool only_story;
+	int ready;
+	bool adjust_times;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
@@ -136,16 +138,16 @@ void for_chapter(
 	}
 
 	if(skip(chapter_timestamp,destname)) {
-		if(adjust_times) {
+		if(g->adjust_times) {
 			// mleh
-			int dest = openat(destloc,destname,O_WRONLY);
+			int dest = openat(g->destloc,destname,O_WRONLY);
 			if(dest >= 0) {
 				close_with_time(dest,chapter_timestamp);
 			}
 		}
 	}
 
-	int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
+	int dest = openat(g->destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
 	ensure_ge(dest,0);
 
 	if(!fixing_srctimes)
@@ -156,7 +158,7 @@ void for_chapter(
 	ensure0(close(src));
 	close_with_time(dest,chapter_timestamp);
 
-	ensure0(renameat(destloc,".tempchap",destloc,destname));
+	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
 
 void for_story(
@@ -249,15 +251,15 @@ void for_story(
 
 	git_time_t max_timestamp = story_timestamp;
 
-	bool any_chapter = false; // stays false when no chapters are ready
-
+	g->any_chapter = false; // stays false when no chapters are ready
+	g->destloc = destloc;
 
 	// NOT story_timestamp
 
 	storydb_for_chapters(
 		udata,
-		story,
 		for_chapter,
+		story,
 		g->timestamp,
 		numchaps,
 		storydb_all_ready);
@@ -498,7 +500,7 @@ int main(int argc, char *argv[])
 		g.timestamp = after;
 	}
 
-	bool adjust_times = getenv("adjust_times")!=NULL;
+	g.adjust_times = getenv("adjust_times")!=NULL;
 
 	g.only_story = -1;
 	if(getenv("story")) {
