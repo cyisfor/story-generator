@@ -97,6 +97,8 @@ void got_title(void* udata, const string title) {
 struct csucksballs {
 	xmlNode* head;
 	xmlNode* body;
+	string location;
+	identifier story;
 };
 
 static
@@ -112,8 +114,8 @@ void got_info(
 
 	// check for description file
 	char path[0x200];
-	memcpy(path,location.s,location.l);
-	memcpy(path+location.l,LITLEN("/description\0"));
+	memcpy(path,g->location.s,g->location.l);
+	memcpy(path+g->location.l,LITLEN("/description\0"));
 	int dfd = open(path,O_RDONLY);
 	if(dfd >= 0) {
 		struct stat st;
@@ -167,7 +169,7 @@ void got_info(
 	}
 	
 	if(newtitle || newsource || newdesc) {
-		storydb_set_info(story,title,description,source);
+		storydb_set_info(g->story,title,description,source);
 	}
 	// if STILL no title, just use location on a temporary unstored basis
 	if(!title.s) {
@@ -330,6 +332,8 @@ int create_contents(identifier story,
 		struct csucksballs g = {
 			.head = head,
 			.body = body
+			.location = location,
+			.story = story
 		};
 		storydb_with_info(&g, got_info, story);
 	}
