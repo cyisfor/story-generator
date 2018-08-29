@@ -60,9 +60,102 @@ void close_with_time(int dest, git_time_t timestamp) {
 struct csucks {
 	size_t num;
 	size_t counter;
+	int chapspercom;
+	git_time_t timestamp;
+	bool any_chapter;
+	git_time_t max_timestamp;
+	bool title_changed
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
+
+void for_chapter(
+	void* udata,
+	identifier chapter,
+	git_time_t chapter_timestamp) {
+	GDERP;
+	SPAM("chapter %.*s%d %d",location.l,location.s,
+			 chapter,chapter_timestamp - g->timestamp);
+	g->any_chapter = true;
+	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
+	if(chapter_timestamp > g->max_timestamp)
+		g->max_timestamp = chapter_timestamp;
+	// this should be moved later...
+	char srcname[0x100];
+	struct stat srcinfo;
+	int src;
+
+	bool setupsrc(void) {
+		snprintf(srcname,0x100,"chapter%ld.hish",chapter);
+		src = openat(srcloc, srcname, O_RDONLY, 0755);
+		ensure_ge(src,0);
+		// for adjusting dest timestamp
+		ensure0(fstatat(srcloc,srcname,&srcinfo,0));
+		if(srcinfo.st_mtime > chapter_timestamp) {
+			// git ruins file modification times... we probably cloned this, and lost
+			// all timestamps. Just set the source file to have changed with the commit then.
+			srcinfo.st_mtime = chapter_timestamp;
+			return true;
+		}
+		return false;
+	}
+
+	if(fixing_srctimes) {
+		if(setupsrc()) {
+			struct timespec times[2] = {
+				srcinfo.st_mtim,
+				srcinfo.st_mtim
+			};
+			INFO("chapter %d had bad timestamp %d (->%d)",
+					 chapter, srcinfo.st_mtime, chapter_timestamp);
+			ensure0(futimens(src,times));
+		}
+	}
+
+	if(!storydb_all_ready && (chapter == numchaps + 1)) {
+		// or other criteria, env, db field, etc
+		WARN("not exporting last chapter");
+		if(chapter > 2 && !storydb_all_ready && ready > 0) {
+			// two chapters before this needs updating, before it now has a "next" link
+			storydb_saw_chapter(false,story,chapter_timestamp,chapter-2);
+		}
+		return;
+	}
+
+	char destname[0x100] = "index.html";
+	if(chapter > 1) {
+		int amt = snprintf(destname,0x100, "chapter%ld.html",chapter);
+		assert(amt < 0x100);
+		/* be sure to mark the previous chapter as "seen" if we are the last chapter
+			 being exported (previous needs a "next" link) */
+		if(chapter == numchaps) {
+			storydb_saw_chapter(false,story,chapter_timestamp,chapter-1);
+		}
+	}
+
+	if(skip(chapter_timestamp,destname)) {
+		if(adjust_times) {
+			// mleh
+			int dest = openat(destloc,destname,O_WRONLY);
+			if(dest >= 0) {
+				close_with_time(dest,chapter_timestamp);
+			}
+		}
+	}
+
+	int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
+	ensure_ge(dest,0);
+
+	if(!fixing_srctimes)
+		setupsrc();
+
+	create_chapter(src,dest,chapter,numchaps,story,&g->title_changed);
+
+	ensure0(close(src));
+	close_with_time(dest,chapter_timestamp);
+
+	ensure0(renameat(destloc,".tempchap",destloc,destname));
+}
 
 void for_story(
 	void* udata,
@@ -72,6 +165,9 @@ void for_story(
 	size_t numchaps,
 	git_time_t story_timestamp) {
 
+	GDERP;
+	g->ready = ready;
+	
 	if(only_story != -1) {
 		if(story != only_story) return;
 	}
@@ -126,7 +222,7 @@ void for_story(
 		return false;
 	}
 
-	bool title_changed = false;
+	g->title_changed = false;
 	bool numchaps_changed = false;
 	{
 		int countchaps = storydb_count_chapters(story);
@@ -152,97 +248,17 @@ void for_story(
 	git_time_t max_timestamp = story_timestamp;
 
 	bool any_chapter = false; // stays false when no chapters are ready
-	void for_chapter(identifier chapter, git_time_t chapter_timestamp) {
-		SPAM("chapter %.*s%d %d",location.l,location.s,
-				 chapter,chapter_timestamp - timestamp);
-		any_chapter = true;
-		//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
-		if(chapter_timestamp > max_timestamp)
-			max_timestamp = chapter_timestamp;
-		// this should be moved later...
-		char srcname[0x100];
-		struct stat srcinfo;
-		int src;
 
-		bool setupsrc(void) {
-			snprintf(srcname,0x100,"chapter%ld.hish",chapter);
-			src = openat(srcloc, srcname, O_RDONLY, 0755);
-			ensure_ge(src,0);
-			// for adjusting dest timestamp
-			ensure0(fstatat(srcloc,srcname,&srcinfo,0));
-			if(srcinfo.st_mtime > chapter_timestamp) {
-				// git ruins file modification times... we probably cloned this, and lost
-				// all timestamps. Just set the source file to have changed with the commit then.
-				srcinfo.st_mtime = chapter_timestamp;
-				return true;
-			}
-			return false;
-		}
-
-		if(fixing_srctimes) {
-			if(setupsrc()) {
-				struct timespec times[2] = {
-					srcinfo.st_mtim,
-					srcinfo.st_mtim
-				};
-				INFO("chapter %d had bad timestamp %d (->%d)",
-						 chapter, srcinfo.st_mtime, chapter_timestamp);
-				ensure0(futimens(src,times));
-			}
-		}
-
-		if(!storydb_all_ready && (chapter == numchaps + 1)) {
-			// or other criteria, env, db field, etc
-			WARN("not exporting last chapter");
-			if(chapter > 2 && !storydb_all_ready && ready > 0) {
-				// two chapters before this needs updating, before it now has a "next" link
-				storydb_saw_chapter(false,story,chapter_timestamp,chapter-2);
-			}
-			return;
-		}
-
-		char destname[0x100] = "index.html";
-		if(chapter > 1) {
-			int amt = snprintf(destname,0x100, "chapter%ld.html",chapter);
-			assert(amt < 0x100);
-			/* be sure to mark the previous chapter as "seen" if we are the last chapter
-				 being exported (previous needs a "next" link) */
-			if(chapter == numchaps) {
-				storydb_saw_chapter(false,story,chapter_timestamp,chapter-1);
-			}
-		}
-
-		if(skip(chapter_timestamp,destname)) {
-			if(adjust_times) {
-				// mleh
-				int dest = openat(destloc,destname,O_WRONLY);
-				if(dest >= 0) {
-					close_with_time(dest,chapter_timestamp);
-				}
-			}
-		}
-
-		int dest = openat(destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
-		ensure_ge(dest,0);
-
-		if(!fixing_srctimes)
-			setupsrc();
-
-		create_chapter(src,dest,chapter,numchaps,story,&title_changed);
-
-		ensure0(close(src));
-		close_with_time(dest,chapter_timestamp);
-
-		ensure0(renameat(destloc,".tempchap",destloc,destname));
-	}
 
 	// NOT story_timestamp
 
-	storydb_for_chapters(story,
-											 for_chapter,
-											 timestamp,
-											 numchaps,
-											 storydb_all_ready);
+	storydb_for_chapters(
+		udata,
+		story,
+		for_chapter,
+		g->timestamp,
+		numchaps,
+		storydb_all_ready);
 
 	// we create contents.html strictly from the db, not the markup directory
 	ensure0(close(srcloc));
@@ -257,7 +273,7 @@ void for_story(
 		close_with_time(wr,max_timestamp);
 	}
 
-	if(!(numchaps_changed || title_changed)) {
+	if(!(numchaps_changed || g->title_changed)) {
 		// no chapters added or removed, and no chapter had an embedded title that changed.
 		struct stat info;
 		// be sure to create anyway if contents.html doesn't exist
@@ -335,7 +351,7 @@ enum gfc_action on_chapter(
 //			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
 
 	// XXX: todo: handle if unreadable
-	printf("%d saw %d of ",timestamp, chapnum);
+	printf("%d saw %d of ",g->timestamp, chapnum);
 	STRPRINT(loc);
 	fputc('\n',stdout);
 	struct stat derp;
