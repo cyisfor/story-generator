@@ -75,6 +75,7 @@ struct csucks {
 	identifier story;
 	bool fixing_srctimes;
 	string location;
+	int contents;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
@@ -181,27 +182,27 @@ void for_chapter(
 	create_chapter(src,dest,chapter,g->numchaps,g->story,&g->title_changed);
 
 	ensure0(close(src));
-	close_with_time(dest,chapter_timestamp);
+	close_with_time(g->dest,chapter_timestamp);
 
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
 
-void on_title(
+void on_title_for_contents(
 	void* udata,
 	void(*handle)(const string title),
 	const string title) {
-		if(title.s == NULL) {
-			char buf[0x100];
-			string fallback = {
-				.s = buf,
-				.l = snprintf(buf,0x100,"Chapter %lu",chapter)
-			};
-			handle(fallback);
-		} else {
-			handle(title);
-		}
+	// we temporarily have the title from the database.
+	GDERP;
+	if(title.s == NULL) {
+		char buf[0x100];
+		string fallback = {
+			.s = buf,
+			.l = snprintf(buf,0x100,"Chapter %lu",chapter)
+		};
+		create_contents(g->story, g->location, g->contents, g->numchaps, fallback);
+	} else {
+		create_contents(g->story, g->location, g->contents, g->numchaps, title);
 	}
-	storydb_with_chapter_title(story,chapter,on_title);
 }
 
 void for_story(
@@ -337,11 +338,11 @@ void for_story(
 		 with any embedded chapter titles */
 
 
-	int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
-	ensure_ge(dest,0);
-	create_contents(story, g->location, dest, numchaps, with_title);
+	g->contents = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
+	ensure_ge(g->contents,0);
+	storydb_with_chapter_title((void*)g, on_title_for_contents, story, chapter);
 
-	close_with_time(dest,max_timestamp);
+	close_with_time(g->contents,max_timestamp);
 	ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 
 	destloc_done();

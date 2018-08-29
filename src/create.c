@@ -78,7 +78,7 @@ int create_contents(identifier story,
 										const string location,
 										int dest,
 										size_t chapters,
-										void (*with_title)(identifier chapter,
+										void (*with_title)(void* udata,
 																			 void(*handle)(const string title))) {	
 	xmlDoc* doc = xmlCopyDoc(contents_template,1);
 	// root, doctype, html, text prefix, head

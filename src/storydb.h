@@ -66,9 +66,11 @@ void storydb_for_chapters(
 	int numchaps,
 	bool all_ready);
 
-void storydb_with_chapter_title(identifier story,
-													 identifier chapter,
-													 void (*handle)(const string));
+void storydb_with_chapter_title(
+	void* udata,
+	void (*handle)(void* udata, const string),
+	identifier story,
+	identifier chapter);
 
 void storydb_with_info(const identifier story, void (*handle)(const string title,
 																															 const string description,
