@@ -1,4 +1,5 @@
 #include "ensure.h"
+#include "storydb.h"
 
 #include "ddate.h"
 #include "create.h"

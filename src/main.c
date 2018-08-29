@@ -75,7 +75,6 @@ struct csucks {
 	identifier story;
 	bool fixing_srctimes;
 	string location;
-	int contents;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata
@@ -182,7 +181,7 @@ void for_chapter(
 	create_chapter(src,dest,chapter,g->numchaps,g->story,&g->title_changed);
 
 	ensure0(close(src));
-	close_with_time(g->dest,chapter_timestamp);
+	close_with_time(dest,chapter_timestamp);
 
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
@@ -321,11 +320,13 @@ void for_story(
 		 with any embedded chapter titles */
 
 
-	g->contents = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
-	ensure_ge(g->contents,0);
-	storydb_with_chapter_title((void*)g, on_title_for_contents, story, chapter);
-
-	close_with_time(g->contents,max_timestamp);
+	{
+		int contents =
+			openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
+		ensure_ge(contents,0);
+		create_contents(story, g->location, contents, g->numchaps);
+		close_with_time(contents,max_timestamp);
+	}
 	ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 
 	destloc_done();
