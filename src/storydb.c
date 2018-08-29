@@ -336,10 +336,14 @@ void storydb_for_stories(
 	}
 }
 
-void storydb_for_undescribed(void (*handle)(identifier story,
-																							 const string title,
-																							 const string description,
-																							 const string source)) {
+void storydb_for_undescribed(
+	void* udata,
+	void (*handle)(
+		void* udata,
+		identifier story,
+		const string title,
+		const string description,
+		const string source)) {
 	DECLARE_STMT(find,FOR_UNDESCRIBED_STORIES);
 	for(;;) {
 		RESETTING(find) int res = db_check(sqlite3_step(find));
@@ -358,7 +362,7 @@ void storydb_for_undescribed(void (*handle)(identifier story,
 			.s = sqlite3_column_blob(find,3),
 			.l = sqlite3_column_bytes(find,3)
 		};
-		handle(story,title,description,source);
+		handle(udata, story,title,description,source);
 	}
 }
 

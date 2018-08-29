@@ -20,7 +20,7 @@ void for_story(void* udata,
 
 	int t = mkstemp(tname);
 			
-	write(t,description.s,description.l);
+	ensure_eq(description.l, write(t,description.s,description.l));
 
 	puts("****");
 	puts(title.s);

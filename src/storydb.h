@@ -50,10 +50,14 @@ void storydb_for_stories(
 	bool forward,
 	git_time_t before);
 
-void storydb_for_undescribed(void (*handle)(identifier story,
-																							 const string title,
-																							 const string description,
-																							 const string source));
+void storydb_for_undescribed(
+	void* udata,
+	void (*handle)(
+		void* udata,
+		identifier story,
+		const string title,
+		const string description,
+		const string source));
 
 void storydb_for_chapters(
 	void* udata,
