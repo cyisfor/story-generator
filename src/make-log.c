@@ -40,13 +40,13 @@ void on_chapter(void* udata,
 		return;
 	}
 	if(!storydb_all_ready) {
-		if(storydb_count_chapters(story) == chapnum + 1) return;
+		if(storydb_count_chapters(story) == chapnum) return;
 	}
 
 	char numbuf[0x10];
 	string num = {
 		.s = numbuf,
-		.l = itoa(numbuf,0x10,chapnum+1)
+		.l = itoa(numbuf,0x10,chapnum)
 	};
 	// need num even for chapnum 0, because "chapter" column
 		
