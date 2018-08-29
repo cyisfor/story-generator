@@ -73,6 +73,24 @@ struct csucks {
 
 #define GDERP struct csucks* g = (struct csucks*)udata
 
+bool skip(struct csuck* g, git_time_t srcstamp, const char* destname) {
+	struct stat destinfo;
+	bool dest_exists = (0==fstatat(g->destloc,destname,&destinfo,0));
+	if(dest_exists) {
+		if(destinfo.st_mtime >= srcstamp) {
+			// XXX: this will keep the db from getting chapter titles
+			// if it's destroyed w/out deleting chapter htmls
+			//WARN("skip %s %d %d",destname,destinfo.st_mtime, srcstamp);
+			return true;
+		}
+	} else {
+		INFO("dest no exist %s",destname);
+	}
+	INFO("generating %s",destname);
+	return false;
+}
+
+
 void for_chapter(
 	void* udata,
 	identifier chapter,
@@ -209,23 +227,6 @@ void for_story(
 	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, location, true);
 
-	struct stat destinfo;
-	bool skip(git_time_t srcstamp, const char* destname) {
-		bool dest_exists = (0==fstatat(destloc,destname,&destinfo,0));
-		if(dest_exists) {
-			if(destinfo.st_mtime >= srcstamp) {
-				// XXX: this will keep the db from getting chapter titles
-				// if it's destroyed w/out deleting chapter htmls
-				//WARN("skip %s %d %d",destname,destinfo.st_mtime, srcstamp);
-				return true;
-			}
-		} else {
-			INFO("dest no exist %s",destname);
-		}
-		INFO("generating %s",destname);
-		return false;
-	}
-
 	g->title_changed = false;
 	bool numchaps_changed = false;
 	{
@@ -296,7 +297,7 @@ void for_story(
 		}
 	}
 
-	if(!any_chapter) {
+	if(!g->any_chapter) {
 		//DEBUG("not recreating contents of %d because no chapters",story);
 		return;
 	}
