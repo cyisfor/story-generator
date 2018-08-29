@@ -408,9 +408,12 @@ RESTART:
 	}
 }
 
-void storydb_with_chapter_title(identifier story,
-													 identifier chapter,
-													 void (*handle)(const string)) {
+// can't return a string, or the statement will be left un-reset
+void storydb_with_chapter_title(
+	void* udata,
+	void (*handle)(void* udata, const string),
+	identifier story,
+	identifier chapter) {
 	DECLARE_STMT(find,"SELECT title FROM chapters WHERE story = ? AND chapter = ?");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);
@@ -420,11 +423,11 @@ void storydb_with_chapter_title(identifier story,
 			.s = sqlite3_column_blob(find,0),
 			.l = sqlite3_column_bytes(find,0)
 		};
-		handle(title);
+		handle(udata, title);
 	} else {
 		db_check(res);
 		string title = {};
-		handle(title);
+		handle(udata, title);
 	}
 }
 

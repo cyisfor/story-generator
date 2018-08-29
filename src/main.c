@@ -186,6 +186,24 @@ void for_chapter(
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
 
+void on_title(
+	void* udata,
+	void(*handle)(const string title),
+	const string title) {
+		if(title.s == NULL) {
+			char buf[0x100];
+			string fallback = {
+				.s = buf,
+				.l = snprintf(buf,0x100,"Chapter %lu",chapter)
+			};
+			handle(fallback);
+		} else {
+			handle(title);
+		}
+	}
+	storydb_with_chapter_title(story,chapter,on_title);
+}
+
 void for_story(
 	void* udata,
 	identifier story,
@@ -318,21 +336,6 @@ void for_story(
 	/* be sure to create the contents after processing the chapters, to update the db
 		 with any embedded chapter titles */
 
-	void with_title(identifier chapter, void(*handle)(const string title)) {
-		void on_title(const string title) {
-			if(title.s == NULL) {
-				char buf[0x100];
-				string fallback = {
-					.s = buf,
-					.l = snprintf(buf,0x100,"Chapter %lu",chapter)
-				};
-				handle(fallback);
-			} else {
-				handle(title);
-			}
-		}
-		storydb_with_chapter_title(story,chapter,on_title);
-	}
 
 	int dest = openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 	ensure_ge(dest,0);
