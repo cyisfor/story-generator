@@ -62,8 +62,7 @@ struct csucks {
 	size_t counter;
 };
 
-#define GDERP struct csucks* contextthingy = (struct csucks*)udata
-#define G(a) contextthingy->(a)
+#define GDERP struct csucks* g = (struct csucks*)udata
 
 void for_story(
 	void* udata,
@@ -325,12 +324,12 @@ enum gfc_action on_chapter(
 	const string src)
 {
 	GDERP;
-	if(++G(num) % 100 == 0) {
+	if(++g->num % 100 == 0) {
 		db_retransaction();
 /*				putchar('\n');
 					exit(23); */
 	}
-	if(++chapspercom == 5) {
+	if(++g->chapspercom == 5) {
 		WARN("huh? lots of chapters in this commit...");
 	}
 //			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
@@ -365,16 +364,17 @@ enum gfc_action on_commit(
 
 	GDERP;
 	
-	INFO("commit %d %d",timestamp, ++G(counter));
-	int chapspercom = 0;
+	INFO("commit %d %d",timestamp, ++g->counter);
+	g->chapspercom = 0;
 	
-	enum gfc_action ret = git_for_chapters_changed(&g,on_chapter,last,cur);
+	enum gfc_action ret = git_for_chapters_changed(g,on_chapter,last,cur);
 	
 	return ret;
 }
 
 int main(int argc, char *argv[])
 {
+
 	note_init();
 	libxmlfixes_setup();
 	struct stat info;
@@ -467,18 +467,17 @@ int main(int argc, char *argv[])
 			return (const string){LITLEN("html")};
 		}
 	}
-	git_time_t timestamp;
-
 	const string scategory = get_category();
-	identifier category = db_get_category(scategory, &timestamp);
-	if(getenv("recheck")) timestamp = 0;
-	else if(getenv("before")) {
+	identifier category = db_get_category(scategory, &g.timestamp);
+	if(getenv("recheck")) {
+		g.timestamp = 0;
+	} else if(getenv("before")) {
 		long res = strtol(getenv("before"),NULL,0);
-		if(res)
-			timestamp = res;
-	}
-	else if(results.after) {
-		timestamp = after;
+		if(res) {
+			g.timestamp = res;
+		}
+	} else if(results.after) {
+		g.timestamp = after;
 	}
 
 	bool adjust_times = getenv("adjust_times")!=NULL;
@@ -493,8 +492,8 @@ int main(int argc, char *argv[])
 	}
 
 	db_retransaction();
-	INFO("stories after %d",timestamp);
-	storydb_for_stories(&g, for_story, true, timestamp);
+	INFO("stories after %d",g.timestamp);
+	storydb_for_stories(&g, for_story, true, g.timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();
