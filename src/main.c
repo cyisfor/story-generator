@@ -60,11 +60,13 @@ void close_with_time(int dest, git_time_t timestamp) {
 static
 void output_time_f(const char* msg, time_t time) {
 	char buf[0x1000];
-	ctime_r(&time, buf);
-	INFO(msg,time,buf);
+	struct tm tm = {};
+	size_t len = strftime(buf, 0x1000, "%c", localtime_r(&time,&tm));
+
+	INFO(msg,time,len, buf);
 }
 
-#define output_time(msg, time) output_time_f(msg " %d %s", time)
+#define output_time(msg, time) output_time_f(msg " %d %.*s", time)
 
 struct csucks {
 	size_t num;
@@ -152,7 +154,7 @@ void for_chapter(
 		}
 	}
 
-	if(storydb_all_ready || (chapter == g->numchaps + 1)) {
+	if(!storydb_all_ready && (chapter == g->numchaps + 1)) {
 		// or other criteria, env, db field, etc
 		WARN("not exporting last chapter");
 		if(chapter > 2 && !storydb_all_ready && g->ready > 0) {
@@ -237,7 +239,6 @@ void for_story(
 	}
 
 	CLOSING int srcloc = descend(AT_FDCWD, g->location, false);
-	g->srcloc = srcloc;
 	if(srcloc < 0) return; // glorious moved
 	{ string markup = {LITLEN("markup")};
 		srcloc = descend(srcloc, markup, false);
@@ -247,6 +248,8 @@ void for_story(
 			return;
 		}
 	}
+	g->srcloc = srcloc;
+
 	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, g->location, true);
 
@@ -448,8 +451,9 @@ int main(int argc, char *argv[])
 			output_time("going back after",after);
 		}
 
-		if(results.before)
+		if(results.before) {
 			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(before));
+		}
 	}
 
 	struct csucks g = {

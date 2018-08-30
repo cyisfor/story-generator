@@ -40,6 +40,7 @@ DEFINE(warn,"WARN");
 
 HEAD(error) {
 	BODY("ERROR");
+	perror("errno");
 	if(getenv("error_nonfatal")) return;
 	abort();
 }
