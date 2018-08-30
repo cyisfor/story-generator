@@ -57,6 +57,15 @@ void close_with_time(int dest, git_time_t timestamp) {
 	ensure0(close(dest));
 }
 
+static
+void output_time_f(const char* msg, time_t time) {
+	char buf[0x1000];
+	ctime_r(&time, buf);
+	INFO(msg,time,buf);
+}
+
+#define output_time(msg, time) output_time_f(msg " %d %s", time)
+
 struct csucks {
 	size_t num;
 	size_t counter;
@@ -137,11 +146,13 @@ void for_chapter(
 			};
 			INFO("chapter %d had bad timestamp %d (->%d)",
 					 chapter, srcinfo.st_mtime, chapter_timestamp);
+			output_time("file",srcinfo.st_mtime);
+			output_time("db",chapter_timestamp);
 			ensure0(futimens(src,times));
 		}
 	}
 
-	if(!storydb_all_ready && (chapter == g->numchaps + 1)) {
+	if(storydb_all_ready || (chapter == g->numchaps + 1)) {
 		// or other criteria, env, db field, etc
 		WARN("not exporting last chapter");
 		if(chapter > 2 && !storydb_all_ready && g->ready > 0) {
@@ -355,9 +366,10 @@ enum gfc_action on_chapter(
 //			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
 
 	// XXX: todo: handle if unreadable
-	printf("%ld saw %ld of ",g->timestamp, chapnum);
+	INFO("%ld saw %ld of ",g->timestamp, chapnum);
 	STRPRINT(loc);
 	fputc('\n',stdout);
+	output_time("time",g->timestamp);
 	struct stat derp;
 	if(0!=stat(src.s,&derp)) {
 		WARN("%s wasn't there",src.s);
@@ -385,6 +397,7 @@ enum gfc_action on_commit(
 	GDERP;
 	
 	INFO("commit %d %d",timestamp, ++g->counter);
+	output_time("time",timestamp);
 	g->chapspercom = 0;
 	
 	enum gfc_action ret = git_for_chapters_changed(g,on_chapter,last,cur);
@@ -431,8 +444,9 @@ int main(int argc, char *argv[])
 		git_object_free(thing1);
 	} else {
 		db_last_seen_commit(&results,&after,before);
-		if(results.after)
-			INFO("going back after %d",after);
+		if(results.after) {
+			output_time("going back after",after);
+		}
 
 		if(results.before)
 			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(before));
@@ -443,7 +457,7 @@ int main(int argc, char *argv[])
 		.counter = 0
 	};
 	
-	git_for_commits(on_commit, (void*)&g, results.after, after, results.before, before);
+	git_for_commits((void*)&g, on_commit, results.after, after, results.before, before);
 	// check this even when after is set, so we don't clear a before in progress?
 	if(g.num > 0) {
 		db_caught_up_committing();
@@ -500,6 +514,8 @@ int main(int argc, char *argv[])
 		g.timestamp = after;
 	}
 
+	g.timestamp -= 100;
+
 	g.adjust_times = getenv("adjust_times")!=NULL;
 
 	g.only_story = -1;
@@ -512,7 +528,7 @@ int main(int argc, char *argv[])
 	}
 
 	db_retransaction();
-	INFO("stories after %d",g.timestamp);
+	output_time("stories after",g.timestamp);
 	storydb_for_stories(&g, for_story, true, g.timestamp);
 	db_caught_up_category(category);
 	INFO("caught up");
