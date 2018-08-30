@@ -77,7 +77,7 @@ struct csucks {
 	git_time_t max_timestamp;
 	bool title_changed;
 	string scategory;
-	bool only_story;
+	identifier only_story;
 	int ready;
 	bool adjust_times;
 	int destloc;
@@ -518,7 +518,7 @@ int main(int argc, char *argv[])
 		g.timestamp = after;
 	}
 
-	g.timestamp -= 100;
+//	g.timestamp -= 100;
 
 	g.adjust_times = getenv("adjust_times")!=NULL;
 
