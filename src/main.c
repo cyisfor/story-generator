@@ -191,7 +191,7 @@ void for_chapter(
 	if(!g->fixing_srctimes)
 		setupsrc();
 
-	create_chapter(src,dest,chapter,g->numchaps,g->story,&g->title_changed);
+	create_chapter(src,dest,chapter,g->ready,g->story,&g->title_changed);
 
 	ensure0(close(src));
 	close_with_time(dest,chapter_timestamp);

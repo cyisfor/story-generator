@@ -346,7 +346,7 @@ int create_contents(identifier story,
 }
 
 void create_chapter(int src, int dest,
-										int chapter, int chapters,
+										int chapter, int ready,
 										identifier story, bool* title_changed) {
 
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
@@ -408,7 +408,7 @@ void create_chapter(int src, int dest,
 	linkthing("contents.html","first",LITLEN("Contents"));
 
 	// XXX: chapters - finished ? 0 : 1
-	if(chapter < chapters) {
+	if(chapter < ready) {
 		xmlNodeAddContentLen(links,LITLEN(" "));
 		snprintf(buf,0x100,"chapter%d.html",chapter+1);
 		linkthing(buf,"next",LITLEN("Next"));
