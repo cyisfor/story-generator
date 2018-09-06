@@ -3,7 +3,7 @@
 
 #include "db-private.h"
 
-#include "o/db.sql.c"
+#include "db.sql.stmt.c"
 
 #include "itoa.h"
 #include "ensure.h"

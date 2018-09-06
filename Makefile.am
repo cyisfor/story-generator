@@ -11,13 +11,13 @@ libstorydb_la_SOURCES = \
 	src/storydb.c
 
 libstorydb_la_LDFLAGS = $(SQLITE_LIBS) $(GIT_LIBS)
-
+libstorydb_la_LIBADD = htmlish/libhtmlish.la
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) \
 	-I $(srcdir)/htmlish/src \
 	-I $(srcdir)/libxml2/include \
 	-I $(srcdir)/libxmlfixes/src \
 	-I htmlish/libxmlfixes \
-	-I htmlish/libxmlfixes/libxml2/include/libxml
+	-I htmlish/libxmlfixes/libxml2/include
 
 ready_SOURCES = \
 	src/ready.c \
@@ -133,7 +133,7 @@ db_oid/gen.h: db_oid/make
 
 db_oid_make_SOURCES = src/db_oid/make.c
 
-%.sql.gen.c: $(srcdir)/src/%.sql make-sql
+%.sql.gen.c: src/%.sql make-sql
 	./make-sql <$< >$@.temp
 	mv $@.temp $@
 
@@ -142,7 +142,7 @@ BUILT_SOURCES+=indexes.sql.gen.c
 
 make_sql_SOURCES = src/make-sql.c
 
-%.sql.stmt.c: $(srcdir)/src/%.sql.stmt statements2source
+%.sql.stmt.c: src/%.sql.stmt statements2source
 	onlydefine=1 ./statements2source derp <$< >$@.temp
 	mv $@.temp $@
 
