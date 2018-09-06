@@ -2,16 +2,25 @@
 
 git submodule update --init
 set -e
-cd libxml2
+
+prefix=$(realpath $(dirname $0))/deps/
+
+
 function doit() {
 		mkdir -p build
 		cd build
-		../configure --prefix=$prefix
+		../configure --prefix=$prefix "$@"
 		make -j12 -l12
-		make install
+		make -i install
 }
+pushd libxml2
+doit --disable-python
+popd
+pushd libxmlfixes
 doit
-cd ..
+popd
+pushd htmlish
 doit
-cd ..
+popd
+cd ../..
 doit
