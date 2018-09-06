@@ -39,8 +39,7 @@ generate_SOURCES += o/category.gen.c $(DDATE_C)
 
 generate_SOURCES += cystuff/src/itoa.c
 
-generate_CFLAGS = \
-	$(libstorydb_la_CFLAGS) \
+generate_CFLAGS = $(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la
@@ -124,8 +123,8 @@ describe_SOURCES = \
 	src/db.c \
 	src/note.c
 
-describe_CFLAGS = 
-describe_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
+describe_CFLAGS = $(libstorydb_la_CFLAGS)
+describe_LDADD = libstorydb.la
 describe_LDFLAGS = $(STORYDB_ldflags) -lreadline
 
 BUILT_SOURCES+=db_oid/gen.h

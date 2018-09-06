@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
 {
 
 	note_init();
-	libxmlfixes_setup();
+	//libxmlfixes_setup();
 	struct stat info;
 	// make sure we're outside the code directory
 	while(0 != stat("code",&info)) ensure0(chdir(".."));

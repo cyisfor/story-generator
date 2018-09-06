@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	}
 	repo_check(repo_discover_init(LITLEN(".git")));
 
-	libxmlfixes_setup();
+	//libxmlfixes_setup();
 	xmlDoc* out = htmlParseFile("template/news-log.html","UTF-8");
 	if(out == NULL) {
 		printf("Couldn't parse html?");
