@@ -12,7 +12,11 @@ libstorydb_la_SOURCES = \
 
 STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS) -L$(prefix)/lib -lhtmlish -lxmlfixes -lxml2
 
-libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) -I $(includedir)/
+libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) \
+	-I $(includedir)/libxml2 \
+	-I $(includedir)/libhtmlish \
+	-I $(includedir)/libxmlfixes
+
 
 ready_SOURCES = \
 	src/ready.c \
@@ -35,11 +39,11 @@ generate_SOURCES += o/category.gen.c $(DDATE_C)
 
 generate_SOURCES += cystuff/src/itoa.c
 
-generate_CFLAGS = -I $(includedir)/libhtmlish/
+generate_CFLAGS = \
 	$(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
-generate_LDADD = libstorydb.la $(STORYDB_libs)
+generate_LDADD = libstorydb.la
 generate_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
 
 BUILT_SOURCES = o/category.gen.c
@@ -55,10 +59,9 @@ news_log_SOURCES = \
 	cystuff/src/become.c
 
 news_log_CFLAGS = -I$(srcdir)/cystuff/src \
-	$(XMLINC) -I $(includedir)/libhtmlish/ \
 	$(libstorydb_la_CFLAGS)
 
-news_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
+news_log_LDADD = libstorydb.la
 news_log_LDFLAGS = $(STORYDB_ldflags)
 
 make_log_SOURCES = \
@@ -68,9 +71,9 @@ make_log_SOURCES = \
 	cystuff/src/become.c
 
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
-	-I $(includedir)/libhtmlish/
 	$(libstorydb_la_CFLAGS)
-make_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
+
+make_log_LDADD = libstorydb.la -L $(prefix)/lib -lhtmlish -lxmlfixes -lxml2
 make_log_LDFLAGS = $(STORYDB_ldflags)
 
 BUILT_SOURCES += \
