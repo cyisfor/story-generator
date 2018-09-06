@@ -48,7 +48,7 @@ void storydb_for_stories(
 								 size_t numchaps,
 								 git_time_t updated),
 	bool forward,
-	git_time_t before);
+	git_time_t after);
 
 void storydb_for_undescribed(
 	void* udata,

@@ -287,7 +287,7 @@ void for_story(
 		udata,
 		for_chapter,
 		story,
-		g->timestamp,
+		g->after,
 		numchaps,
 		storydb_all_ready);
 
@@ -508,14 +508,14 @@ int main(int argc, char *argv[])
 	g.scategory = get_category();
 	identifier category = db_get_category(g.scategory, &g.timestamp);
 	if(getenv("recheck")) {
-		g.timestamp = 0;
+		g.after = 0;
 	} else if(getenv("before")) {
 		long res = strtol(getenv("before"),NULL,0);
 		if(res) {
-			g.timestamp = res;
+			g.after = res;
 		}
 	} else if(results.after) {
-		g.timestamp = after;
+		g.after = after;
 	}
 
 //	g.timestamp -= 100;
@@ -532,8 +532,8 @@ int main(int argc, char *argv[])
 	}
 
 	db_retransaction();
-	output_time("stories after",g.timestamp);
-	storydb_for_stories(&g, for_story, true, g.timestamp);
+	output_time("stories after",g.after);
+	storydb_for_stories(&g, for_story, true, g.after);
 	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();

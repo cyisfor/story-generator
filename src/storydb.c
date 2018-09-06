@@ -99,12 +99,15 @@ void storydb_saw_chapter(bool deleted, identifier story,
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
 	sqlite3_bind_int64(find,1,story);
 	sqlite3_bind_int64(find,2,chapter);
+	assert(updated > 0);
 	TRANSACTION;
 	RESETTING(find) int res = sqlite3_step(find);
 	switch(res) {
 	case SQLITE_ROW:
 		// update if new updated is higher
 		if(sqlite3_column_int64(find,0) < updated) {
+			git_time_t derpdated = updated;
+			if(!derpdated) derpdated = time(NULL);
 			sqlite3_bind_int64(update,1,updated);
 			sqlite3_bind_int64(update,2,story);
 			sqlite3_bind_int64(update,3,chapter);
@@ -276,7 +279,7 @@ void storydb_for_stories(
 								 size_t numchaps,
 								 git_time_t updated),
 	bool forward,
-	git_time_t before) {
+	git_time_t after) {
 	if(only_story.ye) {
 		DECLARE_STMT(find, FOR_ONLY_STORY);
 
@@ -309,7 +312,7 @@ void storydb_for_stories(
 		find = findrev;
 
 	sqlite3_bind_int(find,1,storydb_all_ready);
-	sqlite3_bind_int64(find,2,before);
+	sqlite3_bind_int64(find,2,after);
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
@@ -373,14 +376,14 @@ void storydb_for_chapters(
 		identifier chapter,
 		git_time_t timestamp),
 	identifier story,
-	git_time_t before,
+	git_time_t after,
 	int numchaps,
 	bool all_ready) {
 	DECLARE_STMT(find,FOR_CHAPTERS);
 
 RESTART:
 	sqlite3_bind_int64(find,1,story);
-	sqlite3_bind_int64(find,2,before);
+	sqlite3_bind_int64(find,2,after);
 	sqlite3_bind_int(find,3,all_ready ? 1 : 0);
 	sqlite3_bind_int(find,4,numchaps);
 	for(;;) {
