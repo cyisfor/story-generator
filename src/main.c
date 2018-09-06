@@ -86,6 +86,7 @@ struct csucks {
 	identifier story;
 	bool fixing_srctimes;
 	string location;
+	git_time_t after;
 };
 
 #define GDERP struct csucks* g = (struct csucks*)udata

@@ -13,17 +13,12 @@ noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
 HISH_cflags=$(XMLINC) -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src
 
-HISH_libs = \
-	$(srcdir)/libxml2/build/libxml2.la \
-	$(srcdir)/htmlish/libhtmlish.la \
-	$(srcdir)/htmlish/html_when/libhtmlwhen.la
-
 libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
 STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS)
-STORYDB_libs = $(HISH_libs)
+STORYDB_libs = $(srcdir)/htmlish/lib/libhtmlish.la
 
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
 
@@ -72,7 +67,7 @@ news_log_CFLAGS = -I$(srcdir)/cystuff/src \
 	$(XMLINC) $(HISHINC) \
 	$(libstorydb_la_CFLAGS)
 
-news_log_LDADD = libstorydb.la $(HISH_libs)
+news_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 news_log_LDFLAGS = $(STORYDB_ldflags)
 
 make_log_SOURCES = \
@@ -84,7 +79,7 @@ make_log_SOURCES = \
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
 	$(HISHINC) \
 	$(libstorydb_la_CFLAGS)
-make_log_LDADD = libstorydb.la $(STORYDB_libs)
+make_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 make_log_LDFLAGS = $(STORYDB_ldflags)
 
 BUILT_SOURCES += \
@@ -109,7 +104,7 @@ make_contents_SOURCES = \
 	src/make-contents.c \
 	src/note.c \
 	cystuff/src/itoa.c
-make_contents_LDADD = libstorydb.la $(STORYDB_libs)
+make_contents_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 make_contents_LDFLAGS = $(STORYDB_ldflags) 
 
 
@@ -124,7 +119,7 @@ statements2source_SOURCES = \
 	cystuff/src/itoa.c \
 	cystuff/src/mmapfile.c
 statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
-statements2source_LDADD = $(STORYDB_libs)
+statements2source_LDADD = $(srcdir)/htmlish/lib/libhtmlish.la
 statements2source_LDFLAGS = $(STORYDB_ldflags)
 
 BUILT_SOURCES += o/template/statements2source.c.c
@@ -136,7 +131,7 @@ describe_SOURCES = \
 	src/note.c
 
 describe_CFLAGS = $(HISH_cflags)
-describe_LDADD = libstorydb.la $(STORYDB_libs) 
+describe_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 describe_LDFLAGS = $(STORYDB_ldflags) -lreadline
 
 define make_sublib
@@ -144,7 +139,7 @@ $(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile
 	$(MAKE) -C $(srcdir)/$(name)/build
 
 $(srcdir)/$(name)/build/Makefile: $(srcdir)/$(name)/configure | $(srcdir)/$(name)/build
-	(cd $(srcdir)/$(name)/build; . ../$(srcdir)/$(name)/configure)
+	(cd $(srcdir)/$(name)/build; . ../$(srcdir)/$(name)/configure --prefix=$$(realpath ..))
 
 $(srcdir)/$(name)/build: | $(srcdir)/$(name)
 	mkdir $$@

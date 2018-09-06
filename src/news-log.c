@@ -1,7 +1,7 @@
 #define _GNU_SOURCE // memmem
 #include "repo.h"
 #include "mystring.h"
-
+#include "htmlish.h"
 #include "become.h"
 
 #include <libxmlfixes.h> // html_dump_to_fd

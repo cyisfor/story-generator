@@ -400,8 +400,8 @@ RESTART:
 					 no chapter should be added with an OLDER updated
 					 than the current one!
 				*/
-				before = sqlite3_column_int64(find,1);
-				sqlite3_bind_int64(find,2,before);
+				after = sqlite3_column_int64(find,1);
+				sqlite3_bind_int64(find,2,after);
 				sqlite3_reset(find);
 				need_restart_for_chapters = false;
 			}
