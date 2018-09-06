@@ -4,7 +4,7 @@ DDATE_C=$(srcdir)/ddate/ddate.c
 
 bin_PROGRAMS = generate news-log make-log describe make-contents ready
 lib_LTLIBRARIES = libstorydb.la
-noinst_PROGRAMS = statements2source db_oid/make o/make-sql
+noinst_PROGRAMS = statements2source db_oid/make make-sql
 
 libstorydb_la_SOURCES = \
 	src/db.c \
@@ -137,16 +137,15 @@ db_oid_make_SOURCES = src/db_oid/make.c
 	./make-sql <$< >$@.temp
 	mv $@.temp $@
 
-
 BUILT_SOURCES+=schema.sql.gen.c
 BUILT_SOURCES+=indexes.sql.gen.c
 
-o_make_sql_SOURCES = src/make-sql.c
+make_sql_SOURCES = src/make-sql.c
 
-%.sql.c: $(srcdir)/src/%.sql o statements2source
+%.sql.stmt.c: $(srcdir)/src/%.sql statements2source
 	onlydefine=1 ./statements2source derp <$< >$@.temp
 	mv $@.temp $@
 
-BUILT_SOURCES+=db.sql.c
+BUILT_SOURCES+=db.sql.stmt.c
 
 SUBDIRS = htmlish
