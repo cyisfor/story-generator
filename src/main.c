@@ -403,7 +403,9 @@ enum gfc_action on_commit(
 	INFO("commit %d %d",timestamp, ++g->counter);
 	output_time("time",timestamp);
 	g->chapspercom = 0;
-	
+	if(g->timestamp == 0) {
+		g->timestamp = timestamp;
+	}
 	enum gfc_action ret = git_for_chapters_changed(g,on_chapter,last,cur);
 	
 	return ret;
@@ -445,10 +447,12 @@ int main(int argc, char *argv[])
 		const git_oid* oid = git_commit_id(thing2);
 		INFO("going back after commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
 		after = git_author_time(thing2);
+		after -= 100;
 		git_object_free(thing1);
 	} else {
 		db_last_seen_commit(&results,&after,before);
 		if(results.after) {
+			after -= 100;
 			output_time("going back after",after);
 		}
 
@@ -508,6 +512,7 @@ int main(int argc, char *argv[])
 	}
 	g.scategory = get_category();
 	identifier category = db_get_category(g.scategory, &g.timestamp);
+	assert(g.timestamp != 0);
 	if(getenv("recheck")) {
 		g.after = 0;
 	} else if(getenv("before")) {

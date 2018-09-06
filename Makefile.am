@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
+AM_LIBTOOLFLAGS = --quiet --no-warnings
+
 DDATE_C=$(srcdir)/ddate/ddate.c
 
 bin_PROGRAMS = generate news-log make-log describe make-contents ready
