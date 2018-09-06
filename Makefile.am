@@ -142,7 +142,7 @@ BUILT_SOURCES+=indexes.sql.gen.c
 
 make_sql_SOURCES = src/make-sql.c
 
-%.sql.stmt.c: $(srcdir)/src/%.sql statements2source
+%.sql.stmt.c: $(srcdir)/src/%.sql.stmt statements2source
 	onlydefine=1 ./statements2source derp <$< >$@.temp
 	mv $@.temp $@
 
