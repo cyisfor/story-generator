@@ -10,44 +10,43 @@ libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
-STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS) -L$(prefix)/lib -lhtmlish -lxmlfixes -lxml2
+libstorydb_la_LDFLAGS = $(SQLITE_LIBS) $(GIT_LIBS)
 
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) \
-	-I $(includedir)/libxml2 \
-	-I $(includedir)/libhtmlish \
-	-I $(includedir)/libxmlfixes
-
+	-I $(srcdir)/htmlish/src \
+	-I $(srcdir)/libxml2/include \
+	-I $(srcdir)/libxmlfixes/src \
+	-I htmlish/libxmlfixes \
+	-I htmlish/libxmlfixes/libxml2/include/libxml
 
 ready_SOURCES = \
 	src/ready.c \
 	src/note.c \
 	cystuff/src/itoa.c
 
-ready_LDADD = libstorydb.la $(STORYDB_ldflags)
+ready_LDADD = libstorydb.la
 
 ready_CFLAGS = $(libstorydb_la_CFLAGS)
-ready_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
+ready_LDFLAGS = $(AM_LDFLAGS) $(libstorydb_la_LDFLAGS)
 
 generate_SOURCES = \
 	src/main.c \
 	src/storygit.c \
 	src/repo.c \
 	src/create.c \
-	src/note.c
-
-generate_SOURCES += o/category.gen.c $(DDATE_C)
-
-generate_SOURCES += cystuff/src/itoa.c
+	src/note.c \
+  category.gen.c \
+	cystuff/src/itoa.c
 
 generate_CFLAGS = $(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la
-generate_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
+generate_LDFLAGS = $(AM_LDFLAGS) $(libstorydb_la_LDFLAGS)
 
-BUILT_SOURCES = o/category.gen.c
+BUILT_SOURCES = category.gen.c
 
-o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
+category.gen.c category.gen.h: src/categories.list ./str_to_enum_trie/main
 	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../$(srcdir)/str_to_enum_trie/main) <$<
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
@@ -61,7 +60,7 @@ news_log_CFLAGS = -I$(srcdir)/cystuff/src \
 	$(libstorydb_la_CFLAGS)
 
 news_log_LDADD = libstorydb.la
-news_log_LDFLAGS = $(STORYDB_ldflags)
+news_log_LDFLAGS =  $(libstorydb_la_LDFLAGS)
 
 make_log_SOURCES = \
 	src/make-log.c \
@@ -72,21 +71,21 @@ make_log_SOURCES = \
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
 	$(libstorydb_la_CFLAGS)
 
-make_log_LDADD = libstorydb.la -L $(prefix)/lib -lhtmlish -lxmlfixes -lxml2
-make_log_LDFLAGS = $(STORYDB_ldflags)
+make_log_LDADD = libstorydb.la
+make_log_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES += \
 	o/template/make-log.html.c \
 	o/template/make-log.row.html.c
 
-o/template/%.c: $(srcdir)/template/% $(srcdir)/ctemplate/generate | o/template
-	$(srcdir)/ctemplate/generate < $< > $@.temp
+template/%.c: $(srcdir)/template/% ctemplate/generate | template
+	./ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
 
-o/template:
+template:
 	mkdir $@
 
-$(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
+ctemplate/generate: | ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
 
 make_contents_CFLAGS = \
@@ -98,7 +97,7 @@ make_contents_SOURCES = \
 	src/note.c \
 	cystuff/src/itoa.c
 make_contents_LDADD = libstorydb.la 
-make_contents_LDFLAGS = $(STORYDB_ldflags) 
+make_contents_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 
 BUILT_SOURCES += o/template/page.html.c \
@@ -113,7 +112,7 @@ statements2source_SOURCES = \
 	cystuff/src/mmapfile.c
 statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
 statements2source_LDADD = $(srcdir)/htmlish/lib/libhtmlish.la
-statements2source_LDFLAGS = $(STORYDB_ldflags)
+statements2source_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES += o/template/statements2source.c.c
 
@@ -125,7 +124,7 @@ describe_SOURCES = \
 
 describe_CFLAGS = $(libstorydb_la_CFLAGS)
 describe_LDADD = libstorydb.la
-describe_LDFLAGS = $(STORYDB_ldflags) -lreadline
+describe_LDFLAGS = $(libstorydb_la_LDFLAGS) -lreadline
 
 BUILT_SOURCES+=db_oid/gen.h
 
@@ -134,18 +133,20 @@ db_oid/gen.h: db_oid/make
 
 db_oid_make_SOURCES = src/db_oid/make.c
 
-BUILT_SOURCES+=o/schema.sql.gen.c
-BUILT_SOURCES+=o/indexes.sql.gen.c
-
-o/%.sql.gen.c: $(srcdir)/src/%.sql o/make-sql
-	o/make-sql <$< >$@.temp
+%.sql.gen.c: $(srcdir)/src/%.sql make-sql
+	./make-sql <$< >$@.temp
 	mv $@.temp $@
+
+
+BUILT_SOURCES+=schema.sql.gen.c
+BUILT_SOURCES+=indexes.sql.gen.c
 
 o_make_sql_SOURCES = src/make-sql.c
 
-
-o/%.sql.c: $(srcdir)/src/%.sql o statements2source
+%.sql.c: $(srcdir)/src/%.sql o statements2source
 	onlydefine=1 ./statements2source derp <$< >$@.temp
 	mv $@.temp $@
 
-BUILT_SOURCES+=o/db.sql.c
+BUILT_SOURCES+=db.sql.c
+
+SUBDIRS = htmlish
