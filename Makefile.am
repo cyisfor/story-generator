@@ -30,12 +30,13 @@ ready_CFLAGS = $(libstorydb_la_CFLAGS)
 ready_LDFLAGS = $(AM_LDFLAGS) $(libstorydb_la_LDFLAGS)
 
 generate_SOURCES = \
+  category.gen.c \
+	ddate/ddate.c \
 	src/main.c \
 	src/storygit.c \
 	src/repo.c \
 	src/create.c \
 	src/note.c \
-  category.gen.c \
 	cystuff/src/itoa.c
 
 generate_CFLAGS = $(libstorydb_la_CFLAGS) \
@@ -44,12 +45,12 @@ generate_CFLAGS = $(libstorydb_la_CFLAGS) \
 generate_LDADD = libstorydb.la
 generate_LDFLAGS = $(AM_LDFLAGS) $(libstorydb_la_LDFLAGS)
 
-BUILT_SOURCES = category.gen.c
+BUILT_SOURCES = category.gen.c category.gen.h
 
-category.gen.c category.gen.h: src/categories.list ./str_to_enum_trie/main
-	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../$(srcdir)/str_to_enum_trie/main) <$<
-./str_to_enum_trie/main: str_to_enum_trie/src/main.c
-	$(MAKE) -C str_to_enum_trie main
+category.gen.c category.gen.h: src/categories.list $(srcdir)/str_to_enum_trie/main
+	noupper=1 prefix=category enum=CATEGORY exec $(srcdir)/str_to_enum_trie/main <$<
+$(srcdir)/str_to_enum_trie/main: str_to_enum_trie/src/main.c
+	$(MAKE) -C $(srcdir)/str_to_enum_trie main
 
 news_log_SOURCES = \
 	src/news-log.c \
