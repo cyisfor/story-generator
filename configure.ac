@@ -41,7 +41,7 @@ AC_FUNC_MMAP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([dup2 memchr memset mkdir munmap pow setenv setlocale strcasecmp strchr strdup strrchr strstr strtol])
 
-(cd ..; . ./setup.sh)
+#(cd ..; . ./setup.sh)
 
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES(SQLITE, sqlite3)
