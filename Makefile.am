@@ -1,36 +1,27 @@
-BUILT_SOURCES =
-
 ACLOCAL_AMFLAGS = -I m4
 
-XMLFIXES_C=$(srcdir)/libxmlfixes/src/libxmlfixes.c
 DDATE_C=$(srcdir)/ddate/ddate.c
-
-XMLINC=-I$(srcdir)/libxml2/include -I$(srcdir)/libxml2/build/include
 
 bin_PROGRAMS = generate news-log make-log describe make-contents ready
 lib_LTLIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make o/make-sql
 
-HISH_cflags=$(XMLINC) -I $(srcdir)/htmlish/html_when/src -I $(srcdir)/htmlish/src -I $(srcdir)/libxmlfixes/src
-
 libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
-STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS)
-STORYDB_libs = $(srcdir)/htmlish/lib/libhtmlish.la
+STORYDB_ldflags = $(SQLITE_LIBS) $(GIT_LIBS) -L$(prefix)/lib -lhtmlish -lxmlfixes -lxml2
 
-libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) $(HISH_cflags) 
+libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) -I $(includedir)/
 
 ready_SOURCES = \
 	src/ready.c \
 	src/note.c \
 	cystuff/src/itoa.c
 
-ready_LDADD = libstorydb.la $(STORYDB_libs)
+ready_LDADD = libstorydb.la $(STORYDB_ldflags)
 
-ready_CFLAGS = $(HISH_cflags) \
-	$(libstorydb_la_CFLAGS)
+ready_CFLAGS = $(libstorydb_la_CFLAGS)
 ready_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
 
 generate_SOURCES = \
@@ -40,31 +31,31 @@ generate_SOURCES = \
 	src/create.c \
 	src/note.c
 
-generate_SOURCES += o/category.gen.c $(XMLFIXES_C) $(DDATE_C)
+generate_SOURCES += o/category.gen.c $(DDATE_C)
 
 generate_SOURCES += cystuff/src/itoa.c
 
-generate_CFLAGS = $(HISH_cflags) \
+generate_CFLAGS = -I $(includedir)/libhtmlish/
 	$(libstorydb_la_CFLAGS) \
 	-I $(srcdir)/ddate
 
 generate_LDADD = libstorydb.la $(STORYDB_libs)
 generate_LDFLAGS = $(AM_LDFLAGS) $(STORYDB_ldflags)
 
-BUILT_SOURCES += o/category.gen.c
+BUILT_SOURCES = o/category.gen.c
 
 o/category.gen.c o/category.gen.h: src/categories.list ./str_to_enum_trie/main
 	(cd o && noupper=1 prefix=category enum=CATEGORY exec ../$(srcdir)/str_to_enum_trie/main) <$<
 ./str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C str_to_enum_trie main
 
-news_log_SOURCES = $(XMLFIXES_C) \
+news_log_SOURCES = \
 	src/news-log.c \
 	src/repo.c \
 	cystuff/src/become.c
 
 news_log_CFLAGS = -I$(srcdir)/cystuff/src \
-	$(XMLINC) $(HISHINC) \
+	$(XMLINC) -I $(includedir)/libhtmlish/ \
 	$(libstorydb_la_CFLAGS)
 
 news_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
@@ -77,7 +68,7 @@ make_log_SOURCES = \
 	cystuff/src/become.c
 
 make_log_CFLAGS = $(XMLINC) -I$(srcdir)/cystuff/src \
-	$(HISHINC) \
+	-I $(includedir)/libhtmlish/
 	$(libstorydb_la_CFLAGS)
 make_log_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 make_log_LDFLAGS = $(STORYDB_ldflags)
@@ -97,14 +88,14 @@ $(srcdir)/ctemplate/generate: | $(srcdir)/ctemplate/src/generate.c
 	$(make) -C $(dir $@) generate
 
 make_contents_CFLAGS = \
-	$(XMLINC) -I$(srcdir)/cystuff/src $(HISHINC) \
+	$(XMLINC) -I$(srcdir)/cystuff/src -I $(includedir)/libhtmlish/ \
 	$(libstorydb_la_CFLAGS)
 
 make_contents_SOURCES = \
 	src/make-contents.c \
 	src/note.c \
 	cystuff/src/itoa.c
-make_contents_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
+make_contents_LDADD = libstorydb.la 
 make_contents_LDFLAGS = $(STORYDB_ldflags) 
 
 
@@ -130,27 +121,9 @@ describe_SOURCES = \
 	src/db.c \
 	src/note.c
 
-describe_CFLAGS = $(HISH_cflags)
+describe_CFLAGS = 
 describe_LDADD = libstorydb.la $(srcdir)/htmlish/lib/libhtmlish.la
 describe_LDFLAGS = $(STORYDB_ldflags) -lreadline
-
-define make_sublib
-$(srcdir)/$(name)/build/$(target): | $(srcdir)/$(name)/build/Makefile 
-	$(MAKE) -C $(srcdir)/$(name)/build
-
-$(srcdir)/$(name)/build/Makefile: $(srcdir)/$(name)/configure | $(srcdir)/$(name)/build
-	(cd $(srcdir)/$(name)/build; . ../$(srcdir)/$(name)/configure --prefix=$$(realpath ..))
-
-$(srcdir)/$(name)/build: | $(srcdir)/$(name)
-	mkdir $$@
-
-$(srcdir)/$(name)/configure: | $(srcdir)/$(name)/configure.ac
-	(cd $(srcdir)/$(name); . ./autogen.sh)
-endef
-
-name=libxml2
-target=libxml2.la
-$(eval $(make_sublib))
 
 BUILT_SOURCES+=db_oid/gen.h
 
