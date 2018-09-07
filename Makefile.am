@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
+.SILENT:
 
 AM_LIBTOOLFLAGS = --quiet --no-warnings
 
