@@ -114,7 +114,7 @@ statements2source_SOURCES = \
 	cystuff/src/itoa.c \
 	cystuff/src/mmapfile.c
 statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
-statements2source_LDADD = $(srcdir)/htmlish/lib/libhtmlish.la
+statements2source_LDADD = htmlish/libhtmlish.la
 statements2source_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES += o/template/statements2source.c.c
