@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
-.SILENT:
+#.SILENT:
 
-AM_LIBTOOLFLAGS = --quiet --no-warnings
+#AM_LIBTOOLFLAGS = --quiet --no-warnings
 
 DDATE_C=$(srcdir)/ddate/ddate.c
 

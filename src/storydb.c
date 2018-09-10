@@ -36,7 +36,7 @@ void storydb_open() {
 
 identifier storydb_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	sqlite3_bind_text(find,1,location.s,location.l,NULL);
+	db_check(sqlite3_bind_text(find,1,location.s,location.l,NULL));
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		return sqlite3_column_int64(find,0);
@@ -48,10 +48,10 @@ bool storydb_set_censored(identifier story, bool censored) {
 	DECLARE_STMT(insert,"INSERT OR IGNORE INTO censored_stories (story) VALUES (?)");
 	DECLARE_STMT(delete,"DELETE FROM censored_stories WHERE story = ?");
 	if(censored) {
-		sqlite3_bind_int64(insert,1,story);
+		db_check(sqlite3_bind_int64(insert,1,story));
 		db_once(insert);
 	} else {
-		sqlite3_bind_int64(delete,1,story);
+		db_check(sqlite3_bind_int64(delete,1,story));
 		db_once(delete);
 	}
 	return sqlite3_changes(db) > 0; // operation did something, or not.
@@ -61,15 +61,15 @@ identifier storydb_get_story(const string location, git_time_t created) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
 
-	sqlite3_bind_text(find,1,location.s,location.l,NULL);
+	db_check(sqlite3_bind_text(find,1,location.s,location.l,NULL));
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		identifier id = sqlite3_column_int64(find,0);
 		return id;
 	} else {
-		sqlite3_bind_text(insert,1,location.s, location.l, NULL);
-		sqlite3_bind_int64(insert,2,created);
+		db_check(sqlite3_bind_text(insert,1,location.s, location.l, NULL));
+		db_check(sqlite3_bind_int64(insert,2,created));
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
 		INFO("creating story %.*s: %lu",location.l,location.s,story);
@@ -85,8 +85,8 @@ void storydb_saw_chapter(bool deleted, identifier story,
 	if(deleted) {
 		INFO("BALEETED %d:%d %d",story,chapter,updated);
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
-		sqlite3_bind_int64(delete,1,story);
-		sqlite3_bind_int64(delete,2,chapter);
+		db_check(sqlite3_bind_int64(delete,1,story));
+		db_check(sqlite3_bind_int64(delete,2,chapter));
 		db_once_trans(delete);
 		return;
 	}
@@ -97,8 +97,8 @@ void storydb_saw_chapter(bool deleted, identifier story,
 							 "WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update_story,SAW_CHAPTER_UPDATE_STORY);
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
-	sqlite3_bind_int64(find,1,story);
-	sqlite3_bind_int64(find,2,chapter);
+	db_check(sqlite3_bind_int64(find,1,story));
+	db_check(sqlite3_bind_int64(find,2,chapter));
 	assert(updated > 0);
 	TRANSACTION;
 	RESETTING(find) int res = sqlite3_step(find);
@@ -108,9 +108,9 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		if(sqlite3_column_int64(find,0) < updated) {
 			git_time_t derpdated = updated;
 			if(!derpdated) derpdated = time(NULL);
-			sqlite3_bind_int64(update,1,updated);
-			sqlite3_bind_int64(update,2,story);
-			sqlite3_bind_int64(update,3,chapter);
+			db_check(sqlite3_bind_int64(update,1,updated));
+			db_check(sqlite3_bind_int64(update,2,story));
+			db_check(sqlite3_bind_int64(update,3,chapter));
 			db_once(update);
 			assert(sqlite3_changes(db) > 0);
 			// any for_chapters iterator has to be restarted now.
@@ -119,18 +119,18 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		INFO("chapter found %lu:%lu",story,chapter);
 		break;
 	case SQLITE_DONE:
-		sqlite3_bind_int64(insert,1,updated);
-		sqlite3_bind_int64(insert,2,story);
-		sqlite3_bind_int64(insert,3,chapter);
+		db_check(sqlite3_bind_int64(insert,1,updated));
+		db_check(sqlite3_bind_int64(insert,2,story));
+		db_check(sqlite3_bind_int64(insert,3,chapter));
 		db_once(insert);
 		INFO("creating chapter %lu:%lu",story,chapter);
 		break;
 	};
 
-	sqlite3_bind_int64(update_story, 1, updated);
-	sqlite3_bind_int64(update_story, 2, story);
-	sqlite3_bind_int64(update_story, 3, storydb_all_ready ? 1 : 0);
-	sqlite3_bind_int64(update_story, 4, chapter);
+	db_check(sqlite3_bind_int64(update_story, 1, updated));
+	db_check(sqlite3_bind_int64(update_story, 2, story));
+	db_check(sqlite3_bind_int64(update_story, 3, storydb_all_ready ? 1 : 0));
+	db_check(sqlite3_bind_int64(update_story, 4, chapter));
 	db_once(update_story);
 }
 
@@ -188,14 +188,14 @@ struct storycache* storydb_start_cache(void) {
 
 // return true if it's in the cache, add it if not in the cache->
 bool storydb_in_cache(struct storycache* cache, identifier story, size_t chapter) {
-	sqlite3_bind_int64(cache->find, 1, story);
-	sqlite3_bind_int64(cache->find, 2, chapter);
+	db_check(sqlite3_bind_int64(cache->find, 1, story));
+	db_check(sqlite3_bind_int64(cache->find, 2, chapter));
 	TRANSACTION;
 	int res = db_check(sqlite3_step(cache->find));
 	sqlite3_reset(cache->find);
 	if(res == SQLITE_ROW) return true;
-	sqlite3_bind_int64(cache->insert, 1, story);
-	sqlite3_bind_int64(cache->insert, 2, chapter);
+	db_check(sqlite3_bind_int64(cache->insert, 1, story));
+	db_check(sqlite3_bind_int64(cache->insert, 2, chapter));
 	db_check(sqlite3_step(cache->insert));
 	sqlite3_reset(cache->insert);
 	return false;
@@ -224,9 +224,9 @@ void storydb_for_recent_chapters(
 
 	DECLARE_STMT(find,RECENT_CHAPTERS);
 	RESETTING(find) int res;
-	sqlite3_bind_int(find,1,storydb_only_censored ? 1 : 0);
-	sqlite3_bind_int(find,2,storydb_all_ready ? 1 : 0);
-	sqlite3_bind_int(find,3,limit);
+	db_check(sqlite3_bind_int(find,1,storydb_only_censored ? 1 : 0));
+	db_check(sqlite3_bind_int(find,2,storydb_all_ready ? 1 : 0));
+	db_check(sqlite3_bind_int(find,3,limit));
 
 
 	for(;;) {
@@ -283,8 +283,8 @@ void storydb_for_stories(
 	if(only_story.ye) {
 		DECLARE_STMT(find, FOR_ONLY_STORY);
 
-		sqlite3_bind_int64(find,1,only_story.i);
-		sqlite3_bind_int(find,2,storydb_only_censored ? 1 : 0);
+		db_check(sqlite3_bind_int64(find,1,only_story.i));
+		db_check(sqlite3_bind_int(find,2,storydb_only_censored ? 1 : 0));
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		ensure_eq(res,SQLITE_ROW);
 		const string location = {
@@ -311,8 +311,8 @@ void storydb_for_stories(
 	else
 		find = findrev;
 
-	sqlite3_bind_int(find,1,storydb_all_ready);
-	sqlite3_bind_int64(find,2,after);
+	db_check(sqlite3_bind_int(find,1,storydb_all_ready));
+	db_check(sqlite3_bind_int64(find,2,after));
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
@@ -382,10 +382,10 @@ void storydb_for_chapters(
 	DECLARE_STMT(find,FOR_CHAPTERS);
 
 RESTART:
-	sqlite3_bind_int64(find,1,story);
-	sqlite3_bind_int64(find,2,after);
-	sqlite3_bind_int(find,3,all_ready ? 1 : 0);
-	sqlite3_bind_int(find,4,numchaps);
+	db_check(sqlite3_bind_int64(find,1,story));
+	db_check(sqlite3_bind_int64(find,2,after));
+	db_check(sqlite3_bind_int(find,3,all_ready ? 1 : 0));
+	db_check(sqlite3_bind_int(find,4,numchaps));
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {
@@ -401,7 +401,7 @@ RESTART:
 					 than the current one!
 				*/
 				after = sqlite3_column_int64(find,1);
-				sqlite3_bind_int64(find,2,after);
+				db_check(sqlite3_bind_int64(find,2,after));
 				sqlite3_reset(find);
 				need_restart_for_chapters = false;
 			}
@@ -423,8 +423,8 @@ void storydb_with_chapter_title(
 	identifier story,
 	identifier chapter) {
 	DECLARE_STMT(find,"SELECT title FROM chapters WHERE story = ? AND chapter = ?");
-	sqlite3_bind_int64(find,1,story);
-	sqlite3_bind_int64(find,2,chapter);
+	db_check(sqlite3_bind_int64(find,1,story));
+	db_check(sqlite3_bind_int64(find,2,chapter));
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		const string title = {
@@ -454,7 +454,7 @@ void storydb_with_info(
 		"title IS NOT NULL OR "
 		"description IS NOT NULL OR "
 		"source IS NOT NULL)");
-	sqlite3_bind_int64(find,1,story);
+	db_check(sqlite3_bind_int64(find,1,story));
 	string title = {};
 	string description = {};
 	string source = {};
@@ -478,7 +478,7 @@ void storydb_with_info(
 
 identifier storydb_count_chapters(identifier story) {
 	DECLARE_STMT(find,"SELECT COUNT(chapter) FROM chapters WHERE story = ?");
-	sqlite3_bind_int64(find,1,story);
+	db_check(sqlite3_bind_int64(find,1,story));
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		identifier count = sqlite3_column_int64(find,0);
@@ -494,10 +494,10 @@ void storydb_set_chapter_title(const string title,
 													identifier story, identifier chapter,
 													bool* title_changed) {
 	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND (title IS NULL OR title != ?)");
-	sqlite3_bind_text(update,1,title.s,title.l,NULL);
-	sqlite3_bind_int64(update,2,story);
-	sqlite3_bind_int64(update,3,chapter);
-	sqlite3_bind_text(update,4,title.s,title.l,NULL);
+	db_check(sqlite3_bind_text(update,1,title.s,title.l,NULL));
+	db_check(sqlite3_bind_int64(update,2,story));
+	db_check(sqlite3_bind_int64(update,3,chapter));
+	db_check(sqlite3_bind_text(update,4,title.s,title.l,NULL));
 	BEGIN_TRANSACTION;
 	db_once(update);
 	if(!*title_changed) {
@@ -517,23 +517,23 @@ void storydb_set_info(identifier story,
 							 "WHERE id = ?");
 	void one(int col, const string thing) {
 		if(thing.l == 0 || thing.s == NULL) {
-			sqlite3_bind_null(update,col);
+			db_check(sqlite3_bind_null(update,col));
 		} else {
-			sqlite3_bind_text(update,col,thing.s,thing.l,NULL);
+			db_check(sqlite3_bind_text(update,col,thing.s,thing.l,NULL));
 		}
 	}
 	one(1,title);
 	one(2,description);
 	one(3,source);
-	sqlite3_bind_int64(update,4,story);
+	db_check(sqlite3_bind_int64(update,4,story));
 	db_once_trans(update);
 }
 
 void storydb_set_chapters(identifier story, size_t numchaps) {
 	DECLARE_STMT(update,"UPDATE stories SET chapters = ? "
 							 "WHERE id = ?");
-	sqlite3_bind_int64(update,1,numchaps);
-	sqlite3_bind_int64(update,2,story);
+	db_check(sqlite3_bind_int64(update,1,numchaps));
+	db_check(sqlite3_bind_int64(update,2,story));
 	db_once_trans(update);
 }
 

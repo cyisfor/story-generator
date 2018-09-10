@@ -91,7 +91,7 @@ sqlite3_stmt* db_preparen(const char* s, int l) {
 }
 
 void db_open() {
-	const char* filename = "storyinfo.sqlite";
+	const char* filename = "derpinfo.sqlite";
 	if(NULL != getenv("db")) filename = getenv("db");
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
@@ -200,13 +200,13 @@ void db_saw_commit(git_time_t updated, const db_oid commit) {
 		 so if interrupted, we start halfway to the "after" again or somewhere
 	 */
 	BEGIN_TRANSACTION;
-	sqlite3_bind_blob(update_before, 2, commit, sizeof(db_oid), NULL);
+	db_check(sqlite3_bind_blob(update_before, 2, commit, sizeof(db_oid)), NULL);
 	db_once(update_before);
 
 	if(!saw_commit) {
 		/* only update after at the beginning
 			 because next time we want to go after the latest commit we saw this time. */
-		sqlite3_bind_int64(update_after, 1, updated);
+		db_check(sqlite3_bind_int64(update_after, 1, updated));
 		db_once(update_after);
 		saw_commit = true;
 	}
@@ -224,7 +224,7 @@ void db_caught_up_committing(void) {
 identifier db_get_category(const string name, git_time_t* updated) {
 	DECLARE_STMT(find,"SELECT id,updated FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
-	sqlite3_bind_text(find,1,name.s,name.l,NULL);
+	db_check(sqlite3_bind_text(find,1,name.s,name.l,NULL));
 	RESETTING(find) int res = sqlite3_step(find);
 	TRANSACTION;
 	if(res == SQLITE_ROW) {
@@ -232,7 +232,7 @@ identifier db_get_category(const string name, git_time_t* updated) {
 		return sqlite3_column_int64(find,0);
 	}
 	*updated = 0;
-	sqlite3_bind_text(insert,1,name.s,name.l,NULL);
+	db_check(sqlite3_bind_text(insert,1,name.s,name.l,NULL));
 	db_once(insert);
 	identifier ret = sqlite3_last_insert_rowid(db);
 	return ret;
@@ -259,8 +259,8 @@ void db_caught_up_category(identifier category) {
 	DECLARE_STMT(update,"UPDATE categories SET updated = ? WHERE id = ?");
 
 	time_t updated = time(NULL);
-	sqlite3_bind_int(update,1,updated);
-	sqlite3_bind_int64(update,2,category);
+	db_check(sqlite3_bind_int(update,1,updated));
+	db_check(sqlite3_bind_int64(update,2,category));
 	db_once_trans(update);
 }
 
@@ -291,7 +291,7 @@ void db_retransaction(void) {
 static bool is_cool_xml_tag(const char* tag, size_t tlen) {
 	if(!db) return true;
 	DECLARE_STMT(find,"SELECT 1 FROM cool_xml_tags WHERE tag = ?");
-	sqlite3_bind_text(find,1,tag,tlen,NULL);
+	db_check(sqlite3_bind_text(find,1,tag,tlen,NULL));
 	int res = sqlite3_step(find);
 	sqlite3_reset(find);
 	db_check(res);
@@ -317,8 +317,8 @@ void cool_xml_error_handler(void * userData, xmlErrorPtr error) {
 	}
 	if(working.story) {
 		DECLARE_STMT(find,"SELECT location,(select title FROM chapters where id = ?2) FROM stories WHERE id = ?1");
-		sqlite3_bind_int64(find,1,working.story);
-		sqlite3_bind_int64(find,2,working.chapter);
+		db_check(sqlite3_bind_int64(find,1,working.story));
+		db_check(sqlite3_bind_int64(find,2,working.chapter));
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		if(res == SQLITE_ROW) {
 			fprintf(stderr,"=== %.*s:%ld ",

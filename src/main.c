@@ -235,7 +235,8 @@ void for_story(
 			sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
 			ensure_gt(sub,0);
 		}
-		close(loc);
+		if(loc != AT_FDCWD)
+			close(loc);
 		return sub;
 	}
 
@@ -251,8 +252,9 @@ void for_story(
 	}
 	g->srcloc = srcloc;
 
-	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
+	int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, g->location, true);
+	CLOSING int derploc = destloc;
 
 	g->title_changed = false;
 	bool numchaps_changed = false;
