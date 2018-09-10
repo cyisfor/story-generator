@@ -114,7 +114,7 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s%d %d",
+	SPAM("chapter %.*s %lu timestamp %d",
 			 g->location.l,g->location.s,
 			 chapter,chapter_timestamp - g->timestamp);
 	g->any_chapter = true;
@@ -257,7 +257,7 @@ void for_story(
 	g->title_changed = false;
 	bool numchaps_changed = false;
 	{
-		int countchaps = storydb_count_chapters(story);
+		identifier countchaps = storydb_count_chapters(story);
 		if(countchaps != numchaps) {
 			numchaps_changed = true;
 			WARN("#chapters changed %d -> %d",numchaps,countchaps);

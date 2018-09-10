@@ -25,8 +25,11 @@ int db_check(int res) {
 		error(0,0,"no db %d %s",res, sqlite3_errstr(res));
 		abort();
 	}
-	error(0,0,"db error %d(%s) %s",
-				res,sqlite3_errstr(res),
+	error(0,0,"db error %d(%s) %d(%s) %s",
+				sqlite3_extended_errcode(db),
+				sqlite3_errstr(sqlite3_extended_errcode(db)),
+				res,
+				sqlite3_errstr(res),
 				sqlite3_errmsg(db));
 	abort();
 	return res;
@@ -255,7 +258,8 @@ void db_last_seen_commit(struct bad* out,
 void db_caught_up_category(identifier category) {
 	DECLARE_STMT(update,"UPDATE categories SET updated = ? WHERE id = ?");
 
-	sqlite3_bind_int64(update,1,time(NULL));
+	time_t updated = time(NULL);
+	sqlite3_bind_int(update,1,updated);
 	sqlite3_bind_int64(update,2,category);
 	db_once_trans(update);
 }
