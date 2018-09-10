@@ -415,8 +415,8 @@ RESTART:
 					 than the current one!
 				*/
 				after = sqlite3_column_int64(find,1);
-				db_check(sqlite3_bind_int64(find,2,after));
 				sqlite3_reset(find);
+				db_check(sqlite3_bind_int64(find,2,after));
 				need_restart_for_chapters = false;
 			}
 			continue;

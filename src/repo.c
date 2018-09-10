@@ -102,7 +102,7 @@ void repo_check(git_error_code e) {
 		fprintf(stderr,"GIT ERROR: %s\n",err->message);
 		giterr_clear();
 	}
-
+	abort();
 	exit(e);
 }
 

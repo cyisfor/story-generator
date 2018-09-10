@@ -256,7 +256,7 @@ void db_last_seen_commit(struct bad* out,
 	if(sqlite3_column_type(find,1) != SQLITE_NULL) {
 		out->before = true;
 		assert(sizeof(db_oid) == sqlite3_column_bytes(find,1));
-		memcpy(before,sqlite3_column_blob(find, 0),sizeof(db_oid));
+		memcpy(before,sqlite3_column_blob(find, 1),sizeof(db_oid));
 	}
 }
 
