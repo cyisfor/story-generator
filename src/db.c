@@ -200,7 +200,7 @@ void db_saw_commit(git_time_t updated, const db_oid commit) {
 		 so if interrupted, we start halfway to the "after" again or somewhere
 	 */
 	BEGIN_TRANSACTION;
-	db_check(sqlite3_bind_blob(update_before, 2, commit, sizeof(db_oid)), NULL);
+	db_check(sqlite3_bind_blob(update_before, 1, commit, sizeof(db_oid), NULL));
 	db_once(update_before);
 
 	if(!saw_commit) {
