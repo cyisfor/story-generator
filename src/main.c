@@ -26,7 +26,8 @@
 #include <errno.h> // ENOENT
 
 void close_ptr(int* fd) {
-	close(*fd);
+	if(*fd == -1) return;
+	ensure0(close(*fd));
 	*fd = -1;
 }
 
@@ -54,7 +55,7 @@ void close_with_time(int dest, git_time_t timestamp) {
 		perror("futimens");
 		abort();
 	}
-	ensure0(close(dest));
+	close_ptr(&dest);
 }
 
 static
@@ -194,7 +195,7 @@ void for_chapter(
 
 	create_chapter(src,dest,chapter,g->ready,g->story,&g->title_changed);
 
-	ensure0(close(src));
+	close_ptr(&src);
 	close_with_time(dest,chapter_timestamp);
 
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
@@ -210,7 +211,7 @@ void for_story(
 	git_time_t story_timestamp) {
 
 	GDERP;
-	return;
+	
 	g->ready = ready;
 	g->story = story;
 	g->numchaps = numchaps;
@@ -237,7 +238,7 @@ void for_story(
 			ensure_gt(sub,0);
 		}
 		if(loc != AT_FDCWD)
-			close(loc);
+			close_ptr(&loc);
 		return sub;
 	}
 
@@ -295,16 +296,15 @@ void for_story(
 		storydb_all_ready);
 
 	// we create contents.html strictly from the db, not the markup directory
-	ensure0(close(srcloc));
+	close_ptr(&srcloc);
+	g->srcloc = -1;
 
 	void destloc_done() {
 		/* this is tricky. We can't "upgrade" destloc to a O_WRONLY,
 			 but we can openat(destloc,".") sooo
 		*/
 		int wr = openat(destloc,".",O_DIRECTORY);
-		ensure0(close(destloc));
-		destloc = -1;
-		g->srcloc = -1;
+		close_ptr(&destloc);
 		g->destloc = -1;
 		ensure_ge(wr,0);
 		close_with_time(wr,max_timestamp);

@@ -91,7 +91,7 @@ sqlite3_stmt* db_preparen(const char* s, int l) {
 }
 
 void db_open() {
-	const char* filename = "derpinfo.sqlite";
+	const char* filename = "storyinfo.sqlite";
 	if(NULL != getenv("db")) filename = getenv("db");
 	db_check(sqlite3_open(filename,&db));
 	assert(db != NULL);
