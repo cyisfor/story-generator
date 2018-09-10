@@ -210,6 +210,7 @@ void for_story(
 	git_time_t story_timestamp) {
 
 	GDERP;
+	return;
 	g->ready = ready;
 	g->story = story;
 	g->numchaps = numchaps;
@@ -252,9 +253,8 @@ void for_story(
 	}
 	g->srcloc = srcloc;
 
-	int destloc = descend(AT_FDCWD, g->scategory, true);
+	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, g->location, true);
-	CLOSING int derploc = destloc;
 
 	g->title_changed = false;
 	bool numchaps_changed = false;
@@ -303,6 +303,9 @@ void for_story(
 		*/
 		int wr = openat(destloc,".",O_DIRECTORY);
 		ensure0(close(destloc));
+		destloc = -1;
+		g->srcloc = -1;
+		g->destloc = -1;
 		ensure_ge(wr,0);
 		close_with_time(wr,max_timestamp);
 	}
@@ -542,6 +545,7 @@ int main(int argc, char *argv[])
 	db_retransaction();
 	output_time("stories after",g.after);
 	storydb_for_stories(&g, for_story, true, g.after);
+	db_retransaction();
 	db_caught_up_category(category);
 	INFO("caught up");
 	db_close_and_exit();

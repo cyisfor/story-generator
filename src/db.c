@@ -164,6 +164,11 @@ void db_close_and_exit(void) {
 	for(i=0;i<nstmt;++i) {
 		db_check(sqlite3_finalize(stmts[i]));
 	}
+	sqlite3_stmt* stmt = NULL;
+	while((stmt = sqlite3_next_stmt(db, stmt))) {
+		db_check(sqlite3_finalize(stmt));
+	}
+
 	db_check(sqlite3_close(db));
 	/* if we do any DB thing after this, it will die horribly.
 		 if we need to continue past this, and reopen the db, have to:
