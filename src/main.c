@@ -40,8 +40,7 @@ static bool AISNEWER(struct stat a, struct stat b) {
 	return false;
 }
 
-
-void close_with_time(int dest, git_time_t timestamp) {
+void set_timestamp_at(int location, const char* name, git_time_t timestamp) {
 	// so people requesting the HTML file get its ACTUAL update date.
 	struct timespec times[2] = {
 		{ .tv_sec = timestamp,
@@ -51,11 +50,27 @@ void close_with_time(int dest, git_time_t timestamp) {
 			.tv_nsec = 0
 		}
 	};
-	if(0!=futimens(dest,times)) {
+
+	if(0!=utimensat(location, name, times)) {
 		perror("futimens");
 		abort();
 	}
-	close_ptr(&dest);
+}
+
+void close_with_time(int* dest, git_time_t timestamp) {
+	struct timespec times[2] = {
+		{ .tv_sec = timestamp,
+			.tv_nsec = 0
+		},
+		{ .tv_sec = timestamp,
+			.tv_nsec = 0
+		}
+	};
+	if(0!=futimens(*dest,times)) {
+		perror("futimens");
+		abort();
+	}
+	close_ptr(dest);
 }
 
 static
@@ -180,10 +195,7 @@ void for_chapter(
 	if(skip(g, chapter_timestamp,destname)) {
 		if(g->adjust_times) {
 			// mleh
-			int dest = openat(g->destloc,destname,O_WRONLY);
-			if(dest >= 0) {
-				close_with_time(dest,chapter_timestamp);
-			}
+			set_timestamp_at(g->destloc, destname, chapter_timestamp);
 		}
 	}
 
@@ -196,7 +208,7 @@ void for_chapter(
 	create_chapter(src,dest,chapter,g->ready,g->story,&g->title_changed);
 
 	close_ptr(&src);
-	close_with_time(dest,chapter_timestamp);
+	close_with_time(&dest,chapter_timestamp);
 
 	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
 }
@@ -264,10 +276,11 @@ void for_story(
 		if(countchaps != numchaps) {
 			numchaps_changed = true;
 			WARN("#chapters changed %d -> %d",numchaps,countchaps);
-			/* if we've reduced our chapters, mark the new last chapter as seen recently
-				 before it needs its next link removed
-				 if we've increased our chapters, need to add the next link, or
-				 create if it was the previous last chapter.
+			/* if we've reduced our chapters, mark the new last chapter
+				 as seen recently since it needs its next link removed
+				 if we've increased our chapters, also mark seen recently
+				 since we need to add the next link, or create the previous
+				 last chapter if it was skipped before.
 			*/
 			storydb_saw_chapter(false,g->story,story_timestamp,countchaps);
 			numchaps = countchaps;
