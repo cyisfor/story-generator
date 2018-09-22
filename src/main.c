@@ -507,7 +507,14 @@ int main(int argc, char *argv[])
 	
 	git_for_commits((void*)&g, on_commit, results.after, after, results.before, before);
 	// check this even when after is set, so we don't clear a before in progress?
-	if(g.num > 0) {
+	if(results.after == true || g.num > 0) {
+
+		// we didn't visit the most recent, since no diff from it?
+		git_commit* latest = NULL;
+		repo_check(git_commit_lookup(&latest, repo, GIT_OID(before)));
+		db_saw_commit(git_commit_time(latest), before);
+		git_commit_free(latest);
+		
 		db_caught_up_committing();
 		//putchar('\n');
 	}
