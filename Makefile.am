@@ -13,14 +13,17 @@ libstorydb_la_SOURCES = \
 	src/db.c \
 	src/storydb.c
 
+LIBXML2=htmlish/libxmlfixes/libxml2
+LIBXMLFIXES=htmlish/libxmlfixes
+
 libstorydb_la_LDFLAGS = $(SQLITE_LIBS) $(GIT_LIBS)
 libstorydb_la_LIBADD = htmlish/libhtmlish.la
 libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) \
 	-I $(srcdir)/htmlish/src \
-	-I $(srcdir)/libxml2/include \
-	-I $(srcdir)/libxmlfixes/src \
-	-I htmlish/libxmlfixes \
-	-I htmlish/libxmlfixes/libxml2/include
+	-I $(srcdir)/$(LIBXML2)/include \
+	-I $(srcdir)/$(LIBXMLFIXES)/src \
+	-I $(LIBXMLFIXES) \
+	-I $(LIBXML2)/include
 
 ready_SOURCES = \
 	src/ready.c \
@@ -83,9 +86,13 @@ BUILT_SOURCES += \
 	template/make-log.html.c \
 	template/make-log.row.html.c
 
+CTEMPLATE=$(prefix)/bin/ctemplate	
+
 template/%.c: $(srcdir)/template/% ctemplate/generate | template
 	./ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
+
+ctemplate/generate: ctemplate/
 
 template:
 	mkdir $@
