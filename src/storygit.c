@@ -30,7 +30,6 @@ struct item {
 	git_tree* tree;
 	git_time_t time;	
 	const git_oid* oid;
-	bool checked;
 	/* A - B - C - F - G
 		  \     /
 			 D - E
@@ -75,7 +74,8 @@ git_for_commits(
 		const db_oid parent,
 		git_time_t timestamp,
 		git_tree* last,
-		git_tree* cur),
+		git_tree* cur,
+		int which_parent),
 	bool do_after,
 	const git_time_t after,
 	bool do_before,
@@ -105,15 +105,6 @@ git_for_commits(
 	repo_check(git_commit_tree(&me.tree,me.commit));
 	me.oid = git_commit_id(me.commit);
 
-	/* Okay... so...
-
-		 visit commits back until the earliest commit, that is not before "after"
-		 if there are 2 parents, recurse on each parent.
-		 Eventually all branches will be before "after" and you're done.
-	 */
-
-	void visit_commits(
-
 	/* ugh.... have to search for if a git commit has been visited or not
 		 can't just say commit->visited = true, before commit is opaque
 	*/
@@ -133,12 +124,15 @@ git_for_commits(
 			}
 			parent.oid = git_commit_id(parent.commit);
 
-			/* When two branches converge, the timestamp of the original common commit will be
-				 earlier than any of the timestamps along either branch, so if we find the earlier
-				 commits in all branches, by the time we hit the convergence, the common commit
-				 will NECESSARILY be in the todo list, before it can't be processed after all
-				 later commits in all branches are processed. So we just have to avoid dupes
-				 in the todo list, and the nodes will all be visited exactly once.
+			// PUSH CURRENT PARENT INTO TODO LIST
+
+			/* When two branches converge, the timestamp of the original common
+				 commit will be earlier than any of the timestamps along either branch,
+				 so if we find the earlier commits in all branches, by the time we hit
+				 the convergence, the common commit will NECESSARILY be in the todo
+				 list, before it can't be processed after all later commits in all
+				 branches are processed. So we just have to avoid dupes in the todo
+				 list, and the nodes will all be visited exactly once.
 
 				 so with
 				  A - B - C - F - G
@@ -146,42 +140,88 @@ git_for_commits(
 					 D - E
 
 				 first visit A, then the todo list is (B,D)
-				 then visit B, the todo list is (D,C) D MUST have a later timestamp than C.
-				 then visit D, the todo list is (E,C) E MUST have a later timestamp than C.
+				 then visit B, the todo list is (D,C)
+				 D MUST have a later timestamp than C.
+				 then visit D, the todo list is (E,C)
+				 E MUST have a later timestamp than C.
 				 so we always visit the node with the latest timestamp
-				 visit E, and the next commit is C, but we eliminate duplicates in the todo, so (C,C) -> (C)
+				 visit E, and the next commit is C, but we eliminate duplicates in the
+				 todo, so (C,C) -> (C)
 				 visit C, go to F
 				 visit F, go to G
 				 all nodes have been visited once.
 
-				 Take a look at example_commit_tree.dot and here's how the algorithm would work
+				 Take a look at example_commit_tree.dot and here's how the algorithm
+				 would work.
 				 First, A goes in the todo.
 				 (A=10)
-				 Every iteration, we take the node with the highest timestamp, visit it, and add its parents to the todo, unless they're already in it.
-				 So visit A, which has timestamp 10 incidentally, and add nodes B, E and F.
-				 Now of (B=9,E=6,F=8) B has the highest timestamp.
-				 So visit B, adding C:
-				 (C=8,E=6,F=8)
-				 Visit either C or F, let's say we visit C. Push its parents to get:
-				 (I=4,D=7,E=6,F=8)
-				 
-				 Now visited in timestamp order from soonest to earliest is AHIDJEBCFG or in al
-				 
+				 Every iteration, we take the node with the highest timestamp,
+				 visit it, and add its parents to the todo, unless they're already
+				 in it.
 
-				 Could binary search before it's sorted, but unless you're a horrible team,
+				 So visit A, which has timestamp 10 incidentally,
+				 and add nodes B, F,  and D
+				 (B=9,F=6,D=8)
+				 Now, of the three, B has the highest timestamp.
+				 So visit B, adding C
+				 (C=8,F=6,D=8)
+				 Visit either C or D, let's say we visit C. Push its parents to get:
+				 (I=4,E=7,F=6,D=8)
+				 Now D is the highest, so visit it, and push G
+				 (I=4,E=7,F=6,G=6)
+				 Now E is the highest, so visit it, and push F. But wait!
+				 F is already in the todo list! So just leave it as
+				 (I=4,F=6,G=6)
+				 We can visit either F or G now, so let's do G.
+				 (I=4,F=6,H=5)
+				 Now visit F, discarding its parent, since H is already in the list
+				 (I=4,H=5)
+				 Visit H, and its parent is I, so the todo list is now
+				 (I=4)
+				 Visit I.
+				 (J=3)
+				 Visit J.
+				
+				 Now visited in timestamp order from soonest to earliest is ABCDEFGHIJ
+				 All nodes have been visited!
+
+				 This is a good idea, because normally with a DAG, you have to keep
+				 a list of ALL visited nodes. But this DAG has timestamp values that
+				 follow a special order, such that everything upstream, even in
+				 neighboring branches, was created earlier than everything downstream.
+				 So we only need to keep a list of "todo" nodes, and use the timestamp
+				 to ensure we visit everything.
+
+				 Unless you're a horrible team,
 				 there will only be one branch per coder, and 1-3 for development, so
 				 only binary search if ntodo is large enough for the overhead of that
-				 search to be lower.
+				 search to be lower. Otherwise just iterate through it, looking for
+				 the max timestamp. If ntodo is large enough, sort the todo
+				 list with every addition, then use binary search until it's smaller.
+
+				 Really should figure out some sort of heap thing here, eh. I no good
+				 at computer.
 			*/
 
+			// we're searching the todo list for the current parent.
+			// first find matching timestamps
+			// then compare longer OIDs
+
+			/* The todo list is always sorted by commit time.
+				 So if you run into the correct commit time, all possible OIDs
+				 are going to be next to each other
+			 */
+			
 			bool alreadyhere = false;
 			int here;
-			void findit_sametime(int j) {
+			void check_one_timestamp(int j) {
 				do {
 					if(git_oid_equal(parent.oid, todo[j].oid)) {
+						// okay, so we have parent.commit and todo[j].commit both
+						// allocated. Let's replace parent.commit
 						git_commit_free(parent.commit);
-						// tree isn't allocated yet
-						parent = todo[j];
+						parent.commit = todo[j].commit;
+						// parent.tree isn't allocated yet
 						// WHEN I AM
 						alreadyhere = true;
 						here = j;
@@ -194,7 +234,8 @@ git_for_commits(
 					int j=0;
 					for(;j<ntodo;++j) {
 						if(parent.time == todo[j].time) {
-							return findit_sametime(j);
+							// it's gotta be between j and ?
+							return check_one_timestamp(j);
 						}
 					}
 				}
@@ -206,7 +247,8 @@ git_for_commits(
 					int dj = j >> 1;
 					do {
 						if(todo[j].time == parent.time) {
-							return findit_sametime(j);
+							// it's gotta be between j and ?
+							return check_one_timestamp(j);
 						}
 						// sorted from earlier to later...
 						if(todo[j].time > parent.time) {
@@ -220,46 +262,55 @@ git_for_commits(
 				findit();
 			}
 
+			if(!alreadyhere) {
+				++ntodo;
+				todo = realloc(todo,sizeof(*todo)*ntodo);
+				todo[ntodo-1] = parent;
+				qsort(todo, ntodo, sizeof(*todo), later_commits_last);
+			}
+			
+			// VISIT CURRENT NODE W/ CURRENT PARENT
+			
+			// we need the tree of the parent, just for visiting purposes
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			{
 				INFO("%s:%d ->",git_oid_tostr_s(parent.oid), parent.time);
 				fprintf(stderr,"     %s:%d\n",git_oid_tostr_s(me.oid), me.time);
 			}
 
-			if(nparents == 1) {
-				enum gfc_action op = handle(udata,
-																		DB_OID(*me.oid),
-																		DB_OID(*parent.oid),
-																		me.time,
-																		me.tree,
-																		parent.tree);
-				switch(op) {
-				case GFC_STOP:
-					freeitem(&parent);
-					freeitem(&me);
-					for(i=0;i<ntodo;++i) {
-						freeitem(&todo[i]);
+			/* actually, have to visit once per parent, for chapters changed diff
+				 between the parents of merge commits.
+			*/
+			enum gfc_action op = handle(udata,
+																	DB_OID(*me.oid),
+																	DB_OID(*parent.oid),
+																	me.time,
+																	parent.tree,
+																	me.tree,
+																	i);
+			switch(op) {
+			case GFC_STOP:
+				freeitem(&parent);
+				freeitem(&me);
+				for(i=0;i<ntodo;++i) {
+					freeitem(&todo[i]);
+				}
+				free(todo);
+				return;
+			case GFC_SKIP:
+				// don't add the parent to our todo list.
+				freeitem(&parent);
+				if(alreadyhere) {
+					// ugh... maybe need to remove this from the list, if already in it
+					// from a previous branch
+					int j;
+					for(j=here;j<ntodo-1;++j) {
+						todo[j] = todo[j+1];
 					}
-					free(todo);
-					return;
-				case GFC_SKIP:
-					freeitem(&parent);
-					if(alreadyhere) {
-						// ugh... need to remove this from the list
-						int j;
-						for(j=here;j<ntodo-1;++j) {
-							todo[j] = todo[j+1];
-						}
-					}
-					continue;
-				};
-				// default:
-
-			} else {
-				INFO("skipping merge commit %.*s",GIT_OID_HEXSZ,
-						 git_oid_tostr_s(me.oid));
-			}
-
+				}
+				continue;
+			};
+			
 			if(alreadyhere) {
 				//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
 				continue;
@@ -268,19 +319,19 @@ git_for_commits(
 			/* note: parents can branch, so ntodo is 3 in that case,
 				 then 4 if a grandparent todo, etc */
 			
-			++ntodo;
-			todo = realloc(todo,sizeof(*todo)*ntodo);
-			//if(alreadyhere) blah blah meh
-			todo[ntodo-1] = parent;
+
+
+
 		}
 		freeitem(&me);
 		// if we pushed all the parents, and still no todo, we're done, yay!
 		if(ntodo == 0) break;
 
-		qsort(todo, ntodo, sizeof(*todo), later_commits_last);
+		// since LATER are LAST,
 		// todo[ntodo] should be the most recent now.
-		// pop it off, to examine its parents
+		// pop it off, to visit it and examine its parents
 		me = todo[--ntodo];
+		// don't bother reallocing.
 	}
 
 	assert(0 == ntodo);

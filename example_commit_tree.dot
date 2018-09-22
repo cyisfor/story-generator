@@ -2,23 +2,23 @@ digraph log {
 	A1 [label="A 10"];
 	B2 [label="B 9"];
 	C2 [label="C 8"];
-	F3 [label="F 7"];
-	E2 [label="E 6"];
 	D3 [label="D 8"];
+	E3 [label="E 7"];
+	F3 [label="F 6"];
 	G2 [label="G 6"];
 	H2 [label="H 5"]; // must be less than all upstream
 	I2 [label="I 4"];
 	J2 [label="J 3"];
 
 
-	A1 -> E2;
+	A1 -> F3;
 	A1 -> D3;
 	A1 -> B2;
 	B2 -> C2;
-	C2 -> F3;
-	F3 -> E2;
+	C2 -> E3;
+	E3 -> F3;
 	
-	E2 -> H2;
+	F3 -> H2;
 	D3 -> G2;
 	G2 -> H2;
 	H2 -> I2;
