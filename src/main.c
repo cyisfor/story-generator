@@ -311,7 +311,7 @@ void for_story(
 		close_ptr(&destloc);
 		g->destloc = -1;
 		ensure_ge(wr,0);
-		close_with_time(wr,max_timestamp);
+		close_with_time(&wr,max_timestamp);
 	}
 
 	if(!(numchaps_changed || g->title_changed)) {
@@ -325,7 +325,7 @@ void for_story(
 				// we don't have to recreate
 				int dest = openat(destloc,"contents.html",O_WRONLY);
 				if(dest >= 0) {
-					close_with_time(dest, max_timestamp);
+					close_with_time(&dest, max_timestamp);
 				}
 				destloc_done();
 				return;
@@ -349,7 +349,7 @@ void for_story(
 			openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 		ensure_ge(contents,0);
 		create_contents(story, g->location, contents, g->numchaps);
-		close_with_time(contents,max_timestamp);
+		close_with_time(&contents,max_timestamp);
 	}
 	ensure0(renameat(destloc,".tempcontents",destloc,"contents.html"));
 

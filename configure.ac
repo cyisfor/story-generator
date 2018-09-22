@@ -48,5 +48,5 @@ PKG_CHECK_MODULES(SQLITE, sqlite3)
 PKG_CHECK_MODULES(GIT, libgit2)
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([htmlish])
+AC_CONFIG_SUBDIRS([htmlish ctemplate])
 AC_OUTPUT
