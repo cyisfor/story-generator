@@ -268,6 +268,9 @@ git_for_commits(
 				todo[ntodo-1] = parent;
 				qsort(todo, ntodo, sizeof(*todo), later_commits_last);
 			}
+
+			// if a parent's already here, still visit it, because
+			// a different branch may have different changes to it
 			
 			// VISIT CURRENT NODE W/ CURRENT PARENT
 			
@@ -310,18 +313,6 @@ git_for_commits(
 				}
 				continue;
 			};
-			
-			if(alreadyhere) {
-				//INFO("ALREADY HERE %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(parent.oid));
-				continue;
-			}
-
-			/* note: parents can branch, so ntodo is 3 in that case,
-				 then 4 if a grandparent todo, etc */
-			
-
-
-
 		}
 		freeitem(&me);
 		// if we pushed all the parents, and still no todo, we're done, yay!
@@ -349,7 +340,7 @@ git_for_chapters_changed(
 			bool deleted,
 			const string location,
 			const string name),
-	git_tree* from, git_tree* to) {
+	git_tree* to, git_tree* from) {
 	if(from == NULL) return true;
 	assert(to != NULL);
 

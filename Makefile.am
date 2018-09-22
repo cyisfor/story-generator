@@ -132,7 +132,7 @@ describe_LDFLAGS = $(libstorydb_la_LDFLAGS) -lreadline
 
 BUILT_SOURCES+=db_oid/gen.h
 
-db_oid/gen.h: db_oid/make
+db_oid/gen.h: | db_oid/make
 	./db_oid/make db_oid $(srcdir)/src/db_oid
 
 db_oid_make_SOURCES = src/db_oid/make.c

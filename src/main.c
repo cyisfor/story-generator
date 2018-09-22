@@ -398,7 +398,8 @@ enum gfc_action on_commit(
 	const db_oid parent,
 	git_time_t timestamp, 
 	git_tree* last,
-	git_tree* cur)
+	git_tree* cur,
+	int which_parent)
 {	
 	db_saw_commit(timestamp, oid);
 	assert(last != NULL);

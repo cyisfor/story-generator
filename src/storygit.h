@@ -40,7 +40,8 @@ git_for_commits(
 		const db_oid parent,
 		git_time_t timestamp,
 		git_tree* last,
-		git_tree* cur),
+		git_tree* cur,
+		int which_parent),
 	bool do_after,
 	const git_time_t after,
 	bool do_before,
@@ -69,6 +70,6 @@ git_for_chapters_changed(
 			bool deleted,
 			const string location,
 			const string name),
-	git_tree* from, git_tree* to);
+	git_tree* to, git_tree* from);
 
 #endif /* _STORYGIT_H_ */
