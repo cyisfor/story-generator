@@ -416,6 +416,39 @@ enum gfc_action on_commit(
 	return ret;
 }
 
+bool only_ready = false;
+
+
+const string get_category() {
+	if(getenv("category")!=NULL) {
+		string c = {getenv("category")};
+		switch(lookup_category(c.s)) {
+		case CATEGORY_censored:
+			//WARN("censored is a special category. set censored=1 instead plz");
+			setenv("censored","1",1);
+			c.l = LITSIZ("censored");
+			storydb_only_censored = true;
+			break;
+		case CATEGORY_sneakpeek:
+			storydb_all_ready = true;
+			INFO("sneak peek!");
+			c.l = LITSIZ("sneakpeek");
+			break;
+		case CATEGORY_ready:
+			only_ready = true;
+			c.l = LITSIZ("ready");
+			break;
+		};
+		c.l = strlen(c.s);
+		return c;
+	} else if(getenv("censored")!=NULL) {
+		storydb_only_censored = true;
+		return (const string){LITLEN("censored")};
+	} else {
+		return (const string){LITLEN("html")};
+	}
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -484,37 +517,6 @@ int main(int argc, char *argv[])
 
 	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
 
-	bool only_ready = false;
-
-	const string get_category() {
-		if(getenv("category")!=NULL) {
-			string c = {getenv("category")};
-			switch(lookup_category(c.s)) {
-			case CATEGORY_censored:
-				//WARN("censored is a special category. set censored=1 instead plz");
-				setenv("censored","1",1);
-				c.l = LITSIZ("censored");
-				storydb_only_censored = true;
-				break;
-			case CATEGORY_sneakpeek:
-				storydb_all_ready = true;
-				INFO("sneak peek!");
-				c.l = LITSIZ("sneakpeek");
-				break;
-			case CATEGORY_ready:
-				only_ready = true;
-				c.l = LITSIZ("ready");
-				break;
-			};
-			c.l = strlen(c.s);
-			return c;
-		} else if(getenv("censored")!=NULL) {
-			storydb_only_censored = true;
-			return (const string){LITLEN("censored")};
-		} else {
-			return (const string){LITLEN("html")};
-		}
-	}
 	g.scategory = get_category();
 	identifier category = db_get_category(g.scategory, &g.timestamp);
 	assert(g.timestamp != 0);

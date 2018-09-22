@@ -245,9 +245,15 @@ identifier db_get_category(const string name, git_time_t* updated) {
 
 void db_last_seen_commit(struct bad* out,
 												 git_time_t* after, db_oid before) {
-	DECLARE_STMT(find,"SELECT after,before FROM committing LIMIT 1");
+	DECLARE_STMT(find,"SELECT after,before FROM committing ORDER BY after LIMIT 1 OFFSET ?");
 
+	sqlite3_bind_int(find,1,1);
 	RESETTING(find) int res = sqlite3_step(find);
+	if(res == SQLITE_DONE) {
+		sqlite3_reset(find);
+		sqlite3_bind_int(find,0,0);
+		res = sqlite3_step(find);
+	}
 	assert(res == SQLITE_ROW);
 	if(sqlite3_column_type(find,0) != SQLITE_NULL) {
 		out->after = true;
