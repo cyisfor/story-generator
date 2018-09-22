@@ -156,27 +156,16 @@ git_for_commits(
 
 				 Take a look at example_commit_tree.dot and here's how the algorithm would work
 				 First, A goes in the todo.
+				 (A=10)
 				 Every iteration, we take the node with the highest timestamp, visit it, and add its parents to the todo, unless they're already in it.
-				 So visit A, which has timestamp 10 incidentally, and add nodes H, B and D.
-				 Now of (H=9,B=6,D=8) H has the highest timestamp.
-				 So visit H, adding I: (I=8,B=6,D=8)
-				 Visit either I or D, let's say we visit I. Push its parents to get:
-				 (F=4, J=7, B=6, D=8)
-				 Now D has the highest timestamp. Visit, add parents.
-				 (F=4, J=7, B=6, E=6)
-				 Now J is the highest, visit it, but its parent (B) is already in the todo! So we can't add it twice.
-				 (F=4, B=6, E=6)
-				 Now either B or E, let's visit E.
-				 (F=4, B=6, C=5)
-				 Now visit B, and its parent is C. Oops, already in the todo!
-				 (F=4, C=5)
-				 Now visit C, its parent is F
-				 (F=4)
-				 Now visit F
-				 (G=3)
-				 Now visit G
-
-				 Now visited in timestamp order from soonest to earliest is AHIDJEBCFG or in alpha
+				 So visit A, which has timestamp 10 incidentally, and add nodes B, E and F.
+				 Now of (B=9,E=6,F=8) B has the highest timestamp.
+				 So visit B, adding C:
+				 (C=8,E=6,F=8)
+				 Visit either C or F, let's say we visit C. Push its parents to get:
+				 (I=4,D=7,E=6,F=8)
+				 
+				 Now visited in timestamp order from soonest to earliest is AHIDJEBCFG or in al
 				 
 
 				 Could binary search before it's sorted, but unless you're a horrible team,
