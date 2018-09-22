@@ -105,6 +105,15 @@ git_for_commits(
 	repo_check(git_commit_tree(&me.tree,me.commit));
 	me.oid = git_commit_id(me.commit);
 
+	/* Okay... so...
+
+		 visit commits back until the earliest commit, that is not before "after"
+		 if there are 2 parents, recurse on each parent.
+		 Eventually all branches will be before "after" and you're done.
+	 */
+
+	void visit_commits(
+
 	/* ugh.... have to search for if a git commit has been visited or not
 		 can't just say commit->visited = true, before commit is opaque
 	*/
@@ -130,6 +139,22 @@ git_for_commits(
 				 will NECESSARILY be in the todo list, before it can't be processed after all
 				 later commits in all branches are processed. So we just have to avoid dupes
 				 in the todo list, and the nodes will all be visited exactly once.
+
+				 so with
+				  A - B - C - F - G
+					\     /
+					 D - E
+
+				 first visit A, then the todo list is (B,D)
+				 then visit B, the todo list is (D,C) D MUST have a later timestamp than C.
+				 then visit D, the todo list is (E,C) E MUST have a later timestamp than C.
+				 so we always visit the node with the latest timestamp
+				 visit E, and the next commit is C, but we eliminate duplicates in the todo, so (C,C) -> (C)
+				 visit C, go to F
+				 visit F, go to G
+				 all nodes have been visited once.
+
+				 
 
 				 Could binary search before it's sorted, but unless you're a horrible team,
 				 there will only be one branch per coder, and 1-3 for development, so
