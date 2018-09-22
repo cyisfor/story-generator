@@ -86,16 +86,18 @@ BUILT_SOURCES += \
 	template/make-log.html.c \
 	template/make-log.row.html.c
 
-CTEMPLATE=$(prefix)/bin/ctemplate	
-
-template/%.c: $(srcdir)/template/% ctemplate/generate | template
-	./ctemplate/generate < $< > $@.temp
+template/%.c: $(srcdir)/template/% $(prefix)/bin/ctemplate
+	mkdir -p $(dir $@)
+	$(prefix)/bin/ctemplate < $< > $@.temp
 	mv $@.temp $@
 
-ctemplate/generate: ctemplate/
+$(prefix)/bin/ctemplate: ctemplate/ctemplate
+	$(MAKE) -C $(dir $<) install
 
-template:
-	mkdir $@
+ctemplate/ctemplate:
+	$(MAKE) -C $(dir $@)
+
+
 
 make_contents_CFLAGS = \
 	$(XMLINC) -I$(srcdir)/cystuff/src -I $(includedir)/libhtmlish/ \
