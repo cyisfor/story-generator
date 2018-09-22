@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
-#.SILENT:
-
-#AM_LIBTOOLFLAGS = --quiet --no-warnings
+.SILENT:
+include $(srcdir)/cystuff/status.mk
+AM_LIBTOOLFLAGS = --quiet --no-warnings
 
 DDATE_C=$(srcdir)/ddate/ddate.c
 
@@ -54,10 +54,12 @@ generate_LDFLAGS = $(AM_LDFLAGS) $(libstorydb_la_LDFLAGS)
 BUILT_SOURCES = category.gen.c category.gen.h
 
 category.gen.c category.gen.h: src/categories.list $(srcdir)/str_to_enum_trie/main
-	noupper=1 prefix=category enum=CATEGORY exec $(srcdir)/str_to_enum_trie/main <$<
+	@$(call status, generate category lookup table)
+	@noupper=1 prefix=category enum=CATEGORY exec $(srcdir)/str_to_enum_trie/main <$<
 
 $(srcdir)/str_to_enum_trie/main: str_to_enum_trie/src/main.c
-	$(MAKE) -C $(srcdir)/str_to_enum_trie main
+	@$(call status, str to enum trie)
+	@$(MAKE) -C $(srcdir)/str_to_enum_trie main
 
 news_log_SOURCES = \
 	src/news-log.c \
@@ -87,9 +89,10 @@ BUILT_SOURCES += \
 	template/make-log.row.html.c
 
 template/%.c: $(srcdir)/template/% $(prefix)/bin/ctemplate
-	mkdir -p $(dir $@)
-	$(prefix)/bin/ctemplate < $< > $@.temp
-	mv $@.temp $@
+	@(call status, ctemplate $*)
+	@mkdir -p $(dir $@)
+	@$(prefix)/bin/ctemplate < $< > $@.temp
+	@mv $@.temp $@
 
 $(prefix)/bin/ctemplate: ctemplate/ctemplate
 	$(MAKE) -C $(dir $<) install
@@ -154,8 +157,9 @@ BUILT_SOURCES+=indexes.sql.gen.c
 make_sql_SOURCES = src/make-sql.c
 
 %.sql.stmt.c: src/%.sql.stmt statements2source
-	onlydefine=1 ./statements2source derp <$< >$@.temp
-	mv $@.temp $@
+	@$(call status, process SQL statements $*)
+	@onlydefine=1 ./statements2source derp <$< >$@.temp
+	@mv $@.temp $@
 
 BUILT_SOURCES+=db.sql.stmt.c
 
