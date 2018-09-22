@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	if(sql == MAP_FAILED) return 2;
 	close(0);
 
-	#define PUTLIT(a) write(1,a,sizeof(a)-1)
+	#define PUTLIT(a) if(write(1,a,sizeof(a)-1));
 
 	PUTLIT("const char sql[] = \"");
 

@@ -79,18 +79,19 @@ make_log_LDADD = libstorydb.la
 make_log_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES += \
-	o/template/make-log.html.c \
-	o/template/make-log.row.html.c
+	template/make-log.html.c \
+	template/make-log.row.html.c
 
 template/%.c: $(srcdir)/template/% ctemplate/generate | template
 	./ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
 
-template:
+ctemplate template:
 	mkdir $@
 
-ctemplate/generate: | ctemplate/src/generate.c
-	$(make) -C $(dir $@) generate
+ctemplate/generate: $(srcdir)/ctemplate/src/generate.c | ctemplate/
+	$(MAKE) -C $(dir $@) generate
+
 
 make_contents_CFLAGS = \
 	$(XMLINC) -I$(srcdir)/cystuff/src -I $(includedir)/libhtmlish/ \
@@ -104,9 +105,9 @@ make_contents_LDADD = libstorydb.la
 make_contents_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 
-BUILT_SOURCES += o/template/page.html.c \
-	o/template/contents-body.html.c \
-	o/template/contents-story.html.c
+BUILT_SOURCES += template/page.html.c \
+	template/contents-body.html.c \
+	template/contents-story.html.c
 
 statements2source_SOURCES = \
 	src/statements2source.c \
@@ -118,7 +119,7 @@ statements2source_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
 statements2source_LDADD = htmlish/libhtmlish.la
 statements2source_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
-BUILT_SOURCES += o/template/statements2source.c.c
+BUILT_SOURCES += template/statements2source.c.c
 
 describe_SOURCES = \
 	src/describe.c \
