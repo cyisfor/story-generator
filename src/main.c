@@ -427,7 +427,7 @@ bool only_ready = false;
 const string get_category() {
 	if(getenv("category")!=NULL) {
 		string c = {getenv("category")};
-		switch(lookup_category(c.s)) {
+		switch(lookup_category(c.s,c.l)) {
 		case CATEGORY_censored:
 			//WARN("censored is a special category. set censored=1 instead plz");
 			setenv("censored","1",1);

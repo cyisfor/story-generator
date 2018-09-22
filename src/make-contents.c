@@ -37,7 +37,7 @@ void have_info(void* udata, string title, string description, string source) {
 	int numchaps = g->numchaps;
 	const string bleeding_edge = g->bleeding_edge;
 
-#include "o/template/contents-story.html.c"
+#include "template/contents-story.html.c"
 }
 
 #define output_buf(s,l) fwrite(s,l,1,stdout)
@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
 		.l = LITSIZ("Table of Contents")
 	};
 	void output_body() {
-#include "o/template/contents-body.html.c"
+#include "template/contents-body.html.c"
 	}
-#include "o/template/page.html.c"
+#include "template/page.html.c"
 	return 0;
 }

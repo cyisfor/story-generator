@@ -105,19 +105,19 @@ void db_open() {
 #endif
 
 	{
-#include "o/schema.sql.gen.c"
+#include "schema.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 #ifdef UPGRADEME
 	{
-		#include "o/upgrade.sql.gen.c"
+		#include "upgrade.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 	BEGIN_TRANSACTION;
 #endif
 	
 	{
-#include "o/indexes.sql.gen.c"
+#include "indexes.sql.gen.c"
 		db_check(sqlite3_exec(db, sql, NULL, NULL, &err));
 	}
 

@@ -160,3 +160,5 @@ make_sql_SOURCES = src/make-sql.c
 BUILT_SOURCES+=db.sql.stmt.c
 
 SUBDIRS = htmlish ctemplate
+htmlish/libhtmlish.la:
+	$(MAKE) -C $(dir $@)

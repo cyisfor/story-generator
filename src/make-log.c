@@ -53,7 +53,7 @@ void on_chapter(void* udata,
 	const string stitle = story_title.s ? story_title : location;
 	const string ctitle = chapter_title.s ? chapter_title : stitle;
 
-#include "o/template/make-log.row.html.c"
+#include "template/make-log.row.html.c"
 }
 
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
 	dest = become_start(argv[1]);
 
-#include "o/template/make-log.html.c"
+#include "template/make-log.html.c"
 
 	storydb_cache_free(cache);
 	become_commit(&dest);

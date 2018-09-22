@@ -134,6 +134,6 @@ int main(int argc, char *argv[]) {
 			output_literal("\"\n\n");
 		}
 	} else {
-#include "o/template/statements2source.c.c"
+#include "template/statements2source.c.c"
 	}
 }
