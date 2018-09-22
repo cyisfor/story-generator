@@ -40,36 +40,27 @@ static bool AISNEWER(struct stat a, struct stat b) {
 	return false;
 }
 
-void set_timestamp_at(int location, const char* name, git_time_t timestamp) {
-	// so people requesting the HTML file get its ACTUAL update date.
-	struct timespec times[2] = {
-		{ .tv_sec = timestamp,
-			.tv_nsec = 0
-		},
-		{ .tv_sec = timestamp,
-			.tv_nsec = 0
-		}
-	};
+/* isn't C a wonderful language? */
 
-	if(0!=utimensat(location, name, times)) {
-		perror("futimens");
-		abort();
+#define UTIME_THINGY(ACTION) struct timespec times[2] = { \
+		{ .tv_sec = timestamp,																\
+			.tv_nsec = 0																				\
+		},																										\
+		{ .tv_sec = timestamp,																\
+			.tv_nsec = 0																				\
+		}																											\
+	};																											\
+	if(0!=ACTION) {																					\
+		perror("setting utime thingy");												\
+		abort();																							\
 	}
+
+void set_timestamp_at(int location, const char* name, git_time_t timestamp) {
+	UTIME_THINGY(utimensat(location, name, times, 0));
 }
 
 void close_with_time(int* dest, git_time_t timestamp) {
-	struct timespec times[2] = {
-		{ .tv_sec = timestamp,
-			.tv_nsec = 0
-		},
-		{ .tv_sec = timestamp,
-			.tv_nsec = 0
-		}
-	};
-	if(0!=futimens(*dest,times)) {
-		perror("futimens");
-		abort();
-	}
+	UTIME_THINGY(futimens(*dest,times));
 	close_ptr(dest);
 }
 
