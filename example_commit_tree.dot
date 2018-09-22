@@ -1,11 +1,14 @@
 digraph log {
 	A [label="A 10"];
-	B [label="B 9.1"];
-	D [label="D 9.2"];
-	E [label="E 8"];
-	C [label="C 7"]; // must be less than all upstream
-	F [label="F 6"];
-	G [label="G 5"];
+	H [label="H 9"];
+	I [label="I 8"];
+	J [label="J 7"];
+	B [label="B 6"];
+	D [label="D 8"];
+	E [label="E 6"];
+	C [label="C 5"]; // must be less than all upstream
+	F [label="F 4"];
+	G [label="G 3"];
 
 
 	A -> B;
@@ -19,5 +22,7 @@ digraph log {
 	D -> E;
 	E -> C;
 	C -> F;
-	C -> G;
+	F -> G;
+	I -> F;
+	
 }
