@@ -511,11 +511,13 @@ int main(int argc, char *argv[])
 
 		// we didn't visit the most recent, since no diff from it?
 		git_commit* latest = NULL;
-		repo_check(git_commit_lookup(&latest, repo, GIT_OID(before)));
-		db_saw_commit(git_commit_time(latest), before);
-		git_commit_free(latest);
+		if(results.before) {
+			repo_check(git_commit_lookup(&latest, repo, GIT_OID(before)));
+			db_saw_commit(git_commit_time(latest), before);
+			git_commit_free(latest);
+			db_caught_up_committing();
+		}		
 		
-		db_caught_up_committing();
 		//putchar('\n');
 	}
 
@@ -557,7 +559,7 @@ int main(int argc, char *argv[])
 	storydb_for_stories(&g, for_story, true, g.after);
 	db_retransaction();
 	db_caught_up_category(category);
-	INFO("caught up");
+	INFO("all done");
 	db_close_and_exit();
 	return 0;
 }

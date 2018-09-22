@@ -199,7 +199,7 @@ void db_saw_commit(git_time_t updated, const db_oid commit) {
 	static sqlite3_stmt* update_after = NULL, *update_before;
 	if(update_after == NULL) {
 		PREPARE(update_after, "UPDATE committing SET after = ?");
-		PREPARE(update_before, "UPDATE committing SET before = ?");
+		PREPARE(update_before, "UPDATE committing SET before = ? WHERE before IS NOT NULL");
 	}
 	/* update before every time
 		 so if interrupted, we start halfway to the "after" again or somewhere
@@ -280,7 +280,7 @@ void db_transaction(void (*run)(void)) {
 }
 
 void db_retransaction(void) {
-	SPAM("retransaction %d",transaction_level);
+//	SPAM("retransaction %d",transaction_level);
 	if(transaction_level == 0) {
 		db_once(begin_stmt);
 		transaction_level = 1;
