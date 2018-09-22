@@ -52,6 +52,7 @@ BUILT_SOURCES = category.gen.c category.gen.h
 
 category.gen.c category.gen.h: src/categories.list $(srcdir)/str_to_enum_trie/main
 	noupper=1 prefix=category enum=CATEGORY exec $(srcdir)/str_to_enum_trie/main <$<
+
 $(srcdir)/str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	$(MAKE) -C $(srcdir)/str_to_enum_trie main
 
@@ -86,12 +87,8 @@ template/%.c: $(srcdir)/template/% ctemplate/generate | template
 	./ctemplate/generate < $< > $@.temp
 	mv $@.temp $@
 
-ctemplate template:
+template:
 	mkdir $@
-
-ctemplate/generate: $(srcdir)/ctemplate/src/generate.c | ctemplate/
-	$(MAKE) -C $(dir $@) generate
-
 
 make_contents_CFLAGS = \
 	$(XMLINC) -I$(srcdir)/cystuff/src -I $(includedir)/libhtmlish/ \
@@ -153,4 +150,4 @@ make_sql_SOURCES = src/make-sql.c
 
 BUILT_SOURCES+=db.sql.stmt.c
 
-SUBDIRS = htmlish
+SUBDIRS = htmlish ctemplate
