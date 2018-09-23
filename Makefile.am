@@ -89,7 +89,7 @@ BUILT_SOURCES += \
 	template/make-log.row.html.c
 
 template/%.c: $(srcdir)/template/% $(prefix)/bin/ctemplate
-	@(call status, ctemplate $*)
+	@$(call status, ctemplate $*)
 	@mkdir -p $(dir $@)
 	@$(prefix)/bin/ctemplate < $< > $@.temp
 	@mv $@.temp $@
