@@ -30,17 +30,31 @@ git_time_t git_author_time(git_commit* commit);
 
 enum gfc_action { GFC_CONTINUE = 0, GFC_STOP, GFC_SKIP };
 
+/* SIGH
+	 we need to do a special revwalk, because revwalk gimps out on diffs between merges.
+	 algorithm:
+	 if no parent, done
+	 if single parent, diff then repeat for parent
+	 if multiple parents, push left + right, then diff merge with most recent one
+	 replace most recent with parent, or none
+*/
+
+struct git_item {
+	git_commit* commit;
+	git_tree* tree;
+	git_time_t time;	
+	const git_oid* oid;
+};
+
+
 void
 git_for_commits(
 	void* udata,
 	enum gfc_action
 	(*handle)(
 		void* udata,
-		const db_oid commit,
-		const db_oid parent,
-		git_time_t timestamp,
-		git_tree* last,
-		git_tree* cur,
+		const struct git_item base,
+		const struct git_item parent,
 		int which_parent),
 	bool do_after,
 	const git_time_t after,

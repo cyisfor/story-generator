@@ -15,28 +15,6 @@
 #define LITSIZ(a) (sizeof(a)-1)
 #define LITLEN(a) a,LITSIZ(a)
 
-/* SIGH
-	 we need to do a special revwalk, because revwalk gimps out on diffs between merges.
-	 algorithm:
-	 if no parent, done
-	 if single parent, diff then repeat for parent
-	 if multiple parents, push left + right, then diff merge with most recent one
-	 replace most recent with parent, or none
-*/
-
-
-struct item {
-	git_commit* commit;
-	git_tree* tree;
-	git_time_t time;	
-	const git_oid* oid;
-	/* A - B - C - F - G
-		  \     /
-			 D - E
-	  when you traverse ABCFG, then DE, don't also do another CFG
-	*/
-};
-
 git_time_t git_author_time(git_commit* commit) {
 	// the commit time, or the committer time, changes with every rebase
 	// but author remains the same!
@@ -70,19 +48,16 @@ git_for_commits(
 	enum gfc_action
 	(*handle)(
 		void* udata,
-		const db_oid commit,
-		const db_oid parent,
-		git_time_t timestamp,
-		git_tree* last,
-		git_tree* cur,
+		const struct git_item base,
+		const struct git_item parent,
 		int which_parent),
 	bool do_after,
 	const git_time_t after,
 	bool do_before,
 	const db_oid before) {
 
-	struct item me = {};
-	struct item* todo = NULL;
+	struct git_item me = {};
+	struct git_item* todo = NULL;
 	size_t ntodo = 0;
 
 	if(do_before) {
@@ -114,7 +89,7 @@ git_for_commits(
 		//INFO("%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
 		int i;
 		for(i = 0; i < nparents; ++i) {
-			struct item parent = {};
+			struct git_item parent = {};
 			repo_check(git_commit_parent(&parent.commit, me.commit, i));
 
 			parent.time = git_author_time(parent.commit);
@@ -284,13 +259,7 @@ git_for_commits(
 			/* actually, have to visit once per parent, for chapters changed diff
 				 between the parents of merge commits.
 			*/
-			enum gfc_action op = handle(udata,
-																	DB_OID(*me.oid),
-																	DB_OID(*parent.oid),
-																	me.time,
-																	parent.tree,
-																	me.tree,
-																	i);
+			enum gfc_action op = handle(udata,me,parent,i);
 			switch(op) {
 			case GFC_STOP:
 				freeitem(&parent);
