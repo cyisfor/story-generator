@@ -488,26 +488,32 @@ int main(int argc, char *argv[])
 		results.after = true;
 		git_object* thing1;
 		int res = git_revparse_single(&thing1, repo, getenv("after"));
-		if(res == GIT_ENOTFOUND) {
+		switch(res) {
+		case GIT_ENOTFOUND:
+		case GIT_EAMBIGUOUS:
 			after = atoi(getenv("after"));
 			if(after) {
 				results.after = true;
+				output_time("(override) going back until",after);
 			}
-		} else {
-			repo_check(res);
+			break;
+		case 0:
 			ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
 			git_commit* thing2 = (git_commit*)thing1;
 			const git_oid* oid = git_commit_id(thing2);
-			INFO("going back after commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
+			INFO("(override) going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
 			after = git_author_time(thing2);
 			after -= 100;
 			git_object_free(thing1);
-		}
+			break;
+		default:
+			repo_check(res);
+		};
 	} else {
 		db_last_seen_commit(&results,&after,before);
 		if(results.after) {
 			after -= 100;
-			output_time("going back after",after);
+			output_time("going back until",after);
 		}
 
 		if(results.before) {
