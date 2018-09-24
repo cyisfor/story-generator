@@ -487,14 +487,22 @@ int main(int argc, char *argv[])
 	if(getenv("after")) {
 		results.after = true;
 		git_object* thing1;
-		repo_check(git_revparse_single(&thing1, repo, getenv("after")));
-		ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
-		git_commit* thing2 = (git_commit*)thing1;
-		const git_oid* oid = git_commit_id(thing2);
-		INFO("going back after commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
-		after = git_author_time(thing2);
-		after -= 100;
-		git_object_free(thing1);
+		int res = git_revparse_single(&thing1, repo, getenv("after"));
+		if(res == GIT_ENOTFOUND) {
+			after = atoi(getenv("after"));
+			if(after) {
+				results.after = true;
+			}
+		} else {
+			repo_check(res);
+			ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
+			git_commit* thing2 = (git_commit*)thing1;
+			const git_oid* oid = git_commit_id(thing2);
+			INFO("going back after commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
+			after = git_author_time(thing2);
+			after -= 100;
+			git_object_free(thing1);
+		}
 	} else {
 		db_last_seen_commit(&results,&after,before);
 		if(results.after) {
@@ -523,8 +531,7 @@ int main(int argc, char *argv[])
 			db_saw_commit(git_commit_time(latest), before);
 			git_commit_free(latest);
 			db_caught_up_committing();
-		}		
-		
+		}
 		//putchar('\n');
 	}
 

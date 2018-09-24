@@ -254,7 +254,7 @@ git_for_commits(
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			{
 				INFO("%s:%d ->",git_oid_tostr_s(parent.oid), parent.time);
-				fprintf(stderr,"     %s:%d\n",git_oid_tostr_s(me.oid), me.time);
+				fprintf(stderr,"     %s:%ld\n",git_oid_tostr_s(me.oid), me.time);
 			}
 
 			/* actually, have to visit once per parent, for chapters changed diff
@@ -300,7 +300,7 @@ git_for_commits(
 }
 
 typedef enum gfc_action
-	(*diffhandler)(
+	(*chapter_handler)(
 			void* udata,
 			long int num,
 			bool deleted,
@@ -308,7 +308,7 @@ typedef enum gfc_action
 			const string name);
 
 struct diffctx {
-	diffhandler handler;
+	chapter_handler handle;
 	void* udata;
 	enum gfc_action result;
 };
@@ -351,7 +351,7 @@ int file_changed(const git_diff_delta *delta,
 			.l = slash-path.s
 		};
 
-		ctx->result = ctx->handle(udata, chapnum, deleted, location, path);
+		ctx->result = ctx->handle(ctx->udata, chapnum, deleted, location, path);
 	}
 	// XXX: todo: handle if unreadable
 	switch(delta->status) {
@@ -397,10 +397,10 @@ git_for_chapters_changed(
 
 	repo_check(git_diff_tree_to_tree(&diff,repo,base,parent,&opts));
 	struct diffctx ctx = {
-		.handler = handler,
-		.udata = udata
+		.handle = handler,
+		.udata = udata,
 		.result = GFC_CONTINUE
-	}
+	};
 	git_diff_foreach(diff,
 									 (void*)file_changed,
 									 NULL, NULL, NULL, &ctx);
