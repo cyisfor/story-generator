@@ -398,25 +398,28 @@ enum gfc_action on_chapter(
 
 enum gfc_action on_commit(
 	void* udata,
-	const db_oid oid,
-	const db_oid parent,
-	git_time_t timestamp, 
-	git_tree* last,
-	git_tree* cur,
+	const struct git_item base,
+	const struct git_item parent,
 	int which_parent)
-{	
-	db_saw_commit(timestamp, oid);
+{
+	if(which_parent == 0) {
+		db_saw_commit(base.timestamp, DB_OID(base.oid));
+	}
+	db_saw_commit(parent.timestamp, DB_OID(parent.oid));
 	assert(last != NULL);
 
 	GDERP;
 	
-	INFO("commit %d %d",timestamp, ++g->counter);
-	output_time("time",timestamp);
+	INFO("commit %d %d %d",base.timestamp, which_parent, ++g->counter);
+	output_time("time",base.timestamp);
 	g->chapspercom = 0;
 	if(g->timestamp == 0) {
-		g->timestamp = timestamp;
+		g->timestamp = base.timestamp;
 	}
-	enum gfc_action ret = git_for_chapters_changed(g,on_chapter,last,cur);
+	enum gfc_action ret = git_for_chapters_changed(g,
+																								 on_chapter,
+																								 parent.tree,
+																								 base.tree);
 	
 	return ret;
 }
