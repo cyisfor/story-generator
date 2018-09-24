@@ -309,9 +309,9 @@ git_for_chapters_changed(
 			bool deleted,
 			const string location,
 			const string name),
-	git_tree* to, git_tree* from) {
-	if(from == NULL) return true;
-	assert(to != NULL);
+	git_tree* parent, git_tree* base) {
+	if(base == NULL) return true;
+	assert(parent != NULL);
 
 	enum gfc_action result = GFC_CONTINUE;
 
@@ -385,7 +385,7 @@ git_for_chapters_changed(
 		GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS
 	};
 
-	repo_check(git_diff_tree_to_tree(&diff,repo,from,to,&opts));
+	repo_check(git_diff_tree_to_tree(&diff,repo,parent,base,&opts));
 	git_diff_foreach(diff,
 									 file_changed,
 									 NULL, NULL, NULL, NULL);

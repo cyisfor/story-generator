@@ -84,6 +84,6 @@ git_for_chapters_changed(
 			bool deleted,
 			const string location,
 			const string name),
-	git_tree* to, git_tree* from);
+	git_tree* parent, git_tree* base);
 
 #endif /* _STORYGIT_H_ */

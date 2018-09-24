@@ -403,18 +403,18 @@ enum gfc_action on_commit(
 	int which_parent)
 {
 	if(which_parent == 0) {
-		db_saw_commit(base.timestamp, DB_OID(base.oid));
+		db_saw_commit(base.time, base.oid);
 	}
-	db_saw_commit(parent.timestamp, DB_OID(parent.oid));
+	db_saw_commit(parent.time, parent.oid);
 	assert(last != NULL);
 
 	GDERP;
 	
-	INFO("commit %d %d %d",base.timestamp, which_parent, ++g->counter);
-	output_time("time",base.timestamp);
+	INFO("commit %d %d %d",base.time, which_parent, ++g->counter);
+	output_time("time",base.time);
 	g->chapspercom = 0;
 	if(g->timestamp == 0) {
-		g->timestamp = base.timestamp;
+		g->timestamp = base.time;
 	}
 	enum gfc_action ret = git_for_chapters_changed(g,
 																								 on_chapter,
