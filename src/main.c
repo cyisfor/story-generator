@@ -188,6 +188,7 @@ void for_chapter(
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);
 		}
+		return;
 	}
 
 	int dest = openat(g->destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
@@ -273,7 +274,7 @@ void for_story(
 				 since we need to add the next link, or create the previous
 				 last chapter if it was skipped before.
 			*/
-			storydb_saw_chapter(false,g->story,story_timestamp,countchaps);
+			storydb_saw_chapter(false,g->story,story_timestamp,countchaps-1);
 			numchaps = countchaps;
 		}
 	}
@@ -430,6 +431,7 @@ bool only_ready = false;
 const string get_category() {
 	if(getenv("category")!=NULL) {
 		string c = {getenv("category")};
+		c.l = strlen(c.s);
 		switch(lookup_category(c.s,c.l)) {
 		case CATEGORY_censored:
 			//WARN("censored is a special category. set censored=1 instead plz");
