@@ -403,10 +403,10 @@ enum gfc_action on_commit(
 	int which_parent)
 {
 	if(which_parent == 0) {
-		db_saw_commit(base.time, base.oid);
+		db_saw_commit(base.time, DB_OID(*base.oid));
 	}
-	db_saw_commit(parent.time, parent.oid);
-	assert(last != NULL);
+	db_saw_commit(parent.time, DB_OID(*parent.oid));
+	assert(parent.tree != NULL);
 
 	GDERP;
 	

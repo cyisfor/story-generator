@@ -25,12 +25,13 @@ git_time_t git_author_time(git_commit* commit) {
 
 int later_commits_last(const void* a, const void* b) {
 //	printf("um %p %p\n",a,b);
-	git_time_t ta = (((struct item*) a)->time);
-	git_time_t tb = (((struct item*) b)->time);
+	git_time_t ta = (((struct git_item*) a)->time);
+	git_time_t tb = (((struct git_item*) b)->time);
 	return ta - tb;
 }
 
-void freeitem(struct item* i) {
+static
+void freeitem(struct git_item* i) {
 	git_commit_free(i->commit);
 	git_tree_free(i->tree);
 	i->commit = NULL; // debugging
@@ -298,81 +299,90 @@ git_for_commits(
 	assert(me.commit == NULL);
 }
 
-// note: this is the DIFF not the changes of each commit in between.
-enum gfc_action
-git_for_chapters_changed(
-	void* udata,
-	enum gfc_action
-	(*handle)(
+typedef enum gfc_action
+	(*diffhandler)(
 			void* udata,
 			long int num,
 			bool deleted,
 			const string location,
-			const string name),
+			const string name);
+
+struct diffctx {
+	diffhandler handler;
+	void* udata;
+	enum gfc_action result;
+};
+
+static
+int file_changed(const git_diff_delta *delta,
+								 float progress,
+								 struct diffctx *ctx) {
+
+	// can't see only directory changes and descend, have to parse >:(
+	/* location/markup/chapterN.hish */
+		
+	/* either deleted, pass old_file, true
+		 renamed, old_file, true, new_file, false
+		 otherwise, new_file, false */
+
+	void
+		one_file(const char* spath, bool deleted)
+	{
+		const string path = {
+			.s = spath,
+			.l = strlen(spath)
+		};
+		if(path.l < LITSIZ("a/markup/chapterN.hish")) return;
+		const char* slash = strchr(path.s,'/');
+		if(slash == NULL) return;
+		const char* markup = slash+1;
+		if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return;
+		if(0!=memcmp(markup,LITLEN("markup/chapter"))) return;
+		const char* num = markup + LITSIZ("markup/chapter");
+		char* end;
+		long int chapnum = strtol(num,&end,10);
+		assert(chapnum != 0);
+		if(path.l-(end-path.s) < LITSIZ(".hish")) return;
+		if(0!=memcmp(end,LITLEN(".hish"))) return;
+		// got it!
+
+		const string location = {
+			.s = path.s,
+			.l = slash-path.s
+		};
+
+		ctx->result = ctx->handle(udata, chapnum, deleted, location, path);
+	}
+	// XXX: todo: handle if unreadable
+	switch(delta->status) {
+	case GIT_DELTA_DELETED:
+		one_file(delta->old_file.path,true);
+		return ctx->result;
+	case GIT_DELTA_RENAMED:
+		one_file(delta->old_file.path,true);
+		if(ctx->result!=GFC_CONTINUE) return ctx->result;
+		// fall through
+	case GIT_DELTA_ADDED:
+	case GIT_DELTA_MODIFIED:
+	case GIT_DELTA_COPIED:
+		// note: with copied, the old file didn't change, so disregard it.
+		one_file(delta->new_file.path,false);
+		return ctx->result;
+	default:
+		ERROR("bad delta status %d",delta->status);
+		abort();
+	};
+}
+
+
+// note: this is the DIFF not the changes of each commit in between.
+enum gfc_action
+git_for_chapters_changed(
+	void* udata,
+	chapter_handler handler,
 	git_tree* parent, git_tree* base) {
 	if(base == NULL) return true;
 	assert(parent != NULL);
-
-	enum gfc_action result = GFC_CONTINUE;
-
-	int file_changed(const git_diff_delta *delta,
-									 float progress,
-									 void *payload) {
-		// can't see only directory changes and descend, have to parse >:(
-		/* location/markup/chapterN.hish */
-		
-		/* either deleted, pass old_file, true
-			 renamed, old_file, true, new_file, false
-			 otherwise, new_file, false */
-		
-		void
-			one_file(const char* spath, bool deleted)
-		{
-			const string path = {
-				.s = spath,
-				.l = strlen(spath)
-			};
-			if(path.l < LITSIZ("a/markup/chapterN.hish")) return;
-			const char* slash = strchr(path.s,'/');
-			if(slash == NULL) return;
-			const char* markup = slash+1;
-			if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return;
-			if(0!=memcmp(markup,LITLEN("markup/chapter"))) return;
-			const char* num = markup + LITSIZ("markup/chapter");
-			char* end;
-			long int chapnum = strtol(num,&end,10);
-			assert(chapnum != 0);
-			if(path.l-(end-path.s) < LITSIZ(".hish")) return;
-			if(0!=memcmp(end,LITLEN(".hish"))) return;
-			// got it!
-
-			const string location = {
-				.s = path.s,
-				.l = slash-path.s
-			};
-
-			result = handle(udata, chapnum, deleted, location, path);
-		}
-		// XXX: todo: handle if unreadable
-		switch(delta->status) {
-		case GIT_DELTA_DELETED:
-			one_file(delta->old_file.path,true);
-			return result;
-		case GIT_DELTA_RENAMED:
-			one_file(delta->old_file.path,true);
-			if(result!=GFC_CONTINUE) return result;
-			// fall through
-		case GIT_DELTA_ADDED:
-		case GIT_DELTA_MODIFIED:
-		case GIT_DELTA_COPIED:
-			// note: with copied, the old file didn't change, so disregard it.
-			one_file(delta->new_file.path,false);
-			return result;
-		default:
-			ERROR("bad delta status %d",delta->status);
-			abort();
-		};
-	}
 
 	git_diff* diff=NULL;
 	git_diff_options opts = {
@@ -385,9 +395,14 @@ git_for_chapters_changed(
 		GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS
 	};
 
-	repo_check(git_diff_tree_to_tree(&diff,repo,parent,base,&opts));
+	repo_check(git_diff_tree_to_tree(&diff,repo,base,parent,&opts));
+	struct diffctx ctx = {
+		.handler = handler,
+		.udata = udata
+		.result = GFC_CONTINUE
+	}
 	git_diff_foreach(diff,
-									 file_changed,
-									 NULL, NULL, NULL, NULL);
-	return result;
+									 (void*)file_changed,
+									 NULL, NULL, NULL, &ctx);
+	return ctx.result;
 }
