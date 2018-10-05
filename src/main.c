@@ -282,8 +282,15 @@ void for_story(
 	// save numchaps to update story later.
 	const int savenumchaps = numchaps;
 	// XXX: reduce numchaps to ready, unless all are ready
-	if(!storydb_all_ready && ready)
-		numchaps = ready; // + 1 ?
+	if(storydb_all_ready) {
+		puts("derp");
+	} else {
+		if(ready > 0) {
+			numchaps = ready; // + 1 ?
+		} else {
+			puts("herp");
+		}
+	}
 
 	git_time_t max_timestamp = story_timestamp;
 
@@ -315,7 +322,7 @@ void for_story(
 		close_with_time(&wr,max_timestamp);
 	}
 
-	if(!(numchaps_changed || g->title_changed)) {
+	if(NULL==getenv("recreate_contents") && !(numchaps_changed || g->title_changed)) {
 		// no chapters added or removed, and no chapter had an embedded title that changed.
 		struct stat info;
 		// be sure to create anyway if contents.html doesn't exist
