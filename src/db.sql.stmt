@@ -15,8 +15,7 @@ WHERE
   NOT (?1 AND story IN (select story from censored_stories)) 
   AND (
     -- all ready, or this one ready, or not last chapter
-	  (SELECT 
-  	  CASE WHEN ready = 0 THEN
+	  (CASE WHEN ready = 0 THEN
 	  	  CASE WHEN chapters = 1 THEN
 				  1
 				ELSE
@@ -32,8 +31,7 @@ WHERE
 ORDER BY chapters.updated DESC LIMIT ?3;
 FOR_ONLY_STORY
 SELECT location,
-	  (SELECT 
-  	  CASE WHEN ready = 0 THEN
+	  (CASE WHEN ready = 0 THEN
 	  	  CASE WHEN chapters = 1 THEN
 				  1
 				ELSE
@@ -47,8 +45,7 @@ SELECT location,
   AND NOT(?2 AND id IN (SELECT story FROM censored_stories));
 FOR_STORIES
 SELECT id,location,
-	  (SELECT 
-  	  CASE WHEN ?1 THEN
+	  (CASE WHEN ?1 THEN
 			  chapters
 			ELSE
 			  CASE WHEN ready = 0 THEN

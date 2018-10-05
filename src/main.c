@@ -275,21 +275,15 @@ void for_story(
 				 last chapter if it was skipped before.
 			*/
 			storydb_saw_chapter(false,g->story,story_timestamp,countchaps-1);
-			numchaps = countchaps;
+			g->numchaps = numchaps = countchaps;
 		}
 	}
 
 	// save numchaps to update story later.
 	const int savenumchaps = numchaps;
 	// XXX: reduce numchaps to ready, unless all are ready
-	if(storydb_all_ready) {
-		puts("derp");
-	} else {
-		if(ready > 0) {
-			numchaps = ready; // + 1 ?
-		} else {
-			puts("herp");
-		}
+	if(!storydb_all_ready && ready) {
+		g->numchaps = numchaps = ready; // + 1 ?
 	}
 
 	git_time_t max_timestamp = story_timestamp;
