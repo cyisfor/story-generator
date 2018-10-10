@@ -102,6 +102,35 @@ struct csucksballs {
 };
 
 static
+void do_under_construction(xmlNode* cur) {
+	if(!IS(cur->name,"construction")) {
+		xmlNode* kid = cur->children;
+		while(kid) {
+			xmlNode* next = kid->next;
+			do_under_construction(kid);
+			kid = next;
+		}
+		return;
+	}
+	xmlNode* box = xmlNewNode(cur->ns,"div");
+	xmlSetProp(box, "class", "construction");
+	xmlNode* top = xmlNewNode(cur->ns,"div");
+	xmlNode* message = xmlNewNode(cur->ns,"div");
+	xmlAddChild(box, top);
+	xmlNodeAddContentLen(box, LITLEN("(UNDER CONSTRUCTION)"));
+	xmlNodeAddChild(box, message);
+	xmlAddNextSibling(cur,box);
+	xmlNode* inner = cur->children;
+	while(inner) {
+		xmlNode* next = inner->next;
+		xmlUnlinkNode(inner);
+		xmlNodeAddChild(message, inner);
+		inner = next;
+	}
+	xmlUnlinkNode(cur);
+}
+
+static
 void got_info(
 	void* udata,
 	string title, string description, string source) {
@@ -337,6 +366,8 @@ int create_contents(identifier story,
 		};
 		storydb_with_info(&g, got_info, story);
 	}
+
+	do_under_construction(body);
 
 	unsetenv("titlehead");
 
