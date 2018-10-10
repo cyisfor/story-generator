@@ -101,6 +101,8 @@ struct csucksballs {
 	identifier story;
 };
 
+#define IS(what,name) (what && strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)))
+
 static
 void do_under_construction(xmlNode* cur) {
 	if(!IS(cur->name,"construction")) {
@@ -115,16 +117,18 @@ void do_under_construction(xmlNode* cur) {
 	xmlNode* box = xmlNewNode(cur->ns,"div");
 	xmlSetProp(box, "class", "construction");
 	xmlNode* top = xmlNewNode(cur->ns,"div");
+	xmlSetProp(top, "class", "top");
 	xmlNode* message = xmlNewNode(cur->ns,"div");
+	xmlSetProp(message, "class", "m");
 	xmlAddChild(box, top);
-	xmlNodeAddContentLen(box, LITLEN("(UNDER CONSTRUCTION)"));
-	xmlNodeAddChild(box, message);
+	xmlNodeAddContentLen(top, LITLEN("(UNDER CONSTRUCTION)"));
+	xmlAddChild(box, message);
 	xmlAddNextSibling(cur,box);
 	xmlNode* inner = cur->children;
 	while(inner) {
 		xmlNode* next = inner->next;
 		xmlUnlinkNode(inner);
-		xmlNodeAddChild(message, inner);
+		xmlAddChild(message, inner);
 		inner = next;
 	}
 	xmlUnlinkNode(cur);
@@ -211,7 +215,6 @@ void got_info(
 	memcpy(buf+title.l,LITLEN(" - \0"));
 	setenv("titlehead",buf,1);
 
-#define IS(what,name) what && strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)) 
 	void setup_head(xmlNode* cur) {
 		// set <title> and <meta name="description">
 		if(!cur) return;
@@ -367,8 +370,6 @@ int create_contents(identifier story,
 		storydb_with_info(&g, got_info, story);
 	}
 
-	do_under_construction(body);
-
 	unsetenv("titlehead");
 
 	html_dump_to_fd(dest,doc);
@@ -386,7 +387,7 @@ void create_chapter(int src, int dest,
 
 	db_working_on(story,chapter);
 	htmlish(content,src,as_child);
-
+	
 	if(!as_child) {
 		// throw away placeholder node
 		xmlUnlinkNode(content);
@@ -397,6 +398,8 @@ void create_chapter(int src, int dest,
 	xmlNode* head = nextE(doc->children->next->children);
 	// head, blank, body
 	xmlNode* body = head->next->next;
+	do_under_construction(body);
+
 	// text suffix, body, last e in body
 	xmlNode* links = head->next->next->last;
 	while(links->type != XML_ELEMENT_NODE) {
