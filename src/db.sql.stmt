@@ -74,3 +74,9 @@ WHERE
   story = ?1 AND
 	(updated > ?2 OR seen > ?2) AND 
 	(?3 OR chapter <= ?4);
+UNPUBLISHED_CHAPTERS
+SELECT chapter,story,updated FROM chapters
+WHERE
+	chapter > (SELECT ready FROM stories WHERE stories.id = chapters.story)
+ORDER BY
+updated ASC NULLS LAST;

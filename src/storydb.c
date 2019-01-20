@@ -540,5 +540,32 @@ void storydb_set_chapters(identifier story, size_t numchaps) {
 	db_once_trans(update);
 }
 
+void storydb_for_unpublished_chapters(
+	void* udata,
+	int limit;
+	void (*handle)(
+		void* udata,
+		identifier story,
+		identifier chapter,
+		git_time_t timestamp)) {
 
-	
+	DECLARE_STMT(find,UNPUBLISHED_CHAPTERS);
+	db_check(sqlite3_bind_int(find,3,limit));
+	for(;;) {
+		int res = sqlite3_step(find);
+		switch(res) {
+		case SQLITE_ROW:
+			handle(udata,
+						 sqlite3_column_int64(find,0),
+						 sqlite3_column_int64(find,1),
+						 sqlite3_column_int64(find,2));
+			continue;
+		case SQLITE_DONE:
+			sqlite3_reset(find);
+			return;
+		default:
+			db_check(res);
+			abort();
+		};
+	}
+}
