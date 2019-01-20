@@ -115,5 +115,6 @@ void storydb_for_unpublished_chapters(
 	void (*handle)(
 		void* udata,
 		identifier story,
+		const string location,
 		identifier chapter,
 		git_time_t timestamp));

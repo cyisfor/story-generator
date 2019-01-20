@@ -3,9 +3,10 @@
 void each_chapter(
 		void* udata,
 		identifier story,
+		const string location,
 		identifier chapter,
 		git_time_t timestamp) {
-	printf("%d %d %d\n",story,chapter,timestamp);
+	printf("%d:%.*s %d %d\n",story,location.l, location.s, chapter,timestamp);
 }
 
 int main(int argc, char *argv[])

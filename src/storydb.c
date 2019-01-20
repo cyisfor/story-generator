@@ -567,15 +567,14 @@ void storydb_for_unpublished_chapters(
 		case SQLITE_ROW:
 			{
 				const string story_location = {
-					.s = sqlite3_column_blob(find,2),
-					.l = sqlite3_column_bytes(find,2)
+					.s = sqlite3_column_blob(find,1),
+					.l = sqlite3_column_bytes(find,1)
 				};
 				handle(udata,
 							 sqlite3_column_int64(find,0),
-							 sqlite3_column_int64(find,1),
 							 story_location,
-							 sqlite3_column_int64(find,3),
-							 sqlite3_column_int64(find,4));
+							 sqlite3_column_int64(find,2),
+							 sqlite3_column_int64(find,3));
 			}
 			continue;
 		case SQLITE_DONE:
