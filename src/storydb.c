@@ -559,7 +559,7 @@ void storydb_for_unpublished_chapters(
 		git_time_t timestamp)) {
 
 	DECLARE_STMT(find,UNPUBLISHED_CHAPTERS);
-	db_check(sqlite3_bind_int(find,3,limit));
+	db_check(sqlite3_bind_int(find,1,limit));
 	for(;;) {
 		int res = sqlite3_step(find);
 		switch(res) {

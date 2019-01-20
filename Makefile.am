@@ -142,9 +142,12 @@ describe_LDFLAGS = $(libstorydb_la_LDFLAGS) -lreadline
 
 
 find_chapters_to_publish_SOURCES = \
-	src/find-chapters-to-publish.c
+	src/find-chapters-to-publish.c \
+	src/note.c \
+	cystuff/src/itoa.c
+
 find_chapters_to_publish_LDADD = libstorydb.la
-find_chapters_to_publish_CFLAGS = $(libstorydb_la_CFLAGS)
+find_chapters_to_publish_CFLAGS = $(libstorydb_la_CFLAGS) -I$(srcdir)/cystuff/src
 find_chapters_to_publish_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES+=db_oid/gen.h

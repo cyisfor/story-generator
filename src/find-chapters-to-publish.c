@@ -10,7 +10,7 @@ void each_chapter(
 
 int main(int argc, char *argv[])
 {
-
+	storydb_open();
 	storydb_for_unpublished_chapters(NULL, 100, each_chapter);
 	return 0;
 }
