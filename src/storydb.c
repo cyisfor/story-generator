@@ -555,6 +555,7 @@ void storydb_for_unpublished_chapters(
 	void (*handle)(
 		void* udata,
 		identifier story,
+		const string location,
 		identifier chapter,
 		git_time_t timestamp)) {
 
@@ -564,10 +565,18 @@ void storydb_for_unpublished_chapters(
 		int res = sqlite3_step(find);
 		switch(res) {
 		case SQLITE_ROW:
-			handle(udata,
-						 sqlite3_column_int64(find,0),
-						 sqlite3_column_int64(find,1),
-						 sqlite3_column_int64(find,2));
+			{
+				const string story_location = {
+					.s = sqlite3_column_blob(find,2),
+					.l = sqlite3_column_bytes(find,2)
+				};
+				handle(udata,
+							 sqlite3_column_int64(find,0),
+							 sqlite3_column_int64(find,1),
+							 story_location,
+							 sqlite3_column_int64(find,3),
+							 sqlite3_column_int64(find,4));
+			}
 			continue;
 		case SQLITE_DONE:
 			sqlite3_reset(find);
