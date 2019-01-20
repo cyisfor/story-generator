@@ -109,3 +109,11 @@ void storydb_set_info(identifier story,
 											const string title,
 											const string description,
 											const string source);
+void storydb_for_unpublished_chapters(
+	void* udata,
+	int limit,
+	void (*handle)(
+		void* udata,
+		identifier story,
+		identifier chapter,
+		git_time_t timestamp));

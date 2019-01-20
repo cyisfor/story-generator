@@ -78,5 +78,6 @@ UNPUBLISHED_CHAPTERS
 SELECT chapter,story,updated FROM chapters
 WHERE
 	chapter > (SELECT ready FROM stories WHERE stories.id = chapters.story)
+	AND updated IS NOT NULL
 ORDER BY
-updated ASC NULLS LAST;
+updated ASC;

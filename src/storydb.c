@@ -540,9 +540,18 @@ void storydb_set_chapters(identifier story, size_t numchaps) {
 	db_once_trans(update);
 }
 
+	/*
+		For unpublished (which > ready) chapters,
+		show them in order of oldest mtime to newest
+		 - by commit and/or file mtime
+
+		Chapters that have an old mtime, but are unpublished probably
+		should be published.
+	 */
+
 void storydb_for_unpublished_chapters(
 	void* udata,
-	int limit;
+	int limit,
 	void (*handle)(
 		void* udata,
 		identifier story,
