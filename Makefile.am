@@ -5,7 +5,7 @@ AM_LIBTOOLFLAGS = --quiet --no-warnings
 
 DDATE_C=$(srcdir)/ddate/ddate.c
 
-bin_PROGRAMS = generate news-log make-log describe make-contents ready
+bin_PROGRAMS = generate news-log make-log describe make-contents ready find-chapters-to-publish
 lib_LTLIBRARIES = libstorydb.la
 noinst_PROGRAMS = statements2source db_oid/make make-sql
 
@@ -139,6 +139,13 @@ describe_SOURCES = \
 describe_CFLAGS = $(libstorydb_la_CFLAGS)
 describe_LDADD = libstorydb.la
 describe_LDFLAGS = $(libstorydb_la_LDFLAGS) -lreadline
+
+
+find_chapters_to_publish_SOURCES = \
+	src/find-chapters-to-publish.c
+find_chapters_to_publish_LDADD = libstorydb.la
+find_chapters_to_publish_CFLAGS = $(libstorydb_la_CFLAGS)
+find_chapters_to_publish_LDFLAGS = $(libstorydb_la_LDFLAGS)
 
 BUILT_SOURCES+=db_oid/gen.h
 
