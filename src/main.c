@@ -501,7 +501,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 0:
-			ensure_eq(git_object_type(thing1),GIT_OBJ_COMMIT);
+			ensure_eq(git_object_type(thing1),GIT_OBJECT_COMMIT);
 			git_commit* thing2 = (git_commit*)thing1;
 			const git_oid* oid = git_commit_id(thing2);
 			INFO("(override) going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
