@@ -8,6 +8,11 @@ else()
 	message(FATAL_ERROR "SQLite3 not found!")
 endif()
 
+include(FindPkgConfig)
+pkg_check_modules(GIT
+	REQUIRED
+	libgit2)
+
 add_subdirectory(htmlish)
 
 set_source_files_properties(src/storydb.c
@@ -40,7 +45,21 @@ add_executable(generate
 	src/note.c
 	cystuff/src/itoa.c)
 
-target_include_directories(generate PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ddate")
+function(external_package target prefix)
+	target_include_directories("${target}" PRIVATE
+		"${${prefix}_INCLUDE_DIRS}")
+	target_compile_options("${target}" PRIVATE
+		"${${prefix}_CFLAGS}")
+	target_link_options("${target}" PRIVATE
+		"${${prefix}_LDFLAGS}")
+	target_link_libraries("${target}" PRIVATE
+		"${${prefix}_LIBRARIES}")
+endfunction()
+
+external_package(generate GIT)
+external_package(storydb SQLite3)
+target_include_directories(generate PRIVATE
+	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
 target_link_libraries(generate storydb)
 
 add_subdirectory(str_to_enum_trie)
@@ -60,11 +79,11 @@ add_executable(statements2source
 	cystuff/src/itoa.c
 	cystuff/src/mmapfile.c)
 
+external_package(statements2source SQLite3)
 target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
-	"${SQLite3_INCLUDE_DIRS}"
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	)
-target_link_libraries(statements2source "${SQLite3_LIBRARIES}" htmlish justdb)
+target_link_libraries(statements2source htmlish justdb)
 
 add_custom_command(
 	OUTPUT db.sql.stmt.c
