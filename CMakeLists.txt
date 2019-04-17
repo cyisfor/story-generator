@@ -41,3 +41,14 @@ add_custom_command(OUTPUT category.gen.c category.gen.h
 	DEPENDS
 	str_to_enum_trie)
 
+add_executable(statements2source
+	EXCLUDE_FROM_ALL
+	src/statements2source.c
+	src/db.c
+	src/note.c
+	cystuff/src/itoa.c
+	cystuff/src/mmapfile.c)
+
+target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
+	"${SQLite3_INCLUDE_DIRS}")
+target_link_libraries(statements2source "${SQLite3_LIBRARIES}")
