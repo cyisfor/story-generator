@@ -75,7 +75,23 @@ add_executable(ready
 	src/ready.c
 	src/note.c
 	cystuff/src/itoa.c)
-target_link_libraries(ready storydb)
+target_link_libraries(ready PRIVATE storydb)
+external_package(ready GIT)
+
+add_executable(news_log
+	src/news-log.c
+	src/repo.c
+	cystuff/src/become.c)
+target_include_directories(news_log PRIVATE cystuff/src)
+target_link_libraries(news_log PRIVATE storydb)
+
+add_executable(make_log
+	src/make-log.c
+	src/repo.c
+	cystuff/src/itoa.c
+	cystuff/src/become.c)
+target_include_directories(news_log PRIVATE cystuff/src)
+target_link_libraries(news_log PRIVATE storydb xmlfixes)
 
 add_subdirectory(str_to_enum_trie)
 

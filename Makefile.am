@@ -28,7 +28,7 @@ libstorydb_la_CFLAGS = $(SQLITE_CFLAGS) $(GIT_CFLAGS) \
 ready_SOURCES = \
 	src/ready.c \
 	src/note.c \
-	cystuff/src/itoa.c
+	cystuff/src/itoa.
 
 ready_LDADD = libstorydb.la
 
