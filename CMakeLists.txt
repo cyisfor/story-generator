@@ -10,7 +10,7 @@ endif()
 
 add_subdirectory(htmlish)
 
-add_library(storydb PUBLIC
+add_library(storydb
 	src/db.c
 	src/storydb.c)
 target_link_libraries(storydb PUBLIC
@@ -28,7 +28,7 @@ add_executable(generate
 	src/note.c
 	cystuff/src/itoa.c)
 
-target_include_directories(generate "${CMAKE_CURRENT_SOURCE_DIR}/ddate")
+target_include_directories(generate PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ddate")
 target_link_libraries(generate storydb)
 
 add_subdirectory(str_to_enum_trie)
