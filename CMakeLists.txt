@@ -129,8 +129,10 @@ target_include_directories(find_chapters_to_publish PRIVATE cystuff/src)
 target_link_libraries(find_chapters_to_publish PRIVATE storydb)
 external_package(find_chapters_to_publish GIT)
 
-add_subdirectory(str_to_enum_trie)
+##############################################33
+# Now a bunch of generated files
 
+add_subdirectory(str_to_enum_trie)
 add_custom_command(OUTPUT category.gen.c category.gen.h
 	COMMAND
 	noupper=1 prefix=category enum=CATEGORY exec "./str_to_enum_trie/str_to_enum_trie" <"${CMAKE_CURRENT_SOURCE_DIR}/src/categories.list"
@@ -165,6 +167,10 @@ add_custom_command(
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/db.sql.stmt"
 	DEPENDS
 	statements2source)
+
+set_source_files_properties(src/statements2source.c
+	PROPERTIES
+	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
 
 add_executable(dboid_make
 	src/db_oid/make.c)
@@ -210,9 +216,6 @@ ctemplate(make-log.row.html)
 ctemplate(page.html)
 ctemplate(contents-body.html)
 ctemplate(contents-story.html)
-set_source_files_properties(src/statements2source.c
-	PROPERTIES
-	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
 
 function(makeSQL name)
 	set(src	"${CMAKE_CURRENT_SOURCE_DIR}/src/${name}.sql")
