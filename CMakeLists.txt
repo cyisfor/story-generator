@@ -60,7 +60,7 @@ add_executable(generate
 	src/repo.c
 	src/create.c
 	src/note.c
-	cystuff/src/itoa.c)
+	cstuff/src/itoa.c)
 
 pkg_check_modules(GIT
 	REQUIRED
@@ -74,24 +74,24 @@ target_link_libraries(generate PRIVATE storydb)
 add_executable(ready
 	src/ready.c
 	src/note.c
-	cystuff/src/itoa.c)
+	cstuff/src/itoa.c)
 target_link_libraries(ready PRIVATE storydb)
 external_package(ready GIT)
 
 add_executable(news_log
 	src/news-log.c
 	src/repo.c
-	cystuff/src/become.c)
-target_include_directories(news_log PRIVATE cystuff/src)
+	cstuff/src/become.c)
+target_include_directories(news_log PRIVATE cstuff/src)
 target_link_libraries(news_log PRIVATE storydb)
 external_package(news_log GIT)
 
 add_executable(make_log
 	src/make-log.c
 	src/repo.c
-	cystuff/src/itoa.c
-	cystuff/src/become.c)
-target_include_directories(make_log PRIVATE cystuff/src)
+	cstuff/src/itoa.c
+	cstuff/src/become.c)
+target_include_directories(make_log PRIVATE cstuff/src)
 target_link_libraries(make_log PRIVATE storydb xmlfixes)
 external_package(make_log GIT)
 
@@ -104,8 +104,8 @@ set_source_files_properties(src/make-log.c
 add_executable(make_contents
 	src/make-contents.c
 	src/note.c
-	cystuff/src/itoa.c)
-target_include_directories(make_contents PRIVATE cystuff/src)
+	cstuff/src/itoa.c)
+target_include_directories(make_contents PRIVATE cstuff/src)
 target_link_libraries(make_contents PRIVATE storydb xmlfixes)
 external_package(make_contents GIT)
 set_source_files_properties(src/make-contents.c
@@ -114,18 +114,18 @@ set_source_files_properties(src/make-contents.c
 
 add_executable(describe
 	src/describe.c
-	cystuff/src/itoa.c
+	cstuff/src/itoa.c
 	src/db.c
 	src/note.c)
-target_include_directories(describe PRIVATE cystuff/src)
+target_include_directories(describe PRIVATE cstuff/src)
 target_link_libraries(describe PRIVATE storydb xml readline)
 external_package(describe GIT)
 
 add_executable(find_chapters_to_publish
 	src/find-chapters-to-publish.c
 	src/note.c
-	cystuff/src/itoa.c)
-target_include_directories(find_chapters_to_publish PRIVATE cystuff/src)
+	cstuff/src/itoa.c)
+target_include_directories(find_chapters_to_publish PRIVATE cstuff/src)
 target_link_libraries(find_chapters_to_publish PRIVATE storydb)
 external_package(find_chapters_to_publish GIT)
 
@@ -145,12 +145,12 @@ add_executable(statements2source
 	EXCLUDE_FROM_ALL
 	src/statements2source.c
 	src/note.c
-	cystuff/src/itoa.c
-	cystuff/src/mmapfile.c)
+	cstuff/src/itoa.c
+	cstuff/src/mmapfile.c)
 
 external_package(statements2source SQLite3)
 external_package(statements2source GIT)
-target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
+target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cstuff/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	)
 target_link_libraries(statements2source PRIVATE htmlish justdb)

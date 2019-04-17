@@ -100,7 +100,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 							 "WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update_story,SAW_CHAPTER_UPDATE_STORY);
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
-	DECLARE_STMT(notcreated,"SELECT id FROM chapters WHERE created = ?1");
+	DECLARE_STMT(notcreated,"SELECT 1 FROM chapters WHERE created = ?1");
 	git_time_t created = updated;
 	for(;;) {
 		db_check(sqlite3_bind_int64(notcreated, 1, created));

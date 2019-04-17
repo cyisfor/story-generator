@@ -2,10 +2,6 @@
 	path = htmlish
 	url = git://github.com/cyisfor/htmlish.git
 	ignore = untracked
-[submodule "cystuff"]
-	path = cystuff
-	url = git://github.com/cyisfor/cystuff.git
-	ignore = untracked
 [submodule "ctemplate"]
 	path = ctemplate
 	url = git://github.com/cyisfor/ctemplate.git
