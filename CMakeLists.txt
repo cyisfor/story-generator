@@ -9,9 +9,17 @@ else()
 endif()
 
 include(FindPkgConfig)
-pkg_check_modules(GIT
-	REQUIRED
-	libgit2)
+
+function(external_package target prefix)
+	target_include_directories("${target}" PRIVATE
+		"${${prefix}_INCLUDE_DIRS}")
+	target_compile_options("${target}" PRIVATE
+		"${${prefix}_CFLAGS}")
+	target_link_options("${target}" PRIVATE
+		"${${prefix}_LDFLAGS}")
+	target_link_libraries("${target}" PRIVATE
+		"${${prefix}_LIBRARIES}")
+endfunction()
 
 add_subdirectory(htmlish)
 
@@ -23,11 +31,13 @@ add_library(justdb
 	src/db.c)
 target_link_libraries(justdb PUBLIC
 		htmlish # for no error thingies from database
-	"${SQLite3_LIBRARIES}")
+		)
 target_include_directories(justdb PUBLIC
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	"${CMAKE_CURRENT_BINARY_DIR}" # db_oid
-	"${SQLite3_INCLUDE_DIRS}")
+	)
+
+external_package(justdb SQLite3)
 
 add_library(storydb
 	src/storydb.c)
@@ -45,22 +55,14 @@ add_executable(generate
 	src/note.c
 	cystuff/src/itoa.c)
 
-function(external_package target prefix)
-	target_include_directories("${target}" PRIVATE
-		"${${prefix}_INCLUDE_DIRS}")
-	target_compile_options("${target}" PRIVATE
-		"${${prefix}_CFLAGS}")
-	target_link_options("${target}" PRIVATE
-		"${${prefix}_LDFLAGS}")
-	target_link_libraries("${target}" PRIVATE
-		"${${prefix}_LIBRARIES}")
-endfunction()
-
+pkg_check_modules(GIT
+	REQUIRED
+	libgit2)
 external_package(generate GIT)
-external_package(storydb SQLite3)
+
 target_include_directories(generate PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
-target_link_libraries(generate storydb)
+target_link_libraries(generate PRIVATE storydb)
 
 add_subdirectory(str_to_enum_trie)
 
@@ -83,7 +85,7 @@ external_package(statements2source SQLite3)
 target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	)
-target_link_libraries(statements2source htmlish justdb)
+target_link_libraries(statements2source PRIVATE htmlish justdb)
 
 add_custom_command(
 	OUTPUT db.sql.stmt.c
