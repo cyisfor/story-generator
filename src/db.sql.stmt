@@ -74,10 +74,17 @@ WHERE
   story = ?1 AND
 	(updated > ?2 OR seen > ?2) AND 
 	(?3 OR chapter <= ?4);
+
 UNPUBLISHED_CHAPTERS
-SELECT chapter,story,updated FROM chapters
+SELECT story,
+  (SELECT location FROM stories WHERE stories.id = story),
+  chapter,
+  updated
+	FROM chapters
 WHERE
 	chapter > (SELECT ready FROM stories WHERE stories.id = chapters.story)
+	AND (SELECT ready FROM stories WHERE stories.id = chapters.story) > 0
 	AND updated IS NOT NULL
 ORDER BY
-updated ASC;
+updated ASC
+LIMIT ?1;
