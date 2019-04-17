@@ -195,18 +195,10 @@ set_source_files_properties(src/db.c
 file(MAKE_DIRECTORY template)
 add_subdirectory(ctemplate)
 function(ctemplate name)
-	set(src "${CMAKE_CURRENT_SOURCE_DIR}/template/${name}")
-	set(dest "template/${name}.c")
-	add_custom_command(
-		OUTPUT "template/${name}.c"
-		COMMAND
-		"./ctemplate/ctemplate"
-		<"${src}"
-		>"${dest}"
-		MAIN_DEPENDENCY
-		"${src}"
-		DEPENDS
-		ctemplate/ctemplate)
+	add_ctemplate(
+		"${name}"
+		"${CMAKE_CURRENT_SOURCE_DIR}/template/${name}"
+		"template/${name}.c")
 endfunction()
 
 ctemplate(statements2source.c)
