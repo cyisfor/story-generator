@@ -16,7 +16,10 @@ add_library(storydb
 target_link_libraries(storydb PUBLIC
 	htmlish
 	"${SQLite3_LIBRARIES}")
-target_include_directories(storydb PUBLIC "${SQLite3_INCLUDE_DIRS}")
+target_include_directories(storydb PUBLIC
+	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
+	"${SQLite3_INCLUDE_DIRS}"
+	)
 
 add_executable(generate
 	category.gen.c
@@ -52,3 +55,16 @@ add_executable(statements2source
 target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
 	"${SQLite3_INCLUDE_DIRS}")
 target_link_libraries(statements2source "${SQLite3_LIBRARIES}")
+
+add_custom_command(
+	OUTPUT db.sql.stmt.c
+	COMMAND
+	onlydefine=1
+	"${CMAKE_CURRENT_BINARY_DIR}/statements2source"
+	derp
+	<"${CMAKE_CURRENT_SOURCE_DIR}/db.sql.stmt"
+	>	"${CMAKE_CURRENT_BINARY_DIR}/db.sql.stmt.c"
+	MAIN_DEPENDENCY
+	"${CMAKE_CURRENT_SOURCE_DIR}/db.sql.stmt"
+	DEPENDS
+	statements2source)
