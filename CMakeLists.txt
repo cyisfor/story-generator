@@ -23,6 +23,10 @@ endfunction()
 
 add_subdirectory(htmlish)
 
+# note: we have to set OBJECT_DEPENDS manually
+# since gcc rage quits if the include file is not found
+# and cmake doesn't parse the rage quit message to find what
+# file needs to be generated.
 set_source_files_properties(src/storydb.c
 	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
@@ -73,7 +77,7 @@ add_custom_command(OUTPUT category.gen.c category.gen.h
 	MAIN_DEPENDENCY
 	src/categories.list
 	DEPENDS
-	str_to_enum_trie)
+	str_to_enum_trie/str_to_enum_trie)
 
 add_executable(statements2source
 	EXCLUDE_FROM_ALL
@@ -132,7 +136,7 @@ add_custom_command(
 	MAIN_DEPENDENCY
 	"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
 	DEPENDS
-	ctemplate)
+	ctemplate/ctemplate)
 add_subdirectory(ctemplate)
 
 set_source_files_properties(src/statements2source.c
@@ -162,6 +166,6 @@ add_executable(make_sql
 	src/make-sql.c)
 
 # str_to_enum_trie makes category.gen.c makes generate
-# make-sql.c makes make-sql makes schema.sql.c makes db.c
-# db_oid/make.c makes make_dboid makes db_oid/gen.h makes db.c
-# ctemplate/ctemplate makes statements2source.c.c makes statements2source.c makes statements2source makes db.sql.stmt.c makes db.c
+# make-sql.c makes make-sql makes schema.sql.c makes justdb
+# db_oid/make.c makes make_dboid makes db_oid/gen.h makes justdb
+# ctemplate/ctemplate makes statements2source.c.c makes statements2source.c makes statements2source makes storydb
