@@ -93,7 +93,9 @@ file(MAKE_DIRECTORY db_oid)
 
 set_source_files_properties(src/db.c
 	PROPERTIES
-	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/db_oid/gen.h")
+	OBJECT_DEPENDS
+	"db_oid/gen.h;schema.sql.gen.c;indexes.sql.gen.c"
+	)
 
 # And now you learn the depths of my insanity
 
@@ -115,21 +117,23 @@ set_source_files_properties(src/statements2source.c
 	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
 
 function(makeSQL name)
+	set(src	"${CMAKE_CURRENT_SOURCE_DIR}/src/${name}.sql")
+	set(dest "${name}.sql.gen.c")
 	add_custom_command(
-		OUTPUT "${name}.sql.gen.c"
+		OUTPUT "${dest}"
 		COMMAND
-		"${CMAKE_CURRENT_BINARY_DIR}/make-sql"
-		<"${CMAKE_CURRENT_SOURCE_DIR}/sql/${name}.sql"
-		>"${name}.sql.gen.c"
+		"${CMAKE_CURRENT_BINARY_DIR}/make_sql"
+		<"${src}"
+		>"${dest}"
 		MAIN_DEPENDENCY
-		"${CMAKE_CURRENT_SOURCE_DIR}/sql/${name}.sql"
+		"${src}"
 		DEPENDS
 		make_sql
 		)
 endfunction()
 
 makeSQL(schema)
-makeSQL(indexed)
+makeSQL(indexes)
 
 add_executable(make_sql
 	src/make-sql.c)
