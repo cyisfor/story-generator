@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(htmlish VERSION 0.1)
+project(story-generator VERSION 0.1)
 
 include(FindSQLite3)
 
@@ -19,7 +19,7 @@ target_link_libraries(storydb PUBLIC
 target_include_directories(storydb PUBLIC "${SQLite3_INCLUDE_DIRS}")
 
 add_executable(generate
-	  category.gen.c
+	category.gen.c
 	ddate/ddate.c
 	src/main.c
 	src/storygit.c
@@ -27,3 +27,17 @@ add_executable(generate
 	src/create.c
 	src/note.c
 	cystuff/src/itoa.c)
+
+target_include_directories(generate "${CMAKE_CURRENT_SOURCE_DIR}/ddate")
+target_link_libraries(generate storydb)
+
+add_subdirectory(str_to_enum_trie)
+
+add_custom_command(OUTPUT category.gen.c category.gen.h
+	COMMAND
+	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/main" <src/categories.list
+	MAIN_DEPENDENCY
+	src/categories.list
+	DEPENDS
+	str_to_enum_trie)
+

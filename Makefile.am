@@ -55,7 +55,7 @@ BUILT_SOURCES = category.gen.c category.gen.h
 
 category.gen.c category.gen.h: src/categories.list $(srcdir)/str_to_enum_trie/main
 	@$(call status, generate category lookup table)
-	@noupper=1 prefix=category enum=CATEGORY exec $(srcdir)/str_to_enum_trie/main <$<
+
 
 $(srcdir)/str_to_enum_trie/main: str_to_enum_trie/src/main.c
 	@$(call status, str to enum trie)
