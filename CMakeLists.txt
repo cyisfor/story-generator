@@ -10,6 +10,9 @@ endif()
 
 add_subdirectory(htmlish)
 
+set_source_files_properties(src/storydb.c
+	OBJECT_DEPENDS "db.sql.stmt.c")
+
 add_library(storydb
 	src/db.c
 	src/storydb.c)
@@ -62,9 +65,9 @@ add_custom_command(
 	onlydefine=1
 	"${CMAKE_CURRENT_BINARY_DIR}/statements2source"
 	derp
-	<"${CMAKE_CURRENT_SOURCE_DIR}/db.sql.stmt"
+	<"${CMAKE_CURRENT_SOURCE_DIR}/src/db.sql.stmt"
 	>	"${CMAKE_CURRENT_BINARY_DIR}/db.sql.stmt.c"
 	MAIN_DEPENDENCY
-	"${CMAKE_CURRENT_SOURCE_DIR}/db.sql.stmt"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/db.sql.stmt"
 	DEPENDS
 	statements2source)
