@@ -11,13 +11,13 @@ endif()
 include(FindPkgConfig)
 
 function(external_package target prefix)
-	target_include_directories("${target}" PRIVATE
+	target_include_directories("${target}" PUBLIC
 		"${${prefix}_INCLUDE_DIRS}")
-	target_compile_options("${target}" PRIVATE
+	target_compile_options("${target}" PUBLIC
 		"${${prefix}_CFLAGS}")
-	target_link_options("${target}" PRIVATE
+	target_link_options("${target}" PUBLIC
 		"${${prefix}_LDFLAGS}")
-	target_link_libraries("${target}" PRIVATE
+	target_link_libraries("${target}" PUBLIC
 		"${${prefix}_LIBRARIES}")
 endfunction()
 
@@ -61,6 +61,7 @@ pkg_check_modules(GIT
 external_package(generate GIT)
 
 target_include_directories(generate PRIVATE
+	"${CMAKE_CURRENT_SOURCE_DIR}/libxmlfixes/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
 target_link_libraries(generate PRIVATE storydb)
 
@@ -68,7 +69,7 @@ add_subdirectory(str_to_enum_trie)
 
 add_custom_command(OUTPUT category.gen.c category.gen.h
 	COMMAND
-	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/str_to_enum_trie" <src/categories.list
+	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/str_to_enum_trie" <"${CMAKE_CURRENT_SOURCE_DIR}/src/categories.list"
 	MAIN_DEPENDENCY
 	src/categories.list
 	DEPENDS
@@ -82,6 +83,7 @@ add_executable(statements2source
 	cystuff/src/mmapfile.c)
 
 external_package(statements2source SQLite3)
+external_package(statements2source GIT)
 target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	)
@@ -118,7 +120,7 @@ set_source_files_properties(src/db.c
 	"db_oid/gen.h;schema.sql.gen.c;indexes.sql.gen.c"
 	)
 
-# And now you learn the depths of my insanity
+# And now you learn the depths of my madness
 
 file(MAKE_DIRECTORY template)
 add_custom_command(
@@ -158,3 +160,8 @@ makeSQL(indexes)
 
 add_executable(make_sql
 	src/make-sql.c)
+
+# str_to_enum_trie makes category.gen.c makes generate
+# make-sql.c makes make-sql makes schema.sql.c makes db.c
+# db_oid/make.c makes make_dboid makes db_oid/gen.h makes db.c
+# ctemplate/ctemplate makes statements2source.c.c makes statements2source.c makes statements2source makes db.sql.stmt.c makes db.c
