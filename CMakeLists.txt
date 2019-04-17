@@ -112,6 +112,23 @@ set_source_files_properties(src/make-contents.c
 	OBJECT_DEPENDS
 	"template/page.html.c;template/contents-body.html.c;template/contents-story.html.c")
 
+add_executable(describe
+	src/describe.c
+	cystuff/src/itoa.c
+	src/db.c
+	src/note.c)
+target_include_directories(describe PRIVATE cystuff/src)
+target_link_libraries(describe PRIVATE storydb xml readline)
+external_package(describe GIT)
+
+add_executable(find_chapters_to_publish
+	src/find-chapters-to-publish.c
+	src/note.c
+	cystuff/src/itoa.c)
+target_include_directories(find_chapters_to_publish PRIVATE cystuff/src)
+target_link_libraries(find_chapters_to_publish PRIVATE storydb)
+external_package(find_chapters_to_publish GIT)
+
 add_subdirectory(str_to_enum_trie)
 
 add_custom_command(OUTPUT category.gen.c category.gen.h
