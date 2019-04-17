@@ -83,6 +83,7 @@ add_executable(news_log
 	cystuff/src/become.c)
 target_include_directories(news_log PRIVATE cystuff/src)
 target_link_libraries(news_log PRIVATE storydb)
+external_package(news_log GIT)
 
 add_executable(make_log
 	src/make-log.c
@@ -91,6 +92,13 @@ add_executable(make_log
 	cystuff/src/become.c)
 target_include_directories(make_log PRIVATE cystuff/src)
 target_link_libraries(make_log PRIVATE storydb xmlfixes)
+
+set_source_files_properties(src/make-log.c
+	PROPERTIES
+	OBJECT_DEPENDS
+	"template/make-log.html.c;template/make-log.row.html.c"
+	)
+
 
 add_subdirectory(str_to_enum_trie)
 
@@ -155,7 +163,7 @@ function(ctemplate name)
 	set(src "${CMAKE_CURRENT_SOURCE_DIR}/template/${name}")
 	set(dest "template/${name}.c")
 	add_custom_command(
-		OUTPUT template/${name}.c
+		OUTPUT "template/${name}.c"
 		COMMAND
 		"./ctemplate/ctemplate"
 		<"${src}"
@@ -169,7 +177,10 @@ endfunction()
 ctemplate(statements2source.c)
 ctemplate(make-log.html)
 ctemplate(make-log.row.html)
-
+# for make-contents
+ctemplate(page.html)
+ctemplate(contents-body.html)
+ctemplate(contents-story.html)
 set_source_files_properties(src/statements2source.c
 	PROPERTIES
 	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
