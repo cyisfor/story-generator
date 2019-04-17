@@ -3,9 +3,9 @@ project(story-generator VERSION 0.1)
 
 include(FindSQLite3)
 
-if("${SQLite_FOUND}")
+if(SQLite3_FOUND)
 else()
-	message(FATAL_ERROR SQLite3 not found!)
+	message(FATAL_ERROR "SQLite3 not found!")
 endif()
 
 add_subdirectory(htmlish)
@@ -35,7 +35,7 @@ add_subdirectory(str_to_enum_trie)
 
 add_custom_command(OUTPUT category.gen.c category.gen.h
 	COMMAND
-	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/main" <src/categories.list
+	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/str_to_enum_trie" <src/categories.list
 	MAIN_DEPENDENCY
 	src/categories.list
 	DEPENDS
