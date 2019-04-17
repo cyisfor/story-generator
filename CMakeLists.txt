@@ -11,12 +11,16 @@ endif()
 add_subdirectory(htmlish)
 
 set_source_files_properties(src/storydb.c
+	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
 
+add_library(justdb
+	src/db.c)
+
 add_library(storydb
-	src/db.c
 	src/storydb.c)
 target_link_libraries(storydb PUBLIC
+	justdb
 	htmlish
 	"${SQLite3_LIBRARIES}")
 target_include_directories(storydb PUBLIC
@@ -50,7 +54,6 @@ add_custom_command(OUTPUT category.gen.c category.gen.h
 add_executable(statements2source
 	EXCLUDE_FROM_ALL
 	src/statements2source.c
-	src/db.c
 	src/note.c
 	cystuff/src/itoa.c
 	cystuff/src/mmapfile.c)
@@ -59,7 +62,7 @@ target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}
 	"${SQLite3_INCLUDE_DIRS}"
 	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
 	)
-target_link_libraries(statements2source "${SQLite3_LIBRARIES}" htmlish)
+target_link_libraries(statements2source "${SQLite3_LIBRARIES}" htmlish justdb)
 
 add_custom_command(
 	OUTPUT db.sql.stmt.c
@@ -87,7 +90,8 @@ add_custom_command(
 file(MAKE_DIRECTORY db_oid)
 
 set_source_files_properties(src/db.c
-	OBJECT_DEPENDS "db_oid/gen.h")
+	PROPERTIES
+	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/db_oid/gen.h")
 
 # And now you learn the depths of my insanity
 
@@ -103,3 +107,7 @@ add_custom_command(
 	DEPENDS
 	ctemplate)
 add_subdirectory(ctemplate)
+
+set_source_files_properties(src/statements2source.c
+	PROPERTIES
+	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
