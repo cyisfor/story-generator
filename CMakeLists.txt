@@ -71,3 +71,18 @@ add_custom_command(
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/db.sql.stmt"
 	DEPENDS
 	statements2source)
+
+add_executable(dboid_make
+	src/db_oid/make.c)
+
+add_custom_command(
+	OUTPUT db_oid/gen.h
+	COMMAND
+	"${CMAKE_CURRENT_BINARY_DIR}/dboid_make"
+	db_oid "${CMAKE_CURRENT_SOURCE_DIR}/src/db_oid"
+	MAIN_DEPENDENCY
+	dboid_make)
+file(MAKE_DIRECTORY db_oid)
+
+set_source_files_properties(src/db.c
+	OBJECT_DEPENDS "db_oid/gen.h")
