@@ -88,3 +88,18 @@ file(MAKE_DIRECTORY db_oid)
 
 set_source_files_properties(src/db.c
 	OBJECT_DEPENDS "db_oid/gen.h")
+
+# And now you learn the depths of my insanity
+
+file(MAKE_DIRECTORY template)
+add_custom_command(
+	OUTPUT template/statements2source.c.c
+	COMMAND
+	"${CMAKE_CURRENT_BINARY_DIR}/ctemplate/ctemplate"
+	<"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
+	>"template/statements2source.c.c"
+	MAIN_DEPENDENCY
+	"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
+	DEPENDS
+	ctemplate)
+add_subdirectory(ctemplate)
