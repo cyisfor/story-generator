@@ -48,6 +48,8 @@ add_library(storydb
 target_link_libraries(storydb PUBLIC
 	justdb)
 
+#######################################
+# THE PROGRAMS
 
 add_executable(generate
 	category.gen.c
@@ -69,11 +71,17 @@ target_include_directories(generate PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
 target_link_libraries(generate PRIVATE storydb)
 
+add_executable(ready
+	src/ready.c
+	src/note.c
+	cystuff/src/itoa.c)
+target_link_libraries(ready storydb)
+
 add_subdirectory(str_to_enum_trie)
 
 add_custom_command(OUTPUT category.gen.c category.gen.h
 	COMMAND
-	noupper=1 prefix=category enum=CATEGORY exec "${CMAKE_CURRENT_BINARY_DIR}/str_to_enum_trie/str_to_enum_trie" <"${CMAKE_CURRENT_SOURCE_DIR}/src/categories.list"
+	noupper=1 prefix=category enum=CATEGORY exec "./str_to_enum_trie/str_to_enum_trie" <"${CMAKE_CURRENT_SOURCE_DIR}/src/categories.list"
 	MAIN_DEPENDENCY
 	src/categories.list
 	DEPENDS
@@ -97,7 +105,7 @@ add_custom_command(
 	OUTPUT db.sql.stmt.c
 	COMMAND
 	onlydefine=1
-	"${CMAKE_CURRENT_BINARY_DIR}/statements2source"
+	"./statements2source"
 	derp
 	<"${CMAKE_CURRENT_SOURCE_DIR}/src/db.sql.stmt"
 	>	"${CMAKE_CURRENT_BINARY_DIR}/db.sql.stmt.c"
@@ -112,7 +120,7 @@ add_executable(dboid_make
 add_custom_command(
 	OUTPUT db_oid/gen.h
 	COMMAND
-	"${CMAKE_CURRENT_BINARY_DIR}/dboid_make"
+	"./dboid_make"
 	db_oid "${CMAKE_CURRENT_SOURCE_DIR}/src/db_oid"
 	DEPENDS
 	dboid_make)
@@ -130,7 +138,7 @@ file(MAKE_DIRECTORY template)
 add_custom_command(
 	OUTPUT template/statements2source.c.c
 	COMMAND
-	"${CMAKE_CURRENT_BINARY_DIR}/ctemplate/ctemplate"
+	"./ctemplate/ctemplate"
 	<"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
 	>"template/statements2source.c.c"
 	MAIN_DEPENDENCY
@@ -149,7 +157,7 @@ function(makeSQL name)
 	add_custom_command(
 		OUTPUT "${dest}"
 		COMMAND
-		"${CMAKE_CURRENT_BINARY_DIR}/make_sql"
+		"./make_sql"
 		<"${src}"
 		>"${dest}"
 		MAIN_DEPENDENCY
