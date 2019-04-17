@@ -16,17 +16,19 @@ set_source_files_properties(src/storydb.c
 
 add_library(justdb
 	src/db.c)
+target_link_libraries(justdb PUBLIC
+		htmlish # for no error thingies from database
+	"${SQLite3_LIBRARIES}")
+target_include_directories(justdb PUBLIC
+	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
+	"${CMAKE_CURRENT_BINARY_DIR}" # db_oid
+	"${SQLite3_INCLUDE_DIRS}")
 
 add_library(storydb
 	src/storydb.c)
 target_link_libraries(storydb PUBLIC
-	justdb
-	htmlish
-	"${SQLite3_LIBRARIES}")
-target_include_directories(storydb PUBLIC
-	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
-	"${SQLite3_INCLUDE_DIRS}"
-	)
+	justdb)
+
 
 add_executable(generate
 	category.gen.c
@@ -111,3 +113,23 @@ add_subdirectory(ctemplate)
 set_source_files_properties(src/statements2source.c
 	PROPERTIES
 	OBJECT_DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/template/statements2source.c.c")
+
+function(makeSQL name)
+	add_custom_command(
+		OUTPUT "${name}.sql.gen.c"
+		COMMAND
+		"${CMAKE_CURRENT_BINARY_DIR}/make-sql"
+		<"${CMAKE_CURRENT_SOURCE_DIR}/sql/${name}.sql"
+		>"${name}.sql.gen.c"
+		MAIN_DEPENDENCY
+		"${CMAKE_CURRENT_SOURCE_DIR}/sql/${name}.sql"
+		DEPENDS
+		make_sql
+		)
+endfunction()
+
+makeSQL(schema)
+makeSQL(indexed)
+
+add_executable(make_sql
+	src/make-sql.c)
