@@ -44,6 +44,7 @@ target_include_directories(justdb PUBLIC
 external_package(justdb SQLite3)
 
 add_library(storydb
+	src/note.c
 	src/storydb.c)
 target_link_libraries(storydb PUBLIC
 	justdb)
@@ -92,6 +93,7 @@ add_executable(make_log
 	cystuff/src/become.c)
 target_include_directories(make_log PRIVATE cystuff/src)
 target_link_libraries(make_log PRIVATE storydb xmlfixes)
+external_package(make_log GIT)
 
 set_source_files_properties(src/make-log.c
 	PROPERTIES
@@ -99,6 +101,16 @@ set_source_files_properties(src/make-log.c
 	"template/make-log.html.c;template/make-log.row.html.c"
 	)
 
+add_executable(make_contents
+	src/make-contents.c
+	src/note.c
+	cystuff/src/itoa.c)
+target_include_directories(make_contents PRIVATE cystuff/src)
+target_link_libraries(make_contents PRIVATE storydb xmlfixes)
+external_package(make_contents GIT)
+set_source_files_properties(src/make-contents.c
+	OBJECT_DEPENDS
+	"template/page.html.c;template/contents-body.html.c;template/contents-story.html.c")
 
 add_subdirectory(str_to_enum_trie)
 
