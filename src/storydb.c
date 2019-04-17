@@ -100,6 +100,19 @@ void storydb_saw_chapter(bool deleted, identifier story,
 							 "WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update_story,SAW_CHAPTER_UPDATE_STORY);
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
+	DECLARE_STMT(notcreated,"SELECT id FROM chapters WHERE created = ?1");
+	git_time_t created = updated;
+	for(;;) {
+		db_check(sqlite3_bind_int64(notcreated, 1, created));
+		int res = sqlite3_step(notcreated);
+		sqlite3_reset(notcreated);
+		if(res == SQLITE_DONE) {
+			// XXX: yay, race conditions!
+			break;
+		} else {
+			--created;
+		}
+	}
 	db_check(sqlite3_bind_int64(find,1,story));
 	db_check(sqlite3_bind_int64(find,2,chapter));
 	assert(updated > 0);
@@ -122,7 +135,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		INFO("chapter found %lu:%lu",story,chapter);
 		break;
 	case SQLITE_DONE:
-		db_check(sqlite3_bind_int64(insert,1,updated));
+		db_check(sqlite3_bind_int64(insert,1,created));
 		db_check(sqlite3_bind_int64(insert,2,story));
 		db_check(sqlite3_bind_int64(insert,3,chapter));
 		db_once(insert);

@@ -22,9 +22,13 @@ void for_story(void* udata,
 			
 	ensure_eq(description.l, write(t,description.s,description.l));
 
-	puts("****");
-	puts(title.s);
-	puts("****");
+	if(title.s) {
+		puts("****");
+		puts(title.s);
+		puts("****");
+	} else {
+		puts("No title");
+	}
 		
 	int pid = fork();
 	if(pid == 0) {
@@ -47,8 +51,9 @@ void for_story(void* udata,
 		puts("description unchanged");
 	}
 
-
-	rl_insert_text(title.s);
+	if(title.s) {
+		rl_insert_text(title.s);
+	}
 	string newtit = {
 		.s = readline("Title: ")
 	};
