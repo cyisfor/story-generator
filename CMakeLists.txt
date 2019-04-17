@@ -56,8 +56,10 @@ add_executable(statements2source
 	cystuff/src/mmapfile.c)
 
 target_include_directories(statements2source PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/cystuff/src"
-	"${SQLite3_INCLUDE_DIRS}")
-target_link_libraries(statements2source "${SQLite3_LIBRARIES}")
+	"${SQLite3_INCLUDE_DIRS}"
+	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
+	)
+target_link_libraries(statements2source "${SQLite3_LIBRARIES}" htmlish)
 
 add_custom_command(
 	OUTPUT db.sql.stmt.c
@@ -80,7 +82,7 @@ add_custom_command(
 	COMMAND
 	"${CMAKE_CURRENT_BINARY_DIR}/dboid_make"
 	db_oid "${CMAKE_CURRENT_SOURCE_DIR}/src/db_oid"
-	MAIN_DEPENDENCY
+	DEPENDS
 	dboid_make)
 file(MAKE_DIRECTORY db_oid)
 
