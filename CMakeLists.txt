@@ -67,7 +67,6 @@ pkg_check_modules(GIT
 external_package(generate GIT)
 
 target_include_directories(generate PRIVATE
-	"${CMAKE_CURRENT_SOURCE_DIR}/libxmlfixes/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
 target_link_libraries(generate PRIVATE storydb)
 
@@ -90,8 +89,8 @@ add_executable(make_log
 	src/repo.c
 	cystuff/src/itoa.c
 	cystuff/src/become.c)
-target_include_directories(news_log PRIVATE cystuff/src)
-target_link_libraries(news_log PRIVATE storydb xmlfixes)
+target_include_directories(make_log PRIVATE cystuff/src)
+target_link_libraries(make_log PRIVATE storydb xmlfixes)
 
 add_subdirectory(str_to_enum_trie)
 
@@ -151,17 +150,25 @@ set_source_files_properties(src/db.c
 # And now you learn the depths of my madness
 
 file(MAKE_DIRECTORY template)
-add_custom_command(
-	OUTPUT template/statements2source.c.c
-	COMMAND
-	"./ctemplate/ctemplate"
-	<"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
-	>"template/statements2source.c.c"
-	MAIN_DEPENDENCY
-	"${CMAKE_CURRENT_SOURCE_DIR}/template/statements2source.c"
-	DEPENDS
-	ctemplate/ctemplate)
 add_subdirectory(ctemplate)
+function(ctemplate name)
+	set(src "${CMAKE_CURRENT_SOURCE_DIR}/template/${name}")
+	set(dest "template/${name}.c")
+	add_custom_command(
+		OUTPUT template/${name}.c
+		COMMAND
+		"./ctemplate/ctemplate"
+		<"${src}"
+		>"${dest}"
+		MAIN_DEPENDENCY
+		"${src}"
+		DEPENDS
+		ctemplate/ctemplate)
+endfunction()
+
+ctemplate(statements2source.c)
+ctemplate(make-log.html)
+ctemplate(make-log.row.html)
 
 set_source_files_properties(src/statements2source.c
 	PROPERTIES
