@@ -382,7 +382,7 @@ enum gfc_action on_chapter(
 
 	// XXX: todo: handle if unreadable
 	INFO("%ld saw %ld of ",g->timestamp, chapnum);
-	fwrite(loc.s, loc.l, 1, stderr);
+	fwrite(loc.base, loc.len, 1, stdout);
 	fputc('\n',stdout);
 	output_time("time",g->timestamp);
 	struct stat derp;
