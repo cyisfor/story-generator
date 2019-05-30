@@ -37,7 +37,8 @@ target_link_libraries(justdb PUBLIC
 		htmlish # for no error thingies from database
 		)
 target_include_directories(justdb PUBLIC
-	"${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src"
+	cstuff/src
+	htmlish/src
 	"${CMAKE_CURRENT_BINARY_DIR}" # db_oid
 	)
 
