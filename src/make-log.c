@@ -45,13 +45,13 @@ void on_chapter(void* udata,
 
 	char numbuf[0x10];
 	string num = {
-		.s = numbuf,
-		.l = itoa(numbuf,0x10,chapnum)
+		.base = numbuf,
+		.len = itoa(numbuf,0x10,chapnum)
 	};
 	// need num even for chapnum 0, because "chapter" column
 		
-	const string stitle = story_title.s ? story_title : location;
-	const string ctitle = chapter_title.s ? chapter_title : stitle;
+	const string stitle = story_title.base ? story_title : location;
+	const string ctitle = chapter_title.base ? chapter_title : stitle;
 
 #include "template/make-log.row.html.c"
 }

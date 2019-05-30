@@ -26,7 +26,7 @@ struct csucks {
 static
 void have_info(void* udata, string title, string description, string source) {
 	struct csucks* g = (struct csucks*) udata;
-	if(!title.l) {
+	if(!title.len) {
 		title = g->location;
 	}
 	const string location = g->location;
@@ -66,10 +66,10 @@ void output_story(void* udata,
 											derpbuf2);
 	char modbuf[0x100];
 	char modbuf2[0x100]; // sigh
-	g.modified.s = modbuf;
-	g.modified.l = strftime(modbuf, 0x100, "%B %e, %Y", localtime(&timestamp));
-	g.modified_time.s = modbuf2;
-	g.modified_time.l = strftime(modbuf2, 0x100,
+	g.modified.base = modbuf;
+	g.modified.len = strftime(modbuf, 0x100, "%B %e, %Y", localtime(&timestamp));
+	g.modified_time.base = modbuf2;
+	g.modified_time.len = strftime(modbuf2, 0x100,
 															 "%I:%M %p", localtime(&timestamp));
 
 	storydb_with_info(&g, have_info, story);
@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
 		storydb_for_stories(NULL, output_story, false, 0);
 	}
 	string title = {
-		.s = "Table of Contents",
-		.l = LITSIZ("Table of Contents")
+		.base = "Table of Contents",
+		.len = LITSIZ("Table of Contents")
 	};
 	void output_body() {
 #include "template/contents-body.html.c"

@@ -20,9 +20,9 @@ bool onlydefine = false;
 static
 void output_sql(string sql) {
 	int j = 0;
-	for(j=0;j<sql.l;++j) {
-		if(j == sql.l - 1 && sql.s[j] == ';') break;
-		switch(sql.s[j]) {
+	for(j=0;j<sql.len;++j) {
+		if(j == sql.len - 1 && sql.base[j] == ';') break;
+		switch(sql.base[j]) {
 		case '"':
 			output_literal("\\\"");
 			continue;
@@ -34,7 +34,7 @@ void output_sql(string sql) {
 			output_literal("\n\t\""); 
 			continue;
 		default:
-			fputc(sql.s[j],stdout);
+			fputc(sql.base[j],stdout);
 		}
 	}
 }
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	string name = {};
 	if(isspace(cur[0])) {
 		if(argc == 2) {
-			name = ((string){.s = argv[1], .l = strlen(argv[1])});
+			name = ((string){.base = argv[1], .len = strlen(argv[1])});
 		}
 	} else {
 		int i;
@@ -69,13 +69,13 @@ int main(int argc, char *argv[]) {
 				exit(3);
 			}
 		}
-		name.s = cur;
-		name.l = i;
+		name.base = cur;
+		name.len = i;
 		cur += i;
 		left -= i;
 	}
 
-	fprintf(stderr, "Parsing %.*s\n",name.l, name.s);
+	fprintf(stderr, "Parsing %.*s\n",name.len, name.base);
 
 	while(left != 0) {
 		while(isspace(cur[0])) {
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 		}
 		++nstmts;
 		stmts = realloc(stmts,sizeof(*stmts)*nstmts);
-		stmts[nstmts-1].name = ((string){.s = cur, .l = i});
+		stmts[nstmts-1].name = ((string){.base = cur, .len = i});
 		left -= i;
 		cur += i;
 
@@ -108,14 +108,14 @@ int main(int argc, char *argv[]) {
 		}
 
 		fprintf(stderr, "Parsing %.*s\n",
-						stmts[nstmts-1].name.l,
-						stmts[nstmts-1].name.s);
+						stmts[nstmts-1].name.len,
+						stmts[nstmts-1].name.base);
 		
 		// now parse the SQL statement
 		sqlite3_stmt* stmt = db_preparen(cur,left);
 		sqlite3_finalize(stmt);
 		
-		stmts[nstmts-1].sql = ((string){.s = cur, .l = db_next-cur});
+		stmts[nstmts-1].sql = ((string){.base = cur, .len = db_next-cur});
 
 		assert(left >= db_next-cur-1);
 		left -= db_next-cur + 1;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 	if(onlydefine) {
 		for(i=0;i<nstmts;++i) {
 			output_literal("#define ");
-			output_buf(stmts[i].name.s, stmts[i].name.l);
+			output_buf(stmts[i].name.base, stmts[i].name.len);
 			output_literal(" \\\n\t\"");
 			output_sql(stmts[i].sql);
 			output_literal("\"\n\n");
