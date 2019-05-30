@@ -3,6 +3,8 @@ project(story-generator VERSION 0.1)
 
 include(FindSQLite3)
 
+add_compile_options(-fdiagnostics-color=always)
+
 if(SQLite3_FOUND)
 else()
 	message(FATAL_ERROR "SQLite3 not found!")
