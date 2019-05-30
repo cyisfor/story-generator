@@ -122,7 +122,7 @@ void for_chapter(
 	git_time_t chapter_timestamp) {
 	GDERP;
 	SPAM("chapter %.*s %lu timestamp %d",
-			 g->location.l,g->location.s,
+			 g->location.len,g->location.base,
 			 chapter,chapter_timestamp - g->timestamp);
 	g->any_chapter = true;
 	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
@@ -223,22 +223,22 @@ void for_story(
 	if(g->only_story != -1) {
 		if(story != g->only_story) return;
 	}
-	//DEBUG("story %lu %lu %.*s",story,numchaps,location.l,location.s);
+	//DEBUG("story %lu %lu %.*s",story,numchaps,location.len,location.base);
 
 	// we can spare two file descriptors, to track the directories
 	// use openat from there.
 
 	int descend(int loc, const string name, bool create) {
 		// XXX: ensure these are all null terminated, because open sucks
-		assert(name.s[name.l] == '\0');
-		int sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
+		assert(name.base[name.len] == '\0');
+		int sub = openat(loc,name.base,O_DIRECTORY|O_PATH);
 		if(!create) {
 			return sub;
 		} else if(sub < 0) {
 			ensure_eq(errno,ENOENT);
 			// mkdir if not exists is a painless operation
-			ensure0(mkdirat(loc,name.s,0755));
-			sub = openat(loc,name.s,O_DIRECTORY|O_PATH);
+			ensure0(mkdirat(loc,name.base,0755));
+			sub = openat(loc,name.base,O_DIRECTORY|O_PATH);
 			ensure_gt(sub,0);
 		}
 		if(loc != AT_FDCWD)
@@ -252,7 +252,7 @@ void for_story(
 		srcloc = descend(srcloc, markup, false);
 		if(srcloc < 0) {
 			WARN("ehhh... something got their markup directory removed? %.*s",
-					 g->location.l, g->location.s);
+					 g->location.len, g->location.base);
 			return;
 		}
 	}
@@ -378,16 +378,16 @@ enum gfc_action on_chapter(
 	if(++g->chapspercom == 5) {
 		WARN("huh? lots of chapters in this commit...");
 	}
-//			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.l,loc.s);
+//			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.len,loc.base);
 
 	// XXX: todo: handle if unreadable
 	INFO("%ld saw %ld of ",g->timestamp, chapnum);
-	STRPRINT(loc);
+	fwrite(loc.s, loc.l, 1, stderr);
 	fputc('\n',stdout);
 	output_time("time",g->timestamp);
 	struct stat derp;
-	if(0!=stat(src.s,&derp)) {
-		WARN("%s wasn't there",src.s);
+	if(0!=stat(src.base,&derp)) {
+		WARN("%s wasn't there",src.base);
 		return GFC_CONTINUE;
 	}
 	storydb_saw_chapter(deleted,
@@ -432,25 +432,25 @@ bool only_ready = false;
 const string get_category() {
 	if(getenv("category")!=NULL) {
 		string c = {getenv("category")};
-		c.l = strlen(c.s);
-		switch(lookup_category(c.s,c.l)) {
+		c.len = strlen(c.base);
+		switch(lookup_category(c.base,c.len)) {
 		case CATEGORY_censored:
 			//WARN("censored is a special category. set censored=1 instead plz");
 			setenv("censored","1",1);
-			c.l = LITSIZ("censored");
+			c.len = LITSIZ("censored");
 			storydb_only_censored = true;
 			break;
 		case CATEGORY_sneakpeek:
 			storydb_all_ready = true;
 			INFO("sneak peek!");
-			c.l = LITSIZ("sneakpeek");
+			c.len = LITSIZ("sneakpeek");
 			break;
 		case CATEGORY_ready:
 			only_ready = true;
-			c.l = LITSIZ("ready");
+			c.len = LITSIZ("ready");
 			break;
 		};
-		c.l = strlen(c.s);
+		c.len = strlen(c.base);
 		return c;
 	} else if(getenv("censored")!=NULL) {
 		storydb_only_censored = true;

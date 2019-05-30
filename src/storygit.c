@@ -12,9 +12,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define LITSIZ(a) (sizeof(a)-1)
-#define LITLEN(a) a,LITSIZ(a)
-
 git_time_t git_author_time(git_commit* commit) {
 	// the commit time, or the committer time, changes with every rebase
 	// but author remains the same!
@@ -329,26 +326,26 @@ int file_changed(const git_diff_delta *delta,
 		one_file(const char* spath, bool deleted)
 	{
 		const string path = {
-			.s = spath,
-			.l = strlen(spath)
+			.base = spath,
+			.len = strlen(spath)
 		};
-		if(path.l < LITSIZ("a/markup/chapterN.hish")) return;
-		const char* slash = strchr(path.s,'/');
+		if(path.len < LITSIZ("a/markup/chapterN.hish")) return;
+		const char* slash = strchr(path.base,'/');
 		if(slash == NULL) return;
 		const char* markup = slash+1;
-		if(path.l-(markup-path.s) < LITSIZ("markup/chapterN.hish")) return;
+		if(path.len-(markup-path.base) < LITSIZ("markup/chapterN.hish")) return;
 		if(0!=memcmp(markup,LITLEN("markup/chapter"))) return;
 		const char* num = markup + LITSIZ("markup/chapter");
 		char* end;
 		long int chapnum = strtol(num,&end,10);
 		assert(chapnum != 0);
-		if(path.l-(end-path.s) < LITSIZ(".hish")) return;
+		if(path.len-(end-path.base) < LITSIZ(".hish")) return;
 		if(0!=memcmp(end,LITLEN(".hish"))) return;
 		// got it!
 
 		const string location = {
-			.s = path.s,
-			.l = slash-path.s
+			.base = path.base,
+			.len = slash-path.base
 		};
 
 		ctx->result = ctx->handle(ctx->udata, chapnum, deleted, location, path);
