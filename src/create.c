@@ -83,15 +83,15 @@ struct csucks {
 static
 void got_title(void* udata, const string title) {
 	struct csucks* g = (struct csucks*)udata;
-	if(title.s == NULL) {
+	if(title.base == NULL) {
 		char buf[0x100];
 		string fallback = {
-			.s = buf,
-			.l = snprintf(buf,0x100,"Chapter %u",g->chapter)
+			.base = buf,
+			.len = snprintf(buf,0x100,"Chapter %u",g->chapter)
 		};
-		xmlNodeAddContentLen(g->a,fallback.s,fallback.l);
+		xmlNodeAddContentLen(g->a,fallback.base,fallback.len);
 	} else
-		xmlNodeAddContentLen(g->a,title.s,title.l);
+		xmlNodeAddContentLen(g->a,title.base,title.len);
 }
 
 struct csucksballs {
@@ -147,24 +147,24 @@ void got_info(
 
 	// check for description file
 	char path[0x200];
-	memcpy(path,g->location.s,g->location.l);
-	memcpy(path+g->location.l,LITLEN("/description\0"));
+	memcpy(path,g->location.base,g->location.len);
+	memcpy(path+g->location.len,LITLEN("/description\0"));
 	int dfd = open(path,O_RDONLY);
 	if(dfd >= 0) {
 		struct stat st;
 		if(0==fstat(dfd,&st)) {
 			char* desc = mmap(NULL,st.st_size,PROT_READ,MAP_PRIVATE,dfd,0);
 			close(dfd);
-			if(description.s &&
-				 st.st_size == description.l &&
-				 0 == memcmp(desc,description.s,st.st_size)) {
+			if(description.base &&
+				 st.st_size == description.len &&
+				 0 == memcmp(desc,description.base,st.st_size)) {
 				munmap(desc,st.st_size);
 				// description unmodified
 			} else {
 				newdesc = true;
 				// don't forget to munmap!
-				description.s = desc;
-				description.l = st.st_size;
+				description.base = desc;
+				description.len = st.st_size;
 			}
 		}
 	}
@@ -172,20 +172,20 @@ void got_info(
 	const char* senv = getenv("source");
 	if(senv) {
 		size_t len = strlen(senv);
-		if(source.s &&
-			 len == source.l &&
-			 0 == memcmp(source.s,senv,len)) {
+		if(source.base &&
+			 len == source.len &&
+			 0 == memcmp(source.base,senv,len)) {
 			// source unmodified
 		} else {
 			newsource = true;
-			source.s = senv;
-			source.l = len;
+			source.base = senv;
+			source.len = len;
 		}
 	}
 		
 	// title is sometimes a file
 	// .../description => .../title
-	memcpy(path+g->location.l+1,LITLEN("title\0"));
+	memcpy(path+g->location.len+1,LITLEN("title\0"));
 	int tf = open(path,O_RDONLY);
 	if(tf > 0) {
 		// eh, should be sorta limited, also saves a stat
@@ -194,8 +194,8 @@ void got_info(
 		ssize_t amt = read(tf,buf,0x100);
 		if(amt >= 0) {
 			buf[amt] = '\0';
-			title.s = buf; // goes out of scope when FUNCTION exits
-			title.l = amt;
+			title.base = buf; // goes out of scope when FUNCTION exits
+			title.len = amt;
 			newtitle = true;
 		}
 		close(tf);
@@ -205,14 +205,14 @@ void got_info(
 		storydb_set_info(g->story,title,description,source);
 	}
 	// if STILL no title, just use location on a temporary unstored basis
-	if(!title.s) {
+	if(!title.base) {
 		title = g->location;
 	}
 
 	// setup titlehead for htmlish
 	char buf[0x100];
-	memcpy(buf,title.s,title.l);
-	memcpy(buf+title.l,LITLEN(" - \0"));
+	memcpy(buf,title.base,title.len);
+	memcpy(buf+title.len,LITLEN(" - \0"));
 	setenv("titlehead",buf,1);
 
 	void setup_head(xmlNode* cur) {
@@ -221,8 +221,8 @@ void got_info(
 		if(cur->type != XML_ELEMENT_NODE) return setup_head(cur->next);
 			
 		if(IS(cur->name,"title")) {
-			if(title.s)
-				xmlNodeAddContentLen(cur,title.s,title.l);
+			if(title.base)
+				xmlNodeAddContentLen(cur,title.base,title.len);
 		} else if(IS(cur->name,"meta")) {
 			xmlAttr* attr;
 			for(attr=cur->properties;attr;attr=attr->next) {
@@ -234,14 +234,14 @@ void got_info(
 							for(attr=cur->properties;attr;attr=attr->next) {
 								if(IS(attr->name,"content")) {
 									// can't use xmlSetProp because mmap has no null terminator
-									xmlNodeAddContentLen((xmlNode*)attr,description.s,description.l);
+									xmlNodeAddContentLen((xmlNode*)attr,description.base,description.len);
 									return;
 								}
 							}
 							// no content attribute found... create one
 							attr = xmlSetProp(cur, "content","");
 							// then add to it
-							xmlNodeAddContentLen((xmlNode*)attr,description.s,description.l);
+							xmlNodeAddContentLen((xmlNode*)attr,description.base,description.len);
 							return;
 						}
 						check();
@@ -259,8 +259,8 @@ void got_info(
 		if(cur->type != XML_ELEMENT_NODE) return setup_body(cur->next);
 			
 		if(IS(cur->name,"intitle")) {
-			if(title.s) {
-				xmlNode* new = xmlNewTextLen(title.s,title.l);
+			if(title.base) {
+				xmlNode* new = xmlNewTextLen(title.base,title.len);
 				xmlReplaceNode(cur,new);
 				// no need to check a text node's children
 				return setup_body(new->next);
@@ -271,24 +271,24 @@ void got_info(
 				xmlFreeNode(cur);
 				return setup_body(next);
 			}
-		} else if(description.s && IS(cur->name,"div")) {
+		} else if(description.base && IS(cur->name,"div")) {
 			xmlAttr* attr;
 			for(attr=cur->properties;attr;attr=attr->next) {				
 				if(IS(attr->name,"id")) {
 					if(IS(attr->children->content,"description")) {
 						// in the <body> description will be in htmlish...
-						htmlish_str(cur,description.s,description.l,true);
+						htmlish_str(cur,description.base,description.len,true);
 						// don't descend into it looking for intitle and stuff?
 						// what about a description that contains a description div???
 						break;
 					}
 				}
 			}
-		} else if(source.s && IS(cur->name,"source")) {
+		} else if(source.base && IS(cur->name,"source")) {
 			// move contents into an anchor node
 			xmlNode* a = xmlNewNode(cur->ns,"a");
-			// since libxml sucks, source.s must be null terminated
-			xmlSetProp(a,"href",source.s);
+			// since libxml sucks, source.base must be null terminated
+			xmlSetProp(a,"href",source.base);
 			xmlAddChild(a,cur->children);
 			xmlReplaceNode(cur,a);
 			xmlFreeNode(cur);
@@ -297,14 +297,14 @@ void got_info(
 		setup_body(cur->children);
 		return setup_body(cur->next);
 	}
-	if(title.s || description.s) {
+	if(title.base || description.base) {
 		setup_head(g->head);
 		setup_body(g->body);		
-	} else if(source.s) {
+	} else if(source.base) {
 		setup_body(g->body);
 	}
 	if(newdesc) {
-		munmap((char*)description.s,description.l);
+		munmap((char*)description.base,description.len);
 	}
 }
 
@@ -409,9 +409,9 @@ void create_chapter(int src, int dest,
 	xmlNode* title = get_title(head);
 	if(title && title->children) {
 		string t = {
-			.s = title->children->content
+			.base = title->children->content
 		};
-		t.l = strlen(t.s);
+		t.len = strlen(t.base);
 		storydb_set_chapter_title(t, story, chapter, title_changed);
 	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);

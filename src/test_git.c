@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 		{
 			printf("%2d ",num);
 			int i;
-			for(i=0;i<20-location.l;++i) putchar(' ');
+			for(i=0;i<20-location.len;++i) putchar(' ');
 			STRPRINT(location);
 			putchar(' ');
 			STRPRINT(path);

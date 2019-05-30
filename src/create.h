@@ -20,9 +20,9 @@ void create_chapter(int src, int dest,
 
 #define CHAPTER_NAME_STRING(i,name,buf)										\
 	if(i > 1) {																							\
-		(name).s = buf;																				\
-		(name).l = snprintf(buf,0x100,"chapter%ld.html",i);		\
+		(name).base = buf;																				\
+		(name).len = snprintf(buf,0x100,"chapter%ld.html",i);		\
 	} else {																								\
-		(name).s = "index.html";															\
-		(name).l = 10;																				\
+		(name).base = "index.html";															\
+		(name).len = 10;																				\
 	}

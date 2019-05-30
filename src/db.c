@@ -229,7 +229,7 @@ void db_caught_up_committing(void) {
 identifier db_get_category(const string name, git_time_t* updated) {
 	DECLARE_STMT(find,"SELECT id,updated FROM categories WHERE category = ?");
 	DECLARE_STMT(insert,"INSERT INTO categories (category) VALUES(?)");
-	db_check(sqlite3_bind_text(find,1,name.s,name.l,NULL));
+	db_check(sqlite3_bind_text(find,1,name.base,name.len,NULL));
 	RESETTING(find) int res = sqlite3_step(find);
 	TRANSACTION;
 	if(res == SQLITE_ROW) {
@@ -237,7 +237,7 @@ identifier db_get_category(const string name, git_time_t* updated) {
 		return sqlite3_column_int64(find,0);
 	}
 	*updated = 0;
-	db_check(sqlite3_bind_text(insert,1,name.s,name.l,NULL));
+	db_check(sqlite3_bind_text(insert,1,name.base,name.len,NULL));
 	db_once(insert);
 	identifier ret = sqlite3_last_insert_rowid(db);
 	return ret;

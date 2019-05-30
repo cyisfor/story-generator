@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 			const string src)
 		{
 			fputc(' ',stderr);
-			fwrite(src.s,src.l,1,stderr);
+			fwrite(src.base,src.len,1,stderr);
 			fputc('\n',stderr);
 			return GFC_CONTINUE;
 		}
