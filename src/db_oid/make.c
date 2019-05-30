@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
 	if(argc != 3) exit(4);
 
-	const char* srcdir = realpath(argv[2],NULL);
+	char* srcdir = realpath(argv[2],NULL);
 	int srcdirlen= strlen(srcdir);
 	
 	const char* destdir = argv[1];

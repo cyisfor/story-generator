@@ -24,9 +24,9 @@ struct {
 
 void storydb_open() {
 	db_open();
-	string s = { .s = getenv("story") };
-	if(s.s != NULL) {
-		s.l = strlen(s.s);
+	string s = { .base = getenv("story") };
+	if(s.base != NULL) {
+		s.len = strlen(s.base);
 		only_story.i = storydb_find_story(s);
 		ensure_ge(only_story.i,0);
 		only_story.ye = true;
@@ -36,7 +36,7 @@ void storydb_open() {
 
 identifier storydb_find_story(const string location) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
-	db_check(sqlite3_bind_text(find,1,location.s,location.l,NULL));
+	db_check(sqlite3_bind_text(find,1,location.base,location.len,NULL));
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
 		return sqlite3_column_int64(find,0);
@@ -62,8 +62,8 @@ identifier storydb_get_story(const string location, git_time_t created) {
 //	DECLARE_STMT(finderp,"SELECT id,location FROM stories");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
 
-	WARN("get story %.*s",location.l, location.s);
-	db_check(sqlite3_bind_text(find,1,location.s,location.l,NULL));
+	WARN("get story %.*s",location.len, location.base);
+	db_check(sqlite3_bind_text(find,1,location.base,location.len,NULL));
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
 	if(res == SQLITE_ROW) {
@@ -71,11 +71,11 @@ identifier storydb_get_story(const string location, git_time_t created) {
 		return id;
 	} else {
 		WARN("inserderp %s", sqlite3_errstr(res));
-		db_check(sqlite3_bind_text(insert,1,location.s, location.l, NULL));
+		db_check(sqlite3_bind_text(insert,1,location.base, location.len, NULL));
 		db_check(sqlite3_bind_int64(insert,2,created));
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
-		INFO("creating story %.*s: %lu",location.l,location.s,story);
+		INFO("creating story %.*s: %lu",location.len,location.base,story);
 		return story;
 	}
 }
@@ -258,16 +258,16 @@ void storydb_for_recent_chapters(
 						sqlite3_column_int(find,7));
 #endif
 			const string story_title = {
-				.s = sqlite3_column_blob(find,2),
-				.l = sqlite3_column_bytes(find,2)
+				.base = sqlite3_column_blob(find,2),
+				.len = sqlite3_column_bytes(find,2)
 			};
 			const string chapter_title = {
-				.s = sqlite3_column_blob(find,3),
-				.l = sqlite3_column_bytes(find,3)
+				.base = sqlite3_column_blob(find,3),
+				.len = sqlite3_column_bytes(find,3)
 			};
 			const string location = {
-				.s = sqlite3_column_blob(find,4),
-				.l = sqlite3_column_bytes(find,4)
+				.base = sqlite3_column_blob(find,4),
+				.len = sqlite3_column_bytes(find,4)
 			};
 			handle(
 				udata,
@@ -304,8 +304,8 @@ void storydb_for_stories(
 		RESETTING(find) int res = db_check(sqlite3_step(find));
 		ensure_eq(res,SQLITE_ROW);
 		const string location = {
-			.s = sqlite3_column_blob(find,0),
-			.l = sqlite3_column_bytes(find,0)
+			.base = sqlite3_column_blob(find,0),
+			.len = sqlite3_column_bytes(find,0)
 		};
 
 		handle(udata,
@@ -334,8 +334,8 @@ void storydb_for_stories(
 		switch(res) {
 		case SQLITE_ROW: {
 			const string location = {
-				.s = sqlite3_column_blob(find,1),
-				.l = sqlite3_column_bytes(find,1)
+				.base = sqlite3_column_blob(find,1),
+				.len = sqlite3_column_bytes(find,1)
 			};
 			handle(udata,
 						 sqlite3_column_int64(find,0),
@@ -370,16 +370,16 @@ void storydb_for_undescribed(
 		ensure_eq(res,SQLITE_ROW);
 		identifier story = sqlite3_column_int64(find,0);
 		string title = {
-			.s = sqlite3_column_blob(find,1),
-			.l = sqlite3_column_bytes(find,1)
+			.base = sqlite3_column_blob(find,1),
+			.len = sqlite3_column_bytes(find,1)
 		};
 		string description = {
-			.s = sqlite3_column_blob(find,2),
-			.l = sqlite3_column_bytes(find,2)
+			.base = sqlite3_column_blob(find,2),
+			.len = sqlite3_column_bytes(find,2)
 		};
 		string source = {
-			.s = sqlite3_column_blob(find,3),
-			.l = sqlite3_column_bytes(find,3)
+			.base = sqlite3_column_blob(find,3),
+			.len = sqlite3_column_bytes(find,3)
 		};
 		handle(udata, story,title,description,source);
 	}
@@ -444,8 +444,8 @@ void storydb_with_chapter_title(
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		const string title = {
-			.s = sqlite3_column_blob(find,0),
-			.l = sqlite3_column_bytes(find,0)
+			.base = sqlite3_column_blob(find,0),
+			.len = sqlite3_column_bytes(find,0)
 		};
 		handle(udata, title);
 	} else {
@@ -477,8 +477,8 @@ void storydb_with_info(
 	RESETTING(find) int res = sqlite3_step(find);
 	if(res == SQLITE_ROW) {
 		void CHECK(int col, string* str) {
-			str->s = sqlite3_column_blob(find,col);
-			str->l = sqlite3_column_bytes(find,col);
+			str->base = sqlite3_column_blob(find,col);
+			str->len = sqlite3_column_bytes(find,col);
 		}
 		CHECK(0,&title);
 		CHECK(1,&description);
@@ -510,10 +510,10 @@ void storydb_set_chapter_title(const string title,
 													identifier story, identifier chapter,
 													bool* title_changed) {
 	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND (title IS NULL OR title != ?)");
-	db_check(sqlite3_bind_text(update,1,title.s,title.l,NULL));
+	db_check(sqlite3_bind_text(update,1,title.base,title.len,NULL));
 	db_check(sqlite3_bind_int64(update,2,story));
 	db_check(sqlite3_bind_int64(update,3,chapter));
-	db_check(sqlite3_bind_text(update,4,title.s,title.l,NULL));
+	db_check(sqlite3_bind_text(update,4,title.base,title.len,NULL));
 	BEGIN_TRANSACTION;
 	db_once(update);
 	if(!*title_changed) {
@@ -532,10 +532,10 @@ void storydb_set_info(identifier story,
 							 "source = COALESCE(?,source) "
 							 "WHERE id = ?");
 	void one(int col, const string thing) {
-		if(thing.l == 0 || thing.s == NULL) {
+		if(thing.len == 0 || thing.base == NULL) {
 			db_check(sqlite3_bind_null(update,col));
 		} else {
-			db_check(sqlite3_bind_text(update,col,thing.s,thing.l,NULL));
+			db_check(sqlite3_bind_text(update,col,thing.base,thing.len,NULL));
 		}
 	}
 	one(1,title);
@@ -580,8 +580,8 @@ void storydb_for_unpublished_chapters(
 		case SQLITE_ROW:
 			{
 				const string story_location = {
-					.s = sqlite3_column_blob(find,1),
-					.l = sqlite3_column_bytes(find,1)
+					.base = sqlite3_column_blob(find,1),
+					.len = sqlite3_column_bytes(find,1)
 				};
 				handle(udata,
 							 sqlite3_column_int64(find,0),
