@@ -20,11 +20,11 @@ void for_story(void* udata,
 
 	int t = mkstemp(tname);
 			
-	ensure_eq(description.l, write(t,description.s,description.l));
+	ensure_eq(description.len, write(t,description.base,description.len));
 
-	if(title.s) {
+	if(title.base) {
 		puts("****");
-		puts(title.s);
+		puts(title.base);
 		puts("****");
 	} else {
 		puts("No title");
@@ -42,30 +42,30 @@ void for_story(void* udata,
 	ensure_ge(t,0);
 	struct stat info;
 	fstat(t,&info);
-	mstring newdesc = {
+	bstring newdesc = {
 		mmap(NULL,info.st_size,PROT_READ,MAP_PRIVATE,t,0),
 		info.st_size
 	};
-	ensure_ne(newdesc.s,MAP_FAILED);
-	if(info.st_size == description.l && 0==memcmp(newdesc.s,description.s,description.l)) {
+	ensure_ne(newdesc.base,MAP_FAILED);
+	if(info.st_size == description.len && 0==memcmp(newdesc.base,description.base,description.len)) {
 		puts("description unchanged");
 	}
 
-	if(title.s) {
-		rl_insert_text(title.s);
+	if(title.base) {
+		rl_insert_text(title.base);
 	}
 	string newtit = {
-		.s = readline("Title: ")
+		.base = readline("Title: ")
 	};
-	newtit.l = strlen(newtit.s);
+	newtit.len = strlen(newtit.base);
 			
 	string newsauce = {};
-	if(source.l == 0) {
-		newsauce.s = readline("Source: ");
-		newsauce.l = strlen(newsauce.s);
+	if(source.len == 0) {
+		newsauce.base = readline("Source: ");
+		newsauce.len = strlen(newsauce.base);
 	}
-	storydb_set_info(story,newtit,CSTR(newdesc),newsauce);
-	munmap(newdesc.s,newdesc.l);
+	storydb_set_info(story,newtit,CSTRING(newdesc),newsauce);
+	munmap(newdesc.base,newdesc.len);
 }
 
 static
