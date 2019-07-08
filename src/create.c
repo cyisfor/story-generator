@@ -36,8 +36,8 @@ static void set_created(xmlNode* body) {
 static xmlNode* get_title(xmlNode* cur) {
 	if(!cur) return NULL;
 	if(cur->type == XML_ELEMENT_NODE &&
-		 strlen(cur->name)==LITSIZ("title") &&
-		 0==memcmp(cur->name,LITLEN("title"))) {
+	   strlen(cur->name)==LITSIZ("title") &&
+	   0==memcmp(cur->name,LITLEN("title"))) {
 		return cur;
 	}
 	xmlNode* t = get_title(cur->children);
@@ -50,13 +50,13 @@ xmlDoc* chapter_template = NULL;
 xmlDoc* contents_template = NULL;
 
 const char defaultTemplate[] =
-  "<!DOCTYPE html>\n"
-  "<html>\n"
-  "<head><meta charset=\"utf-8\"/>\n"
-  "<title/></head>\n"
-  "<body>\n"
-  "<content/>\n"
-  "</body></html>";
+	"<!DOCTYPE html>\n"
+	"<html>\n"
+	"<head><meta charset=\"utf-8\"/>\n"
+	"<title/></head>\n"
+	"<body>\n"
+	"<content/>\n"
+	"</body></html>";
 
 void create_setup(void) {
 	// encoding should be NULL (that indicates UTF-8 in libxml2)
@@ -64,10 +64,10 @@ void create_setup(void) {
 	chapter_template = htmlParseFile("template/chapter.html","UTF-8");
 	if(!chapter_template) {
 		chapter_template = htmlReadMemory(LITLEN(defaultTemplate),
-																			"","utf-8",
-																			HTML_PARSE_RECOVER |
-																			HTML_PARSE_NOBLANKS |
-																			HTML_PARSE_COMPACT);
+										  "","utf-8",
+										  HTML_PARSE_RECOVER |
+										  HTML_PARSE_NOBLANKS |
+										  HTML_PARSE_COMPACT);
 	}
 	contents_template = htmlParseFile("template/contents.html","UTF-8");
 	if(!contents_template) {
@@ -156,8 +156,8 @@ void got_info(
 			char* desc = mmap(NULL,st.st_size,PROT_READ,MAP_PRIVATE,dfd,0);
 			close(dfd);
 			if(description.base &&
-				 st.st_size == description.len &&
-				 0 == memcmp(desc,description.base,st.st_size)) {
+			   st.st_size == description.len &&
+			   0 == memcmp(desc,description.base,st.st_size)) {
 				munmap(desc,st.st_size);
 				// description unmodified
 			} else {
@@ -173,8 +173,8 @@ void got_info(
 	if(senv) {
 		size_t len = strlen(senv);
 		if(source.base &&
-			 len == source.len &&
-			 0 == memcmp(source.base,senv,len)) {
+		   len == source.len &&
+		   0 == memcmp(source.base,senv,len)) {
 			// source unmodified
 		} else {
 			newsource = true;
@@ -392,8 +392,8 @@ int create_contents(identifier story,
 }
 
 void create_chapter(int src, int dest,
-										int chapter, int ready,
-										identifier story, bool* title_changed) {
+					int chapter, int ready,
+					identifier story, bool* title_changed) {
 
 	xmlDoc* doc = xmlCopyDoc(chapter_template,1);
 	bool as_child = false;
@@ -429,7 +429,7 @@ void create_chapter(int src, int dest,
 		storydb_set_chapter_title(t, story, chapter, title_changed);
 	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);
-	}*/
+		}*/
 
 	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {
 		xmlNode* a = xmlNewNode(links->ns,"a");
