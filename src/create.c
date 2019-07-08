@@ -332,7 +332,7 @@ int create_contents(identifier story,
 	xmlNode* image = NULL;
 	xmlNode* toc = NULL;
 	void find_stuff(xmlNode* cur) {
-		if(!cur) return NULL;
+		if(!cur) return;
 		if(cur->type == XML_ELEMENT_NODE) {
 			if(mycheck(cur, LITSTR("ol"), LITSTR("id"))) {
 				toc = cur;
@@ -354,7 +354,7 @@ int create_contents(identifier story,
 		abort();
 	}
 
-	xmlSetProp(image, "src", title_file);
+	xmlSetProp(image, "src", title_file.base);
 	
 	size_t i;
 	for(i=1;i<=chapters;++i) {
