@@ -308,40 +308,54 @@ void got_info(
 	}
 }
 
+bool mycheck(xmlNode* cur, const string element, const string id) {
+	if(strlen(cur->name) != element.len) return false;
+	if(0!=memcmp(cur->name, element.base, element.len)) return false;
+	if(!xmlHasProp(cur,"id")) return false;
+	xmlChar* val = xmlGetProp(cur,"id");
+	if(strlen(val) != id.len) return false;
+	bool yes = 0 == memcmp(val,id.base,id.len);
+	xmlFree(val);
+	return yes;
+}
+
 int create_contents(identifier story,
-										const string location,
-										int dest,
-										size_t chapters) {	
+					const string title_file,
+					const string location,
+					int dest,
+					size_t chapters) {
 	xmlDoc* doc = xmlCopyDoc(contents_template,1);
+	
 	// root, doctype, html, text prefix, head
 	xmlNode* head = doc->children->next->children->next;
 	xmlNode* body = head->next->next;
-	xmlNode* find_toc(xmlNode* cur) {
+	xmlNode* image = NULL;
+	xmlNode* toc = NULL;
+	void find_stuff(xmlNode* cur) {
 		if(!cur) return NULL;
 		if(cur->type == XML_ELEMENT_NODE) {
-			if(0==strcmp(cur->name,"ol")) {
-				if(xmlHasProp(cur,"id")) {
-					xmlChar* val = xmlGetProp(cur,"id");
-					bool yes = 0 == strcmp(val,"toc");
-					xmlFree(val);
-					if(yes) {
-						return cur;
-					}
-				}
+			if(mycheck(cur, LITSTR("ol"), LITSTR("id"))) {
+				toc = cur;
+				if(image) return;
+			} else if(mycheck(cur, LITSTR("img"), LITSTR("id"))) {
+				image = cur;
+				if(toc) return;
 			}
 		}
 
-		xmlNode* test = find_toc(cur->children);
-		if(test) return test;
-		return find_toc(cur->next);
+		find_stuff(cur->children);
+		if(image && toc) return;
+		return find_stuff(cur->next);
 	}
 
-	xmlNode* toc = find_toc(body);
-	if(!toc) {
+	find_stuff(body);
+	if(!(image && toc)) {
 		htmlDocDump(stdout,doc);
+		abort();
 	}
-	assert(toc);
 
+	xmlSetProp(image, "src", title_file);
+	
 	size_t i;
 	for(i=1;i<=chapters;++i) {
 		xmlNode* li = xmlNewNode(toc->ns,"li");

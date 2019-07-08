@@ -3,6 +3,7 @@
 void create_setup(void);
 
 int create_contents(identifier story,
+					const string title_file,
 										const string location,
 										int dest,
 										size_t chapters);
