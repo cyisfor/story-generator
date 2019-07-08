@@ -6,7 +6,7 @@ void each_chapter(
 		const string location,
 		identifier chapter,
 		git_time_t timestamp) {
-	printf("%d:%.*s %d %d\n",story,(int)location.len, location.base, chapter,timestamp);
+	printf("%ld:%.*s %ld %ld\n",story,STRING_FOR_PRINTF(location), chapter,timestamp);
 }
 
 int main(int argc, char *argv[])

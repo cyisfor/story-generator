@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	xmlNode* entry_template = fuckXPath(out, "body");
+	xmlNode* entry_template = fuckXPath((xmlNode*)out, "body");
 	if(entry_template == NULL) abort();
 	xmlNode* body = entry_template;
 	entry_template = xmlCopyNode(entry_template, 1);

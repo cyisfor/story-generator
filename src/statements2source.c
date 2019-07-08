@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 		int i;
 		for(i=0;cur[i]!='\n';++i) {
 			if(i == left) {
-				fprintf(stderr, "only one line for the name...\n");
+				fputs("only one line for the name...\n", stderr);
 				exit(3);
 			}
 		}
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 		left -= i;
 	}
 
-	fprintf(stderr, "Parsing %.*s\n",(int)name.len, name.base);
+	fprintf(stderr, "Parsing %.*s\n",STRING_FOR_PRINTF(name));
 
 	while(left != 0) {
 		while(isspace(cur[0])) {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 		size_t i;
 		for(i=0;;++i) {
 			if(i == left) {
-				fprintf(stderr,"no sql?\n");
+				fputs("no sql?\n", stderr);
 				exit(1);
 			}
 			if(isspace(cur[i])) break;
@@ -101,15 +101,14 @@ int main(int argc, char *argv[]) {
 		while(isspace(*cur)) {
 			++cur;
 			if(left == 0) {
-				fprintf(stderr,"no sql?\n");
+				fputs("no sql?\n", stderr);
 				exit(2);
 			}
 			--left;
 		}
 
 		fprintf(stderr, "Parsing %.*s\n",
-						stmts[nstmts-1].name.len,
-						stmts[nstmts-1].name.base);
+				STRING_FOR_PRINTF(stmts[nstmts-1].name));
 		
 		// now parse the SQL statement
 		sqlite3_stmt* stmt = db_preparen(cur,left);

@@ -59,7 +59,7 @@ SELECT id,location,
 				END
 			END)
 ,chapters,updated FROM stories WHERE
-  updated AND updated > ?2 ORDER BY updated;
+  updated AND updated >= ?2 ORDER BY updated;
 	
 FOR_UNDESCRIBED_STORIES
 SELECT id,COALESCE(title,location),description,source
