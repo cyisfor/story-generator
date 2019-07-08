@@ -334,10 +334,10 @@ int create_contents(identifier story,
 	void find_stuff(xmlNode* cur) {
 		if(!cur) return;
 		if(cur->type == XML_ELEMENT_NODE) {
-			if(mycheck(cur, LITSTR("ol"), LITSTR("id"))) {
+			if(mycheck(cur, LITSTR("ol"), LITSTR("toc"))) {
 				toc = cur;
 				if(image) return;
-			} else if(mycheck(cur, LITSTR("img"), LITSTR("id"))) {
+			} else if(mycheck(cur, LITSTR("img"), LITSTR("title"))) {
 				image = cur;
 				if(toc) return;
 			}

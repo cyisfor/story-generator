@@ -249,6 +249,16 @@ void for_story(
 
 	CLOSING int srcloc = descend(AT_FDCWD, g->location, false);
 	if(srcloc < 0) return; // glorious moved
+
+	string title_file_derp(void) {
+		struct stat info;
+		if(0 == fstatat(srcloc, "title.png", &info, 0)) {
+			return LITSTR("title.png");
+		}
+		return LITSTR("title.jpg");
+	}
+	const string title_file = title_file_derp();
+	
 	{ string markup = {LITLEN("markup")};
 		srcloc = descend(srcloc, markup, false);
 		if(srcloc < 0) {
@@ -258,14 +268,6 @@ void for_story(
 		}
 	}
 	g->srcloc = srcloc;
-
-	string title_file(void) {
-		struct stat info;
-		if(0 == fstatat(srcloc, "title.png", &info, 0)) {
-			return LITSTR("title.png");
-		}
-		return LITSTR("title.jpg");
-	}
 
 	CLOSING int destloc = descend(AT_FDCWD, g->scategory, true);
 	destloc = descend(destloc, g->location, true);
@@ -359,7 +361,7 @@ void for_story(
 		int contents =
 			openat(destloc,".tempcontents",O_WRONLY|O_CREAT|O_TRUNC,0644);
 		ensure_ge(contents,0);
-		create_contents(story, title_file(),
+		create_contents(story, title_file,
 						g->location, contents, g->numchaps);
 		close_with_time(&contents,max_timestamp);
 	}
