@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 		left -= i;
 	}
 
-	fprintf(stderr, "Parsing %.*s\n",name.len, name.base);
+	fprintf(stderr, "Parsing %.*s\n",(int)name.len, name.base);
 
 	while(left != 0) {
 		while(isspace(cur[0])) {

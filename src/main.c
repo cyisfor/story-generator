@@ -121,7 +121,7 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s %lu timestamp %d",
+	SPAM("chapter %.*s %lu timestamp %lu",
 			 g->location.len,g->location.base,
 			 chapter,chapter_timestamp - g->timestamp);
 	g->any_chapter = true;
@@ -184,6 +184,7 @@ void for_chapter(
 	}
 
 	if(skip(g, chapter_timestamp,destname)) {
+		SPAM("SKIP %d", chapter_timestamp);
 		if(g->adjust_times) {
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);
@@ -504,9 +505,9 @@ int main(int argc, char *argv[])
 			ensure_eq(git_object_type(thing1),GIT_OBJECT_COMMIT);
 			git_commit* thing2 = (git_commit*)thing1;
 			const git_oid* oid = git_commit_id(thing2);
-			INFO("(override) going back until commit %.*s",GIT_OID_HEXSZ,git_oid_tostr_s(oid));
 			after = git_author_time(thing2);
 			after -= 100;
+			INFO("(override) going back until commit %.*s %d",GIT_OID_HEXSZ,git_oid_tostr_s(oid), after);
 			git_object_free(thing1);
 			break;
 		default:
