@@ -85,6 +85,7 @@ bool need_restart_for_chapters = false;
 
 void storydb_saw_chapter(bool deleted, identifier story,
 										git_time_t updated, identifier chapter) {
+	assert(chapter != 0);
 	if(deleted) {
 		INFO("BALEETED %d:%d %d",story,chapter,updated);
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
@@ -134,7 +135,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		// any for_chapters iterator has to be restarted now.
 		need_restart_for_chapters = true;
 
-		INFO("chapter found %lu:%lu",story,chapter);
+		INFO("chapter found %ld:%ld",story,chapter);
 		} break;
 	case SQLITE_DONE:
 		db_check(sqlite3_bind_int64(insert,1,created));

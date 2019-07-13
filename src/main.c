@@ -127,9 +127,9 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s %lu timestamp %s",
+	SPAM("chapter %.*s %ld timestamp %d %s",
 			 g->location.len,g->location.base,
-			 chapter,myctime(&chapter_timestamp));
+			 chapter,chapter_timestamp, myctime(&chapter_timestamp));
 	g->any_chapter = true;
 	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 	if(chapter_timestamp > g->max_timestamp)
@@ -150,14 +150,15 @@ void for_chapter(
 		if(srcinfo.st_mtime > chapter_timestamp) {
 			// git ruins file modification times... we probably cloned this, and lost
 			// all timestamps. Just set the source file to have changed with the commit then.
-			srcinfo.st_mtime = chapter_timestamp;
 			return true;
 		} else if(chapter_timestamp > srcinfo.st_mtime) {
 			// WHY
 			// git ruins file modification times in its own database
 			// randomly pulling this one out of its ass
+			INFO("chapter %d had bad git timestamp %d (->%d)",
+					 chapter, chapter_timestamp, srcinfo.st_mtime);			
 			chapter_timestamp = srcinfo.st_mtime;
-			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-2);
+			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter);
 		}
 		return false;
 	}
@@ -165,13 +166,14 @@ void for_chapter(
 	if(g->fixing_srctimes) {
 		if(setupsrc()) {
 			struct timespec times[2] = {
-				srcinfo.st_mtim,
-				srcinfo.st_mtim
+				chapter_timestamp,
+				chapter_timestamp
 			};
 			INFO("chapter %d had bad timestamp %d (->%d)",
 					 chapter, srcinfo.st_mtime, chapter_timestamp);
 			output_time("file",srcinfo.st_mtime);
 			output_time("db",chapter_timestamp);
+			srcinfo.st_mtime = chapter_timestamp;
 			ensure0(futimens(src,times));
 		}
 	}
@@ -299,7 +301,9 @@ void for_story(
 				 since we need to add the next link, or create the previous
 				 last chapter if it was skipped before.
 			*/
-			storydb_saw_chapter(false,g->story,story_timestamp,countchaps-1);
+			if(countchaps > 1) {
+				storydb_saw_chapter(false,g->story,story_timestamp,countchaps-1);
+			}
 			g->numchaps = numchaps = countchaps;
 		}
 	}
