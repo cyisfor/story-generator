@@ -13,3 +13,6 @@
 [submodule "ddate"]
 	path = ddate
 	url = git://github.com/cyisfor/ddate.git
+[submodule "note"]
+	path = note
+	url = git://github.com/cyisfor/note.git

@@ -36,7 +36,6 @@ void on_chapter(void* udata,
 		dest->times[1].tv_sec = timestamp;
 	}
 	if(storydb_in_cache(cache,story,chapnum)) {
-		fwrite(LITLEN("yayayay"),1,stderr);
 		return;
 	}
 	if(!storydb_all_ready) {

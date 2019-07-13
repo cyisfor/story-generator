@@ -33,10 +33,13 @@ set_source_files_properties(src/storydb.c
 	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
 
+add_subdirectory(note)
+  
 add_library(justdb
 	src/db.c)
 target_link_libraries(justdb PUBLIC
 		htmlish # for no error thingies from database
+		note
 		)
 target_include_directories(justdb PUBLIC
 	cstuff
@@ -47,7 +50,6 @@ target_include_directories(justdb PUBLIC
 external_package(justdb SQLite3)
 
 add_library(storydb
-	src/note.c
 	src/storydb.c)
 target_link_libraries(storydb PUBLIC
 	justdb)
@@ -62,7 +64,6 @@ add_executable(generate
 	src/storygit.c
 	src/repo.c
 	src/create.c
-	src/note.c
 	cstuff/itoa.c)
 
 pkg_check_modules(GIT
@@ -76,7 +77,6 @@ target_link_libraries(generate PRIVATE storydb)
 
 add_executable(ready
 	src/ready.c
-	src/note.c
 	cstuff/itoa.c)
 target_link_libraries(ready PRIVATE storydb)
 external_package(ready GIT)
@@ -106,7 +106,6 @@ set_source_files_properties(src/make-log.c
 
 add_executable(make_contents
 	src/make-contents.c
-	src/note.c
 	cstuff/itoa.c)
 target_include_directories(make_contents PRIVATE cstuff)
 target_link_libraries(make_contents PRIVATE storydb xmlfixes)
@@ -118,15 +117,13 @@ set_source_files_properties(src/make-contents.c
 add_executable(describe
 	src/describe.c
 	cstuff/itoa.c
-	src/db.c
-	src/note.c)
+	src/db.c)
 target_include_directories(describe PRIVATE cstuff)
 target_link_libraries(describe PRIVATE storydb xml readline)
 external_package(describe GIT)
 
 add_executable(find_chapters_to_publish
 	src/find-chapters-to-publish.c
-	src/note.c
 	cstuff/itoa.c)
 target_include_directories(find_chapters_to_publish PRIVATE cstuff)
 target_link_libraries(find_chapters_to_publish PRIVATE storydb)
@@ -147,7 +144,6 @@ add_custom_command(OUTPUT category.gen.c category.gen.h
 add_executable(statements2source
 	EXCLUDE_FROM_ALL
 	src/statements2source.c
-	src/note.c
 	cstuff/itoa.c
 	cstuff/mmapfile.c)
 

@@ -134,11 +134,13 @@ void for_chapter(
 	int src;
 
 	bool setupsrc(void) {
-		snprintf(srcname,0x100,"chapter%ld.hish",chapter);
+		snprintf(srcname,0x100,"chapter%ld.hish",chapter+1);
 		src = openat(g->srcloc, srcname, O_RDONLY, 0755);
-		ensure_ge(src,0);
+		if(src < 0) return false;
+
 		// for adjusting dest timestamp
-		ensure0(fstatat(g->srcloc,srcname,&srcinfo,0));
+		ensure0(fstat(src,&srcinfo));
+
 		if(srcinfo.st_mtime > chapter_timestamp) {
 			// git ruins file modification times... we probably cloned this, and lost
 			// all timestamps. Just set the source file to have changed with the commit then.
@@ -560,7 +562,7 @@ int main(int argc, char *argv[])
 
 	INFO("processing...");
 
-	bool fixing_srctimes = getenv("fix_srctimes")!=NULL;
+	g.fixing_srctimes = getenv("fix_srctimes")!=NULL;
 
 	g.scategory = get_category();
 	identifier category = db_get_category(g.scategory, &g.timestamp);
