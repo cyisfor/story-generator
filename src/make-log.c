@@ -35,6 +35,9 @@ void on_chapter(void* udata,
 		dest->times[0].tv_sec = timestamp;
 		dest->times[1].tv_sec = timestamp;
 	}
+	INFO("%.*s %d",
+		 STRING_FOR_PRINTF(location),
+		 chapnum);
 	if(storydb_in_cache(cache,story,chapnum)) {
 		return;
 	}
@@ -57,7 +60,7 @@ void on_chapter(void* udata,
 
 
 void output_rows(void) {
-	storydb_for_recent_chapters(NULL, 10000, on_chapter);
+	storydb_for_recent_chapters(NULL, 100000, on_chapter);
 }
 
 
@@ -68,6 +71,8 @@ int main(int argc, char *argv[])
 	struct stat info;
 	while(0 != stat("code",&info)) ensure0(chdir(".."));
 	storydb_open();
+
+	storydb_sync_stories_updated();
 
 	cache = storydb_start_cache();
 	

@@ -228,6 +228,11 @@ void storydb_cache_free(struct storycache* cache) {
 }
 
 
+void storydb_sync_stories_updated(void) {
+	DECLARE_STMT(update,"update stories set updated = (select max(updated) from chapters where story = stories.id);");
+	db_once(update);
+}
+
 /* be CAREFUL none of these iterators are re-entrant! */
 
 void storydb_for_recent_chapters(

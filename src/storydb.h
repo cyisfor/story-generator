@@ -118,3 +118,8 @@ void storydb_for_unpublished_chapters(
 		const string location,
 		identifier chapter,
 		git_time_t timestamp));
+
+/* meh... the story was updated when its last chapter was updated...
+   unless the description was updated sooner but who cares about that
+*/
+void storydb_sync_stories_updated(void);
