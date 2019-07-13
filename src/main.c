@@ -115,15 +115,21 @@ bool skip(struct csucks* g, git_time_t srcstamp, const char* destname) {
 	return false;
 }
 
+static
+const char* myctime(git_time_t* stamp) {
+	char* c = ctime(stamp);
+	c[strlen(c)-1] = '\0';
+	return c;
+}
 
 void for_chapter(
 	void* udata,
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s %lu timestamp %lu",
+	SPAM("chapter %.*s %lu timestamp %s",
 			 g->location.len,g->location.base,
-			 chapter,chapter_timestamp - g->timestamp);
+			 chapter,myctime(&chapter_timestamp));
 	g->any_chapter = true;
 	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
 	if(chapter_timestamp > g->max_timestamp)
@@ -134,7 +140,7 @@ void for_chapter(
 	int src;
 
 	bool setupsrc(void) {
-		snprintf(srcname,0x100,"chapter%ld.hish",chapter+1);
+		snprintf(srcname,0x100,"chapter%ld.hish",chapter);
 		src = openat(g->srcloc, srcname, O_RDONLY, 0755);
 		if(src < 0) return false;
 
@@ -186,7 +192,7 @@ void for_chapter(
 	}
 
 	if(skip(g, chapter_timestamp,destname)) {
-		SPAM("SKIP %d", chapter_timestamp);
+		SPAM("SKIP %s", myctime(&chapter_timestamp));
 		if(g->adjust_times) {
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);
@@ -476,8 +482,6 @@ const string get_category() {
 
 int main(int argc, char *argv[])
 {
-
-	note_init();
 	//libxmlfixes_setup();
 	struct stat info;
 	// make sure we're outside the code directory
