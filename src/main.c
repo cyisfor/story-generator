@@ -152,6 +152,12 @@ void for_chapter(
 			// all timestamps. Just set the source file to have changed with the commit then.
 			srcinfo.st_mtime = chapter_timestamp;
 			return true;
+		} else if(chapter_timestamp > srcinfo.st_mtime) {
+			// WHY
+			// git ruins file modification times in its own database
+			// randomly pulling this one out of its ass
+			chapter_timestamp = srcinfo.st_mtime;
+			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-2);
 		}
 		return false;
 	}

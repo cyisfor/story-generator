@@ -96,8 +96,12 @@ void storydb_saw_chapter(bool deleted, identifier story,
 	
 	//INFO("SAW %d:%d %d",story,chapter,updated);
 	DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
-	DECLARE_STMT(update,"UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
-							 "WHERE story = ? AND chapter = ?");
+	DECLARE_STMT(update,
+				 "UPDATE chapters SET updated = ?, seen = MAX(seen, updated) "
+				 "WHERE story = ? AND chapter = ?");
+	DECLARE_STMT(update_max,
+				 "UPDATE chapters SET updated = MAX(updated,?), seen = MAX(seen, updated) "
+				 "WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update_story,SAW_CHAPTER_UPDATE_STORY);
 	DECLARE_STMT(insert,"INSERT INTO chapters (created,updated,seen,story,chapter) VALUES (?1,?1,?1,?,?)");
 	DECLARE_STMT(notcreated,"SELECT 1 FROM chapters WHERE created = ?1");
@@ -119,21 +123,19 @@ void storydb_saw_chapter(bool deleted, identifier story,
 	TRANSACTION;
 	RESETTING(find) int res = sqlite3_step(find);
 	switch(res) {
-	case SQLITE_ROW:
-		// update if new updated is higher
-		if(sqlite3_column_int64(find,0) < updated) {
-			git_time_t derpdated = updated;
-			if(!derpdated) derpdated = time(NULL);
-			db_check(sqlite3_bind_int64(update,1,updated));
-			db_check(sqlite3_bind_int64(update,2,story));
-			db_check(sqlite3_bind_int64(update,3,chapter));
-			db_once(update);
-			assert(sqlite3_changes(db) > 0);
-			// any for_chapters iterator has to be restarted now.
-			need_restart_for_chapters = true;
-		}
+	case SQLITE_ROW: {
+		git_time_t derpdated = updated;
+		if(!derpdated) derpdated = time(NULL);
+		db_check(sqlite3_bind_int64(update,1,updated));
+		db_check(sqlite3_bind_int64(update,2,story));
+		db_check(sqlite3_bind_int64(update,3,chapter));
+		db_once(update);
+		assert(sqlite3_changes(db) > 0);
+		// any for_chapters iterator has to be restarted now.
+		need_restart_for_chapters = true;
+
 		INFO("chapter found %lu:%lu",story,chapter);
-		break;
+		} break;
 	case SQLITE_DONE:
 		db_check(sqlite3_bind_int64(insert,1,created));
 		db_check(sqlite3_bind_int64(insert,2,story));
