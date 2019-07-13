@@ -151,7 +151,7 @@ void for_chapter(
 			// git ruins file modification times... we probably cloned this, and lost
 			// all timestamps. Just set the source file to have changed with the commit then.
 			return true;
-		} else if(chapter_timestamp > srcinfo.st_mtime) {
+		} else if(g->fixing_srctimes && chapter_timestamp > srcinfo.st_mtime) {
 			// WHY
 			// git ruins file modification times in its own database
 			// randomly pulling this one out of its ass
@@ -166,8 +166,12 @@ void for_chapter(
 	if(g->fixing_srctimes) {
 		if(setupsrc()) {
 			struct timespec times[2] = {
-				chapter_timestamp,
-				chapter_timestamp
+				{
+					.tv_sec = chapter_timestamp,
+				},
+				{
+					.tv_sec = chapter_timestamp
+				}
 			};
 			INFO("chapter %d had bad timestamp %d (->%d)",
 					 chapter, srcinfo.st_mtime, chapter_timestamp);

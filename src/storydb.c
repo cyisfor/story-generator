@@ -125,17 +125,18 @@ void storydb_saw_chapter(bool deleted, identifier story,
 	RESETTING(find) int res = sqlite3_step(find);
 	switch(res) {
 	case SQLITE_ROW: {
-		git_time_t derpdated = updated;
-		if(!derpdated) derpdated = time(NULL);
-		db_check(sqlite3_bind_int64(update,1,updated));
-		db_check(sqlite3_bind_int64(update,2,story));
-		db_check(sqlite3_bind_int64(update,3,chapter));
-		db_once(update);
-		assert(sqlite3_changes(db) > 0);
-		// any for_chapters iterator has to be restarted now.
-		need_restart_for_chapters = true;
-
-		INFO("chapter found %ld:%ld",story,chapter);
+		// update if new updated is different
+		if(sqlite3_column_int64(find,0) != updated) {
+			git_time_t derpdated = updated;
+			if(!derpdated) derpdated = time(NULL);
+			db_check(sqlite3_bind_int64(update,1,updated));
+			db_check(sqlite3_bind_int64(update,2,story));
+			db_check(sqlite3_bind_int64(update,3,chapter));
+			db_once(update);
+			assert(sqlite3_changes(db) > 0);
+			// any for_chapters iterator has to be restarted now.
+			need_restart_for_chapters = true;
+		}
 		} break;
 	case SQLITE_DONE:
 		db_check(sqlite3_bind_int64(insert,1,created));
