@@ -516,8 +516,8 @@ identifier storydb_count_chapters(identifier story) {
 
 // should set to NULL if string is empty
 void storydb_set_chapter_title(const string title,
-													identifier story, identifier chapter,
-													bool* title_changed) {
+							   identifier story, identifier chapter,
+							   bool* title_changed) {
 	DECLARE_STMT(update,"UPDATE chapters SET title = ? WHERE story = ? AND chapter = ? AND (title IS NULL OR title != ?)");
 	db_check(sqlite3_bind_text(update,1,title.base,title.len,NULL));
 	db_check(sqlite3_bind_int64(update,2,story));

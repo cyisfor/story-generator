@@ -203,17 +203,26 @@ void for_chapter(
 		}
 	}
 
+	bool skipping = false;
 	if(skip(g, chapter_timestamp,destname)) {
 		SPAM("SKIP %s", myctime(&chapter_timestamp));
 		if(g->adjust_times) {
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);
 		}
-		return;
+		if(getenv("fix_titles")==NULL) {
+			return;
+		}
+		skipping = true;
 	}
 
-	int dest = openat(g->destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
-	ensure_ge(dest,0);
+	int dest;
+	if(skipping) {
+		dest = -1;
+	} else {
+		dest = openat(g->destloc,".tempchap",O_WRONLY|O_CREAT|O_TRUNC,0644);
+		ensure_ge(dest,0);
+	}
 
 	if(!g->fixing_srctimes)
 		setupsrc();

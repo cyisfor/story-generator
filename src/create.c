@@ -430,6 +430,9 @@ void create_chapter(int src, int dest,
 	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);
 		}*/
+	if(dest < 0) {
+		return;
+	}		
 
 	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {
 		xmlNode* a = xmlNewNode(links->ns,"a");
