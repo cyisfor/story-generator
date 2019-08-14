@@ -30,7 +30,6 @@ void have_info(void* udata, string title, string description, string source) {
 	if(!title.len) {
 		title = g->location;
 	}
-	bool under_construction = storydb_under_construction(
 	const string location = g->location;
 	const string modified = g->modified;
 	const string modified_time = g->modified_time;

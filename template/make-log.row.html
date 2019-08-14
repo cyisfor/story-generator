@@ -4,8 +4,13 @@
 								?>chapter<?cS num ?>.html<?C
  				}
 		}
+        void undercon() {
+               if(under_construction) {
+                      ?> title="UNDER CONSTRUCTION" class="construction"<?C
+               }
+        }
 ?>
-<tr>
+<tr<?C undercon(); ?>>
 <td><a href="<?cS location?>/"><?cS stitle?></a></td>
 <td><a href="<?cS location?>/<?C outchap(); ?>"><?cS chapter_title.base ? chapter_title : stitle?></a></td>
 <td><?cS num ?></td>

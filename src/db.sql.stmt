@@ -7,7 +7,8 @@ WHERE
 RECENT_CHAPTERS
 SELECT story, chapter, stories.title, chapters.title,
        location,
-			 chapters.updated
+			 chapters.updated,
+       chapters.under_construction
 FROM chapters
   INNER JOIN stories on stories.id = chapters.story
 WHERE 

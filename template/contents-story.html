@@ -1,11 +1,17 @@
-<tr>
+<?C
+void undercon(identifier chapter) {
+   if(storydb_under_construction(g->story, chapter)) {
+     ?> class="construction" title="UNDER CONSTRUCTION"<?C
+   }
+}
+?><tr>
 	<td><a title="<?cS description?>" href="<?cS location?>/contents.html"><?cS title ?></a></td> 
 	<td title="<?cS modified_time ?>"><?cS modified ?></td>
 	<td>
-		<a href="<?cS location?>/">Start</a> 
-		<a href="<?cS location?>/<?cS latest ?>" title="Chapter <?c "%d", ready ?>">Latest</a>
+		<a<?C undercon(1); ?> href="<?cS location?>/">Start</a> 
+		<a<?C undercon(g->ready); ?> href="<?cS location?>/<?cS latest ?>" title="Chapter <?c "%lu", ready ?>">Latest</a>
 		<?C if(ready < numchaps) { ?>
-		  <a href="../sneakpeek/<?cS location?>/<?cS bleeding_edge ?>" title="Beware: chapters being rewritten here! You may have to re-read them!">Sneak Peek</a>
+		  <a<?C undercon(g->ready+1); ?> href="../sneakpeek/<?cS location?>/<?cS bleeding_edge ?>" title="Beware: chapters being rewritten here! You may have to re-read them!">Sneak Peek</a>
     <?C } ?>
 	</td>
 </tr>
