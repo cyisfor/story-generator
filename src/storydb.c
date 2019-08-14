@@ -57,9 +57,20 @@ bool storydb_set_censored(identifier story, bool censored) {
 	return sqlite3_changes(db) > 0; // operation did something, or not.
 }
 
+bool storydb_under_construction(identifier story, identifier chapter) {
+	DECLARE_STMT(find,"SELECT under_construction FROM chapters WHERE story = ?1 AND chapter = ?2");
+	sqlite3_bind_int64(find,1,story);
+	sqlite3_bind_int64(find,2,chapter);
+	RESETTING(find) int res = db_check(sqlite3_step(find));
+	if(res == SQLITE_ROW) {
+		return sqlite3_column_int(find, 0) == 1;
+	}
+	return true;
+}
+
 bool storydb_set_under_construction(identifier story, identifier chapter,
 									bool under_construction) {
-	DECLARE_STMT(update,"UPDATE chapters SET under_construction = ?3 WHERE story = ?1 AND which = ?2 AND under_construction != ?3");
+	DECLARE_STMT(update,"UPDATE chapters SET under_construction = ?3 WHERE story = ?1 AND chapter = ?2 AND under_construction != ?3");
 	sqlite3_bind_int64(update,1,story);
 	sqlite3_bind_int64(update,2,chapter);
 	sqlite3_bind_int(update,3,under_construction ? 1 : 0);

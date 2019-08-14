@@ -23,12 +23,12 @@ struct storycache* cache = NULL;
 #define output_buf(s,l) fwrite((s),(l),1,dest->out)
 
 void on_chapter(void* udata,
-								identifier story,
-								size_t chapnum,
-								const string story_title,
-								const string chapter_title,
-								const string location,
-								git_time_t timestamp) {
+				identifier story,
+				size_t chapnum,
+				const string story_title,
+				const string chapter_title,
+				const string location,
+				git_time_t timestamp) {
 	if(!dest->got_times) {
 		dest->got_times = true;
 		printf("lastdos %ld\n",timestamp);
@@ -51,6 +51,8 @@ void on_chapter(void* udata,
 		.len = itoa(numbuf,0x10,chapnum)
 	};
 	// need num even for chapnum 0, because "chapter" column
+
+	bool under_construction = storydb_under_construction(story, chapnum);
 		
 	const string stitle = story_title.base ? story_title : location;
 	const string ctitle = chapter_title.base ? chapter_title : stitle;

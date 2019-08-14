@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS chapters (
 			 created INTEGER NOT NULL,
 			 updated INTEGER NOT NULL,
 			 seen INTEGER NOT NULL,
+			 under_construction BOOLEAN NOT NULL DEFAULT TRUE,
 			 -- seen = acts like it was updated, but was marked by an auxiliary process
 			 -- greatest(updated,seen) -> actual
 			 title TEXT,
