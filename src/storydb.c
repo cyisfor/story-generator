@@ -300,7 +300,7 @@ void storydb_for_recent_chapters(
 				.base = sqlite3_column_blob(find,4),
 				.len = sqlite3_column_bytes(find,4)
 			};
-			bool under_construction = sqlite3_column_int(find,5) == 1;
+			bool under_construction = sqlite3_column_int(find,6) == 1;
 				
 			handle(
 				udata,

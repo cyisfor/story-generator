@@ -18,9 +18,10 @@ struct csucks {
 	string modified;
 	string modified_time;
 	string latest;
-	int ready;
-	int numchaps;
+	size_t ready;
+	size_t numchaps;
 	string bleeding_edge;
+	identifier story;
 };
 
 static
@@ -29,12 +30,13 @@ void have_info(void* udata, string title, string description, string source) {
 	if(!title.len) {
 		title = g->location;
 	}
+	bool under_construction = storydb_under_construction(
 	const string location = g->location;
 	const string modified = g->modified;
 	const string modified_time = g->modified_time;
 	const string latest = g->latest;
-	int ready = g->ready;
-	int numchaps = g->numchaps;
+	size_t ready = g->ready;
+	size_t numchaps = g->numchaps;
 	const string bleeding_edge = g->bleeding_edge;
 
 #include "template/contents-story.html.c"
@@ -52,6 +54,7 @@ void output_story(void* udata,
 									git_time_t timestamp) {
 	struct csucks g = {
 		.location = location,
+		.story = story,
 		.ready = ready,
 		.numchaps = numchaps
 	};
