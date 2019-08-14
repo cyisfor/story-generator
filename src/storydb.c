@@ -57,6 +57,16 @@ bool storydb_set_censored(identifier story, bool censored) {
 	return sqlite3_changes(db) > 0; // operation did something, or not.
 }
 
+bool storydb_set_under_construction(identifier story, identifier chapter,
+									bool under_construction) {
+	DECLARE_STMT(update,"UPDATE chapters SET under_construction = ?3 WHERE story = ?1 AND which = ?2 AND under_construction != ?3");
+	sqlite3_bind_int64(update,1,story);
+	sqlite3_bind_int64(update,2,chapter);
+	sqlite3_bind_int(update,3,under_construction ? 1 : 0);
+	db_once(update);
+	return sqlite3_changes(db) > 0; // operation did something, or not.
+}
+
 identifier storydb_get_story(const string location, git_time_t created) {
 	DECLARE_STMT(find,"SELECT id FROM stories WHERE location = ?");
 //	DECLARE_STMT(finderp,"SELECT id,location FROM stories");

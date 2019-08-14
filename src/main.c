@@ -230,9 +230,10 @@ void for_chapter(
 	create_chapter(src,dest,chapter,g->ready,g->story,&g->title_changed);
 
 	close_ptr(&src);
-	close_with_time(&dest,chapter_timestamp);
-
-	ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
+	if(dest >= 0) {
+		close_with_time(&dest,chapter_timestamp);
+		ensure0(renameat(g->destloc,".tempchap",g->destloc,destname));
+	}
 }
 
 

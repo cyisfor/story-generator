@@ -9,6 +9,8 @@ extern bool storydb_all_ready;
 void storydb_open();
 
 bool storydb_set_censored(identifier story, bool censored);
+bool storydb_set_under_construction(identifier story, identifier chapter,
+									bool under_construction);
 
 identifier storydb_find_story(const string location);
 identifier storydb_get_story(const string location, git_time_t timestamp);

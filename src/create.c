@@ -104,16 +104,17 @@ struct csucksballs {
 #define IS(what,name) (what && strlen(what)==LITSIZ(name) && 0 == memcmp(what,LITLEN(name)))
 
 static
-void do_under_construction(xmlNode* cur) {
+void do_under_construction(bool* gotit, xmlNode* cur) {
 	if(!IS(cur->name,"construction")) {
 		xmlNode* kid = cur->children;
 		while(kid) {
 			xmlNode* next = kid->next;
-			do_under_construction(kid);
+			do_under_construction(gotit, kid);
 			kid = next;
 		}
 		return;
 	}
+	*gotit = true;
 	xmlNode* box = xmlNewNode(cur->ns,"div");
 	xmlSetProp(box, "class", "construction");
 	xmlNode* top = xmlNewNode(cur->ns,"div");
@@ -412,7 +413,9 @@ void create_chapter(int src, int dest,
 	xmlNode* head = nextE(doc->children->next->children);
 	// head, blank, body
 	xmlNode* body = head->next->next;
-	do_under_construction(body);
+	bool is_under_construction = false;
+	do_under_construction(&is_under_construction, body);
+	storydb_set_under_construction(story, chapter, is_under_construction);
 
 	// text suffix, body, last e in body
 	xmlNode* links = head->next->next->last;
@@ -430,9 +433,10 @@ void create_chapter(int src, int dest,
 	} /*else {
 		WARN("no chapter title found for %d %d",story,chapter);
 		}*/
+
 	if(dest < 0) {
 		return;
-	}		
+	}
 
 	void linkthing(const char* href, const char* rel, const char* title, size_t tlen) {
 		xmlNode* a = xmlNewNode(links->ns,"a");
