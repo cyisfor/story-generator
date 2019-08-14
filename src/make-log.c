@@ -25,6 +25,7 @@ struct storycache* cache = NULL;
 void on_chapter(void* udata,
 				identifier story,
 				size_t chapnum,
+				bool under_construction,
 				const string story_title,
 				const string chapter_title,
 				const string location,
@@ -35,9 +36,10 @@ void on_chapter(void* udata,
 		dest->times[0].tv_sec = timestamp;
 		dest->times[1].tv_sec = timestamp;
 	}
-	INFO("%.*s %d",
+	INFO("%.*s %d %d",
 		 STRING_FOR_PRINTF(location),
-		 chapnum);
+		 chapnum,
+		under_construction);
 	if(storydb_in_cache(cache,story,chapnum)) {
 		return;
 	}
@@ -52,8 +54,6 @@ void on_chapter(void* udata,
 	};
 	// need num even for chapnum 0, because "chapter" column
 
-	bool under_construction = storydb_under_construction(story, chapnum);
-		
 	const string stitle = story_title.base ? story_title : location;
 	const string ctitle = chapter_title.base ? chapter_title : stitle;
 

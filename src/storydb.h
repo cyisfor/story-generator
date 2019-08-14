@@ -36,6 +36,7 @@ void storydb_for_recent_chapters(
 			void* udata,
 			identifier story,
 			size_t chapnum,
+			bool under_construction,			
 			const string story_title,
 			const string chapter_title,
 			const string location,

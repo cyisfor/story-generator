@@ -263,6 +263,7 @@ void storydb_for_recent_chapters(
 		void* udata,
 		identifier story,
 		size_t chapnum,
+		bool under_construction,
 		const string story_title,
 		const string chapter_title,
 		const string location,
@@ -299,10 +300,13 @@ void storydb_for_recent_chapters(
 				.base = sqlite3_column_blob(find,4),
 				.len = sqlite3_column_bytes(find,4)
 			};
+			bool under_construction = sqlite3_column_int(find,5) == 1;
+				
 			handle(
 				udata,
 				sqlite3_column_int64(find,0),
 				sqlite3_column_int64(find,1),
+				under_construction,
 				story_title,
 				chapter_title,
 				location,
