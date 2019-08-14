@@ -9,6 +9,7 @@ extern bool storydb_all_ready;
 void storydb_open();
 
 bool storydb_set_censored(identifier story, bool censored);
+bool storydb_under_construction(identifier story, identifier chapter);
 bool storydb_set_under_construction(identifier story, identifier chapter,
 									bool under_construction);
 
