@@ -131,14 +131,33 @@ external_package(find_chapters_to_publish GIT)
 ##############################################33
 # Now a bunch of generated files
 
-add_subdirectory(str_to_enum_trie)
-add_custom_command(OUTPUT category.gen.c category.gen.h
-	COMMAND
-	noupper=1 prefix=category enum=CATEGORY exec "./str_to_enum_trie/str_to_enum_trie" <"${CMAKE_CURRENT_SOURCE_DIR}/src/categories.list"
-	MAIN_DEPENDENCY
-	src/categories.list
-	DEPENDS
-	str_to_enum_trie/str_to_enum_trie)
+# add_subdirectory(str_to_enum_trie)
+# ctemplate adds that and cmake sucks
+
+# And now you learn the depths of my madness
+
+file(MAKE_DIRECTORY template)
+add_subdirectory(ctemplate)
+function(ctemplate name)
+	add_ctemplate(
+		"${name}"
+		"${CMAKE_CURRENT_SOURCE_DIR}/template/${name}"
+		"template/${name}.c")
+endfunction()
+
+ctemplate(statements2source.c)
+ctemplate(make-log.html)
+ctemplate(make-log.row.html)
+# for make-contents
+ctemplate(page.html)
+ctemplate(contents-body.html)
+ctemplate(contents-story.html)
+
+
+
+str_to_enum_trie(category src/categories.list
+  ENUM CATEGORY
+  NOUPPER)
 
 add_executable(statements2source
 	EXCLUDE_FROM_ALL
@@ -187,25 +206,6 @@ set_source_files_properties(src/db.c
 	OBJECT_DEPENDS
 	"db_oid/gen.h;schema.sql.gen.c;indexes.sql.gen.c"
 	)
-
-# And now you learn the depths of my madness
-
-file(MAKE_DIRECTORY template)
-add_subdirectory(ctemplate)
-function(ctemplate name)
-	add_ctemplate(
-		"${name}"
-		"${CMAKE_CURRENT_SOURCE_DIR}/template/${name}"
-		"template/${name}.c")
-endfunction()
-
-ctemplate(statements2source.c)
-ctemplate(make-log.html)
-ctemplate(make-log.row.html)
-# for make-contents
-ctemplate(page.html)
-ctemplate(contents-body.html)
-ctemplate(contents-story.html)
 
 function(makeSQL name)
 	set(src	"${CMAKE_CURRENT_SOURCE_DIR}/src/${name}.sql")
