@@ -1,18 +1,18 @@
 [submodule "htmlish"]
 	path = htmlish
-	url = git://github.com/cyisfor/htmlish.git
+	url = /home/repo/htmlish
 	ignore = untracked
 [submodule "ctemplate"]
 	path = ctemplate
-	url = git://github.com/cyisfor/ctemplate.git
+	url = /home/repo/ctemplate
 	ignore = untracked
 [submodule "str_to_enum_trie"]
 	path = str_to_enum_trie
-	url = git://github.com/cyisfor/str_to_enum_trie.git
+	url = /home/repo/str_to_enum_trie
 	ignore = untracked
 [submodule "ddate"]
 	path = ddate
-	url = git://github.com/cyisfor/ddate.git
+	url = /home/repo/ddate
 [submodule "note"]
 	path = note
-	url = git://github.com/cyisfor/note.git
+	url = /home/repo/note

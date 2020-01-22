@@ -402,6 +402,10 @@ void create_chapter(int src, int dest,
 	xmlNode* content = getContent(xmlDocGetRootElement(doc),false,&as_child);
 
 	db_working_on(story,chapter);
+
+	/* custom makers here, like birthverse etc. */
+	
+	
 	htmlish(content,src,as_child);
 	
 	if(!as_child) {

@@ -104,12 +104,8 @@ int main(int argc, char *argv[])
 	git_revwalk_sorting(walk, GIT_SORT_TIME);
 
 	// since HEAD
-	git_reference* ref;
-	repo_check(git_repository_head(&ref, repo)); // this resolves the reference
-	const git_oid * oiderp = git_reference_target(ref);
-	git_reference_free(ref);
 
-	git_revwalk_push(walk, oiderp);
+	git_revwalk_push_head(walk);
 
 	git_oid oid;
 
