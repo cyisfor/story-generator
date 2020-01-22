@@ -6,10 +6,6 @@
 	path = ctemplate
 	url = /home/repo/ctemplate
 	ignore = untracked
-[submodule "str_to_enum_trie"]
-	path = str_to_enum_trie
-	url = /home/repo/str_to_enum_trie
-	ignore = untracked
 [submodule "ddate"]
 	path = ddate
 	url = /home/repo/ddate
