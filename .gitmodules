@@ -13,6 +13,3 @@
 [submodule "ddate"]
 	path = ddate
 	url = /home/repo/ddate
-[submodule "note"]
-	path = note
-	url = /home/repo/note

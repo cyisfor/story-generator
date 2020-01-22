@@ -33,17 +33,16 @@ set_source_files_properties(src/storydb.c
 	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
 
-add_subdirectory(note)
+add_subdirectory(cstuff)
+add_cstuff(record)
   
 add_library(justdb
 	src/db.c)
 target_link_libraries(justdb PUBLIC
 		htmlish # for no error thingies from database
 		note
-		)
+		cstuff)
 target_include_directories(justdb PUBLIC
-	cstuff
-	htmlish/src
 	"${CMAKE_CURRENT_BINARY_DIR}" # db_oid
 	)
 
