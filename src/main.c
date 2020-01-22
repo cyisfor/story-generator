@@ -127,11 +127,11 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	record(SPAM, "chapter %.*s %ld timestamp %d %s",
+	record(DEBUG, "chapter %.*s %ld timestamp %d %s",
 			 g->location.len,g->location.base,
 			 chapter,chapter_timestamp, myctime(&chapter_timestamp));
 	g->any_chapter = true;
-	//record(SPAM, "chap %d:%d\n",chapter,chapter_timestamp);
+	//record(DEBUG, "chap %d:%d\n",chapter,chapter_timestamp);
 	if(chapter_timestamp > g->max_timestamp)
 		g->max_timestamp = chapter_timestamp;
 	// this should be moved later...
@@ -205,7 +205,7 @@ void for_chapter(
 
 	bool skipping = false;
 	if(skip(g, chapter_timestamp,destname)) {
-		record(SPAM, "SKIP %s", myctime(&chapter_timestamp));
+		record(DEBUG, "SKIP %s", myctime(&chapter_timestamp));
 		if(g->adjust_times) {
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);

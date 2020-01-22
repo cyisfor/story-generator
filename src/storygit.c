@@ -34,8 +34,8 @@ void freeitem(struct git_item* i) {
 	i->commit = NULL; // debugging
 }
 
-const char* myctime(time_t time) {
-	char* ret = ctime(&time);
+const byte* myctime(time_t time) {
+	byte* ret = ctime(&time);
 	ret[strlen(ret)-1] = '\0'; // stupid newline
 	return ret;
 }
@@ -59,7 +59,7 @@ git_for_commits(
 	size_t ntodo = 0;
 
 	if(do_before) {
-		SPAM("before %s\n",db_oid_str(before));
+		record(DEBUG, "before %s\n",db_oid_str(before));
 		repo_check(git_commit_lookup(&me.commit, repo, GIT_OID(before)));
 	} else {
 		// before HEAD
@@ -84,7 +84,7 @@ git_for_commits(
 	
 	for(;;) {	
 		int nparents = git_commit_parentcount(me.commit);
-		//INFO("%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
+		//record(INFO, "%.*s nparents %d\n",GIT_OID_HEXSZ,git_oid_tostr_s(me.oid),nparents);
 		int i;
 		for(i = 0; i < nparents; ++i) {
 			struct git_item parent = {};
@@ -250,7 +250,7 @@ git_for_commits(
 			// we need the tree of the parent, just for visiting purposes
 			repo_check(git_commit_tree(&parent.tree, parent.commit));
 			{
-				INFO("%s:%d ->",git_oid_tostr_s(parent.oid), parent.time);
+				record(INFO, "%s:%d ->",git_oid_tostr_s(parent.oid), parent.time);
 				fprintf(stderr,"     %s:%ld\n",git_oid_tostr_s(me.oid), me.time);
 			}
 
@@ -323,20 +323,20 @@ int file_changed(const git_diff_delta *delta,
 		 otherwise, new_file, false */
 
 	void
-		one_file(const char* spath, bool deleted)
+		one_file(const byte* spath, bool deleted)
 	{
 		const string path = {
 			.base = spath,
 			.len = strlen(spath)
 		};
 		if(path.len < LITSIZ("a/markup/chapterN.hish")) return;
-		const char* slash = strchr(path.base,'/');
+		const byte* slash = strchr(path.base,'/');
 		if(slash == NULL) return;
-		const char* markup = slash+1;
+		const byte* markup = slash+1;
 		if(path.len-(markup-path.base) < LITSIZ("markup/chapterN.hish")) return;
 		if(0!=memcmp(markup,LITLEN("markup/chapter"))) return;
-		const char* num = markup + LITSIZ("markup/chapter");
-		char* end;
+		const byte* num = markup + LITSIZ("markup/chapter");
+		byte* end;
 		long int chapnum = strtol(num,&end,10);
 		assert(chapnum != 0);
 		if(path.len-(end-path.base) < LITSIZ(".hish")) return;
@@ -366,7 +366,7 @@ int file_changed(const git_diff_delta *delta,
 		one_file(delta->new_file.path,false);
 		return ctx->result;
 	default:
-		ERROR("bad delta status %d",delta->status);
+		record(ERROR, "bad delta status %d",delta->status);
 		abort();
 	};
 }

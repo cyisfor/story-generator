@@ -36,7 +36,7 @@ void on_chapter(void* udata,
 		dest->times[0].tv_sec = timestamp;
 		dest->times[1].tv_sec = timestamp;
 	}
-	INFO("%.*s %d %d",
+	record(INFO, "%.*s %d %d",
 		 STRING_FOR_PRINTF(location),
 		 chapnum,
 		under_construction);
