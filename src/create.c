@@ -420,7 +420,7 @@ void create_chapter(int src, int dest,
 	xmlNode* body = head->next->next;
 	bool is_under_construction = false;
 	do_under_construction(&is_under_construction, body);
-	SPAM("DERP under construction %d", is_under_construction);
+	record(DEBUG, "DERP under construction %d", is_under_construction);
 	storydb_set_under_construction(story, chapter, is_under_construction);
 
 	// text suffix, body, last e in body

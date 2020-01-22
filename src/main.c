@@ -105,7 +105,7 @@ bool skip(struct csucks* g, git_time_t srcstamp, const char* destname) {
 		if(destinfo.st_mtime >= srcstamp) {
 			// XXX: this will keep the db from getting chapter titles
 			// if it's destroyed w/out deleting chapter htmls
-			//WARN("skip %s %d %d",destname,destinfo.st_mtime, srcstamp);
+			//record(WARNING, "skip %s %d %d",destname,destinfo.st_mtime, srcstamp);
 			return true;
 		}
 	} else {
@@ -184,7 +184,7 @@ void for_chapter(
 
 	if(!storydb_all_ready && (chapter == g->numchaps + 1)) {
 		// or other criteria, env, db field, etc
-		WARN("not exporting last chapter");
+		record(WARNING, "not exporting last chapter");
 		if(chapter > 2 && !storydb_all_ready && g->ready > 0) {
 			// two chapters before this needs updating, before it now has a "next" link
 			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter-2);
@@ -292,7 +292,7 @@ void for_story(
 	{ string markup = {LITLEN("markup")};
 		srcloc = descend(srcloc, markup, false);
 		if(srcloc < 0) {
-			WARN("ehhh... something got their markup directory removed? %.*s",
+			record(WARNING, "ehhh... something got their markup directory removed? %.*s",
 					 g->location.len, g->location.base);
 			return;
 		}
@@ -308,7 +308,7 @@ void for_story(
 		identifier countchaps = storydb_count_chapters(story);
 		if(countchaps != numchaps) {
 			numchaps_changed = true;
-			WARN("#chapters changed %d -> %d",numchaps,countchaps);
+			record(WARNING, "#chapters changed %d -> %d",numchaps,countchaps);
 			/* if we've reduced our chapters, mark the new last chapter
 				 as seen recently since it needs its next link removed
 				 if we've increased our chapters, also mark seen recently
@@ -383,7 +383,7 @@ void for_story(
 		return;
 	}
 
-	WARN("recreating contents of %d", story);
+	record(WARNING, "recreating contents of %d", story);
 
 	/* be sure to create the contents after processing the chapters, to update the db
 		 with any embedded chapter titles */
@@ -420,7 +420,7 @@ enum gfc_action on_chapter(
 					exit(23); */
 	}
 	if(++g->chapspercom == 5) {
-		WARN("huh? lots of chapters in this commit...");
+		record(WARNING, "huh? lots of chapters in this commit...");
 	}
 //			record(INFO, "%d saw %d of %.*s",timestamp, chapnum,loc.len,loc.base);
 
@@ -431,7 +431,7 @@ enum gfc_action on_chapter(
 	output_time("time",g->timestamp);
 	struct stat derp;
 	if(0!=stat(src.base,&derp)) {
-		WARN("%s wasn't there",src.base);
+		record(WARNING, "%s wasn't there",src.base);
 		return GFC_CONTINUE;
 	}
 	storydb_saw_chapter(deleted,
@@ -479,7 +479,7 @@ const string get_category() {
 		c.len = strlen(c.base);
 		switch(lookup_category(c.base,c.len)) {
 		case CATEGORY_censored:
-			//WARN("censored is a special category. set censored=1 instead plz");
+			//record(WARNING, "censored is a special category. set censored=1 instead plz");
 			setenv("censored","1",1);
 			c.len = LITSIZ("censored");
 			storydb_only_censored = true;

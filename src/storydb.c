@@ -1,14 +1,15 @@
 #include "storydb.h"
 
-#include "db-private.h"
-
-#include "db.sql.stmt.c"
-
 #include "record.h"
 #include "itoa.h"
 #include "ensure.h"
 
 #include <sqlite3.h>
+
+#include "db-private.h"
+
+#include "db.sql.stmt.c"
+
 
 #include <assert.h>
 
@@ -84,7 +85,7 @@ identifier storydb_get_story(const string location, git_time_t created) {
 //	DECLARE_STMT(finderp,"SELECT id,location FROM stories");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
 
-	record(WARN, "get story %.*s",location.len, location.base);
+	record(WARNING, "get story %.*s",location.len, location.base);
 	db_check(sqlite3_bind_text(find,1,location.base,location.len,NULL));
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
@@ -92,7 +93,7 @@ identifier storydb_get_story(const string location, git_time_t created) {
 		identifier id = sqlite3_column_int64(find,0);
 		return id;
 	} else {
-		WARN("inserderp %s", sqlite3_errstr(res));
+		record(WARNING, "inserderp %s", sqlite3_errstr(res));
 		db_check(sqlite3_bind_text(insert,1,location.base, location.len, NULL));
 		db_check(sqlite3_bind_int64(insert,2,created));
 		db_once(insert);
