@@ -1,13 +1,14 @@
 #include "storydb.h"
-#include <sqlite3.h>
 
 #include "db-private.h"
 
 #include "db.sql.stmt.c"
 
+#include "record.h"
 #include "itoa.h"
 #include "ensure.h"
 
+#include <sqlite3.h>
 
 #include <assert.h>
 
@@ -83,7 +84,7 @@ identifier storydb_get_story(const string location, git_time_t created) {
 //	DECLARE_STMT(finderp,"SELECT id,location FROM stories");
 	DECLARE_STMT(insert,"INSERT INTO stories (location,created,updated) VALUES (?1,?2,?2)");
 
-	WARN("get story %.*s",location.len, location.base);
+	record(WARN, "get story %.*s",location.len, location.base);
 	db_check(sqlite3_bind_text(find,1,location.base,location.len,NULL));
 	TRANSACTION;
 	RESETTING(find) int res = db_check(sqlite3_step(find));
@@ -96,7 +97,7 @@ identifier storydb_get_story(const string location, git_time_t created) {
 		db_check(sqlite3_bind_int64(insert,2,created));
 		db_once(insert);
 		identifier story = sqlite3_last_insert_rowid(db);
-		INFO("creating story %.*s: %lu",location.len,location.base,story);
+		record(INFO, "creating story %.*s: %lu",location.len,location.base,story);
 		return story;
 	}
 }
@@ -108,7 +109,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 										git_time_t updated, identifier chapter) {
 	assert(chapter != 0);
 	if(deleted) {
-		INFO("BALEETED %d:%d %d",story,chapter,updated);
+		record(INFO, "BALEETED %d:%d %d",story,chapter,updated);
 		DECLARE_STMT(delete, "DELETE FROM chapters WHERE story = ? AND chapter = ?");
 		db_check(sqlite3_bind_int64(delete,1,story));
 		db_check(sqlite3_bind_int64(delete,2,chapter));
@@ -116,7 +117,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		return;
 	}
 	
-	//INFO("SAW %d:%d %d",story,chapter,updated);
+	//record(INFO, "SAW %d:%d %d",story,chapter,updated);
 	DECLARE_STMT(find,"SELECT updated FROM chapters WHERE story = ? AND chapter = ?");
 	DECLARE_STMT(update,
 				 "UPDATE chapters SET updated = ?, seen = MAX(seen, updated) "
@@ -164,7 +165,7 @@ void storydb_saw_chapter(bool deleted, identifier story,
 		db_check(sqlite3_bind_int64(insert,2,story));
 		db_check(sqlite3_bind_int64(insert,3,chapter));
 		db_once(insert);
-		INFO("creating chapter %lu:%lu",story,chapter);
+		record(INFO, "creating chapter %lu:%lu",story,chapter);
 		break;
 	};
 

@@ -1,7 +1,7 @@
 #include "storygit.h"
 #include "db.h"
 #include "repo.h"
-#include "note.h"
+#include "record.h"
 
 #include <git2/tree.h>
 #include <git2/commit.h>

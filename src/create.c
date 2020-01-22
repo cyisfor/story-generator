@@ -4,7 +4,7 @@
 #include "ddate.h"
 #include "create.h"
 #include "htmlish.h"
-#include "note.h"
+#include "record.h"
 
 #include "libxmlfixes.h"
 

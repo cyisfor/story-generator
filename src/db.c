@@ -1,4 +1,4 @@
-#include "note.h"
+#include "record.h"
 #include "db.h"
 #include "ensure.h"
 #include "htmlish.h"
@@ -22,10 +22,10 @@ int db_check(int res) {
 	};
 
 	if(!db) {
-		error(0,0,"no db %d %s",res, sqlite3_errstr(res));
+		record(ERROR,"no db %d %s",res, sqlite3_errstr(res));
 		abort();
 	}
-	error(0,0,"db error %d(%s) %d(%s) %s",
+	record(ERROR,"db error %d(%s) %d(%s) %s",
 				sqlite3_extended_errcode(db),
 				sqlite3_errstr(sqlite3_extended_errcode(db)),
 				res,

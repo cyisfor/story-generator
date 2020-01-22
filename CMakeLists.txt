@@ -40,7 +40,6 @@ add_library(justdb
 	src/db.c)
 target_link_libraries(justdb PUBLIC
 		htmlish # for no error thingies from database
-		note
 		cstuff)
 target_include_directories(justdb PUBLIC
 	"${CMAKE_CURRENT_BINARY_DIR}" # db_oid
@@ -152,8 +151,6 @@ ctemplate(make-log.row.html)
 ctemplate(page.html)
 ctemplate(contents-body.html)
 ctemplate(contents-story.html)
-
-
 
 str_to_enum_trie(category src/categories.list
   ENUM CATEGORY

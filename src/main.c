@@ -9,7 +9,7 @@
 #include "string.h"
 #include "repo.h"
 #include "create.h"
-#include "note.h"
+#include "record.h"
 
 #include "libxmlfixes/src/libxmlfixes.h"
 
@@ -70,7 +70,7 @@ void output_time_f(const char* msg, time_t time) {
 	struct tm tm = {};
 	size_t len = strftime(buf, 0x1000, "%c", localtime_r(&time,&tm));
 
-	INFO(msg,time,len, buf);
+	record(INFO, msg,time,len, buf);
 }
 
 #define output_time(msg, time) output_time_f(msg " %d %.*s", time)
@@ -109,9 +109,9 @@ bool skip(struct csucks* g, git_time_t srcstamp, const char* destname) {
 			return true;
 		}
 	} else {
-		INFO("dest no exist %s",destname);
+		record(INFO, "dest no exist %s",destname);
 	}
-	INFO("generating %s",destname);
+	record(INFO, "generating %s",destname);
 	return false;
 }
 
@@ -127,11 +127,11 @@ void for_chapter(
 	identifier chapter,
 	git_time_t chapter_timestamp) {
 	GDERP;
-	SPAM("chapter %.*s %ld timestamp %d %s",
+	record(SPAM, "chapter %.*s %ld timestamp %d %s",
 			 g->location.len,g->location.base,
 			 chapter,chapter_timestamp, myctime(&chapter_timestamp));
 	g->any_chapter = true;
-	//SPAM("chap %d:%d\n",chapter,chapter_timestamp);
+	//record(SPAM, "chap %d:%d\n",chapter,chapter_timestamp);
 	if(chapter_timestamp > g->max_timestamp)
 		g->max_timestamp = chapter_timestamp;
 	// this should be moved later...
@@ -155,7 +155,7 @@ void for_chapter(
 			// WHY
 			// git ruins file modification times in its own database
 			// randomly pulling this one out of its ass
-			INFO("chapter %d had bad git timestamp %d (->%d)",
+			record(INFO, "chapter %d had bad git timestamp %d (->%d)",
 					 chapter, chapter_timestamp, srcinfo.st_mtime);			
 			chapter_timestamp = srcinfo.st_mtime;
 			storydb_saw_chapter(false,g->story,chapter_timestamp,chapter);
@@ -173,7 +173,7 @@ void for_chapter(
 					.tv_sec = chapter_timestamp
 				}
 			};
-			INFO("chapter %d had bad timestamp %d (->%d)",
+			record(INFO, "chapter %d had bad timestamp %d (->%d)",
 					 chapter, srcinfo.st_mtime, chapter_timestamp);
 			output_time("file",srcinfo.st_mtime);
 			output_time("db",chapter_timestamp);
@@ -205,7 +205,7 @@ void for_chapter(
 
 	bool skipping = false;
 	if(skip(g, chapter_timestamp,destname)) {
-		SPAM("SKIP %s", myctime(&chapter_timestamp));
+		record(SPAM, "SKIP %s", myctime(&chapter_timestamp));
 		if(g->adjust_times) {
 			// mleh
 			set_timestamp_at(g->destloc, destname, chapter_timestamp);
@@ -422,10 +422,10 @@ enum gfc_action on_chapter(
 	if(++g->chapspercom == 5) {
 		WARN("huh? lots of chapters in this commit...");
 	}
-//			INFO("%d saw %d of %.*s",timestamp, chapnum,loc.len,loc.base);
+//			record(INFO, "%d saw %d of %.*s",timestamp, chapnum,loc.len,loc.base);
 
 	// XXX: todo: handle if unreadable
-	INFO("%ld saw %ld of ",g->timestamp, chapnum);
+	record(INFO, "%ld saw %ld of ",g->timestamp, chapnum);
 	fwrite(loc.base, loc.len, 1, stdout);
 	fputc('\n',stdout);
 	output_time("time",g->timestamp);
@@ -456,7 +456,7 @@ enum gfc_action on_commit(
 
 	GDERP;
 	
-	INFO("commit %d %d %d",base.time, which_parent, ++g->counter);
+	record(INFO, "commit %d %d %d",base.time, which_parent, ++g->counter);
 	output_time("time",base.time);
 	g->chapspercom = 0;
 	if(g->timestamp == 0) {
@@ -486,7 +486,7 @@ const string get_category() {
 			break;
 		case CATEGORY_sneakpeek:
 			storydb_all_ready = true;
-			INFO("sneak peek!");
+			record(INFO, "sneak peek!");
 			c.len = LITSIZ("sneakpeek");
 			break;
 		case CATEGORY_ready:
@@ -519,7 +519,7 @@ int main(int argc, char *argv[])
 
 	create_setup();
 
-	INFO("searching...");
+	record(INFO, "searching...");
 
 	// but not older than the last commit we dealt with
 	struct bad results = {
@@ -548,7 +548,7 @@ int main(int argc, char *argv[])
 			const git_oid* oid = git_commit_id(thing2);
 			after = git_author_time(thing2);
 			after -= 100;
-			INFO("(override) going back until commit %.*s %d",GIT_OID_HEXSZ,git_oid_tostr_s(oid), after);
+			record(INFO, "(override) going back until commit %.*s %d",GIT_OID_HEXSZ,git_oid_tostr_s(oid), after);
 			git_object_free(thing1);
 			break;
 		default:
@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
 		}
 
 		if(results.before) {
-			INFO("current commit %.*s",2*sizeof(db_oid),db_oid_str(before));
+			record(INFO, "current commit %.*s",2*sizeof(db_oid),db_oid_str(before));
 		}
 	}
 
@@ -588,7 +588,7 @@ int main(int argc, char *argv[])
 
 	db_retransaction();
 
-	INFO("processing...");
+	record(INFO, "processing...");
 
 	g.fixing_srctimes = getenv("fix_srctimes")!=NULL;
 
@@ -624,7 +624,7 @@ int main(int argc, char *argv[])
 	storydb_for_stories(&g, for_story, true, g.after);
 	db_retransaction();
 	db_caught_up_category(category);
-	INFO("all done");
+	record(INFO, "all done");
 	db_close_and_exit();
 	return 0;
 }
