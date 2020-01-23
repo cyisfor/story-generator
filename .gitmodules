@@ -1,11 +1,7 @@
-[submodule "htmlish"]
-	path = htmlish
-	url = /home/repo/htmlish
-	ignore = untracked
 [submodule "ctemplate"]
 	path = ctemplate
 	url = /home/repo/ctemplate
 	ignore = untracked
-[submodule "ddate"]
-	path = ddate
-	url = /home/repo/ddate
+[submodule "add_module"]
+	path = add_module
+	url = /home/repo/add_module

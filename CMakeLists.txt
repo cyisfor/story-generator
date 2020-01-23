@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 project(story-generator VERSION 0.1)
 
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/add_module")
+include(AddModule)
+
 include(FindSQLite3)
 
 add_compile_options(-fdiagnostics-color=always)
@@ -23,7 +27,11 @@ function(external_package target prefix)
 		"${${prefix}_LIBRARIES}")
 endfunction()
 
-add_subdirectory(htmlish)
+add_module(htmlish
+  GIT 0955bf47d4916b76e836a291c8a851ac95f9d1c8
+  file:///home/repo/htmlish
+  git@github.com:cyisfor/htmlish.git
+  https://github.com/cyisfor/htmlish.git)
 
 # note: we have to set OBJECT_DEPENDS manually
 # since gcc rage quits if the include file is not found
@@ -32,9 +40,6 @@ add_subdirectory(htmlish)
 set_source_files_properties(src/storydb.c
 	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/add_module")
-include(AddModule)
 
 add_module(cstuff
   GIT 874ae5456e63ea82ddba9cca149600a71be06daf
