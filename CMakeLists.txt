@@ -47,7 +47,7 @@ add_module(cstuff
   git@github.com:cyisfor/cstuff.git
   https://github.com/cyisfor/cstuff.git)
 
-add_cstuff(record)
+add_cstuff(record mmapfile itoa)
   
 add_library(justdb
 	src/db.c)
@@ -70,42 +70,38 @@ target_link_libraries(storydb PUBLIC
 
 add_executable(generate
 	category.gen.c
-	ddate/ddate.c
 	src/main.c
 	src/storygit.c
 	src/repo.c
-	src/create.c
-	cstuff/itoa.c)
+	src/create.c)
 
 pkg_check_modules(GIT
 	REQUIRED
 	libgit2)
 external_package(generate GIT)
 
-target_include_directories(generate PRIVATE
-	"${CMAKE_CURRENT_SOURCE_DIR}/ddate")
-target_link_libraries(generate PRIVATE storydb)
+add_module(ddate
+  GIT f052f11415546b0bbffa6d62c9ea55a9238c9efa
+  file:///home/repo/ddate
+  git@github.com:cyisfor/ddate.git
+  https://github.com/cyisfor/ddate.git)
+
+target_link_libraries(generate PRIVATE storydb ddate)
 
 add_executable(ready
-	src/ready.c
-	cstuff/itoa.c)
+	src/ready.c)
 target_link_libraries(ready PRIVATE storydb)
 external_package(ready GIT)
 
 add_executable(news_log
 	src/news-log.c
-	src/repo.c
-	cstuff/become.c)
-target_include_directories(news_log PRIVATE cstuff)
+	src/repo.c)
 target_link_libraries(news_log PRIVATE storydb)
 external_package(news_log GIT)
 
 add_executable(make_log
 	src/make-log.c
-	src/repo.c
-	cstuff/itoa.c
-	cstuff/become.c)
-target_include_directories(make_log PRIVATE cstuff)
+	src/repo.c)
 target_link_libraries(make_log PRIVATE storydb xmlfixes)
 external_package(make_log GIT)
 
@@ -116,9 +112,7 @@ set_source_files_properties(src/make-log.c
 	)
 
 add_executable(make_contents
-	src/make-contents.c
-	cstuff/itoa.c)
-target_include_directories(make_contents PRIVATE cstuff)
+	src/make-contents.c)
 target_link_libraries(make_contents PRIVATE storydb xmlfixes)
 external_package(make_contents GIT)
 set_source_files_properties(src/make-contents.c
@@ -127,16 +121,12 @@ set_source_files_properties(src/make-contents.c
 
 add_executable(describe
 	src/describe.c
-	cstuff/itoa.c
 	src/db.c)
-target_include_directories(describe PRIVATE cstuff)
 target_link_libraries(describe PRIVATE storydb xml readline)
 external_package(describe GIT)
 
 add_executable(find_chapters_to_publish
-	src/find-chapters-to-publish.c
-	cstuff/itoa.c)
-target_include_directories(find_chapters_to_publish PRIVATE cstuff)
+	src/find-chapters-to-publish.c)
 target_link_libraries(find_chapters_to_publish PRIVATE storydb)
 external_package(find_chapters_to_publish GIT)
 
@@ -178,20 +168,16 @@ ctemplate(contents-body.html)
 ctemplate(contents-story.html)
 
 str_to_enum_trie(category src/categories.list
+  OUTPUT_NAME category.gen
   ENUM CATEGORY
   NOUPPER)
 
 add_executable(statements2source
 	EXCLUDE_FROM_ALL
-	src/statements2source.c
-	cstuff/itoa.c
-	cstuff/mmapfile.c)
-
+	src/statements2source.c)
+  
 external_package(statements2source SQLite3)
 external_package(statements2source GIT)
-target_include_directories(statements2source PUBLIC
-  cstuff
-  "${CMAKE_CURRENT_SOURCE_DIR}/htmlish/src")
 target_link_libraries(statements2source PRIVATE htmlish justdb)
 
 add_custom_command(
