@@ -33,7 +33,15 @@ set_source_files_properties(src/storydb.c
 	PROPERTIES
 	OBJECT_DEPENDS "db.sql.stmt.c")
 
-add_subdirectory(cstuff)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/add_module")
+include(AddModule)
+
+add_module(cstuff
+  GIT 874ae5456e63ea82ddba9cca149600a71be06daf
+  file:///home/repo/cstuff
+  git@github.com:cyisfor/cstuff.git
+  https://github.com/cyisfor/cstuff.git)
+
 add_cstuff(record)
   
 add_library(justdb
@@ -130,13 +138,25 @@ external_package(find_chapters_to_publish GIT)
 ##############################################33
 # Now a bunch of generated files
 
-# add_subdirectory(str_to_enum_trie)
-# ctemplate adds that and cmake sucks
+add_module(str_to_enum_trie
+  GIT 4f5eed5b5e5241afeda669738749cab49e7e07ca
+  file:///home/repo/str_to_enum_trie
+  git@github.com:cyisfor/str_to_enum_trie.git
+  https://github.com/cyisfor/str_to_enum_trie.git)
 
 # And now you learn the depths of my madness
 
 file(MAKE_DIRECTORY template)
-add_subdirectory(ctemplate)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/add_module")
+include(AddModule)
+
+add_module(ctemplate 
+  GIT e9f47e767b238317b4b5948a487645684c127985
+  file:///home/repo/ctemplate
+  git@github.com:cyisfor/ctemplate.git
+  https://github.com/cyisfor/ctemplate.git)
+
 function(ctemplate name)
 	add_ctemplate(
 		"${name}"
