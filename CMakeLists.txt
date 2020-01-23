@@ -28,7 +28,7 @@ function(external_package target prefix)
 endfunction()
 
 add_module(htmlish
-  GIT 0955bf47d4916b76e836a291c8a851ac95f9d1c8
+  GIT e469f0e09cbb45aab938edd03388e18483cc26f0
   file:///home/repo/htmlish
   git@github.com:cyisfor/htmlish.git
   https://github.com/cyisfor/htmlish.git)
@@ -144,7 +144,7 @@ external_package(find_chapters_to_publish GIT)
 # Now a bunch of generated files
 
 add_module(str_to_enum_trie
-  GIT 4f5eed5b5e5241afeda669738749cab49e7e07ca
+  GIT 445f60aca94dc7d8006df4780f7a97114d9bf750
   file:///home/repo/str_to_enum_trie
   git@github.com:cyisfor/str_to_enum_trie.git
   https://github.com/cyisfor/str_to_enum_trie.git)
@@ -157,7 +157,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/add_module")
 include(AddModule)
 
 add_module(ctemplate 
-  GIT e9f47e767b238317b4b5948a487645684c127985
+  GIT 970b8ecbe6557a491f75ee606284e399ecad254d
   file:///home/repo/ctemplate
   git@github.com:cyisfor/ctemplate.git
   https://github.com/cyisfor/ctemplate.git)
