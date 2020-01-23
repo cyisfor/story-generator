@@ -28,7 +28,7 @@ function(external_package target prefix)
 endfunction()
 
 add_module(htmlish
-  GIT e469f0e09cbb45aab938edd03388e18483cc26f0
+  GIT fccdcfbc4fb3b44e7f0d19a37fd4a0d6fa0a2269
   file:///home/repo/htmlish
   git@github.com:cyisfor/htmlish.git
   https://github.com/cyisfor/htmlish.git)
@@ -47,7 +47,7 @@ add_module(cstuff
   git@github.com:cyisfor/cstuff.git
   https://github.com/cyisfor/cstuff.git)
 
-add_cstuff(record mmapfile itoa)
+add_cstuff(record mmapfile itoa become)
   
 add_library(justdb
 	src/db.c)
@@ -81,7 +81,7 @@ pkg_check_modules(GIT
 external_package(generate GIT)
 
 add_module(ddate
-  GIT f052f11415546b0bbffa6d62c9ea55a9238c9efa
+  GIT 8efb05f2bda0cbd2800f268bc7a8fd95ce6aa2e4
   file:///home/repo/ddate
   git@github.com:cyisfor/ddate.git
   https://github.com/cyisfor/ddate.git)
